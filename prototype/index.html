@@ -615,6 +615,9 @@
     .fc-side  .tdot { width: 6px; height: 6px; }
     .fc-cat-name   { font-family: var(--f-hand); font-size: 10px; color: var(--ink-3); line-height: 1; margin-left: 2px; }
     .fc-cat-remain { font-family: var(--f-mono); font-size: 8px; color: var(--ink-3); margin-left: auto; }
+    .fc-task-line  { display: flex; align-items: center; gap: 5px; }
+    .fc-task-lbl   { font-size: 10.5px; color: var(--ink); line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .fc-task-done  { opacity: .45; text-decoration: line-through; }
 
     /* Mini calendar grid */
     .cal-mini-wrap  { padding: 10px 10px 14px; }
@@ -1433,9 +1436,9 @@ function renderMesic() {
 
   /* ── doodle SVG border paths (slightly different per role) ── */
   function doodleFrame(role) {
-    const s = role === 'today' ? 1.15 : 0.95;
+    const s = role === 'today' ? 0.85 : 0.9;
     const c = role === 'today' ? '#b93066' : '#bbb';
-    const o = role === 'today' ? '.5'  : '.3';
+    const o = role === 'today' ? '.38' : '.28';
     return `<svg class="doodle-frame" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none" aria-hidden="true">
       <path d="M3 8 C5 3,12 2,18 3 S38 4,50 2.5 S72 3,82 2 S93 4,97 8" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
       <path d="M97 8 C98 20,99 40,98 55 S99 78,97 92" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
@@ -1445,7 +1448,25 @@ function renderMesic() {
   }
 
   /* ── task dot rows per category ── */
-  function taskDotsHTML(taskList) {
+  function taskDotsHTML(taskList, role) {
+    if (!taskList.length) return '';
+
+    if (role === 'today') {
+      // Show each task as dot + title — there aren't many day-specific tasks
+      const lines = taskList.slice(0, 6).map(t => {
+        const col = CAT[t.tag]?.color || '#999';
+        const dotStyle = t.done
+          ? `border:1.5px solid ${col};background:transparent`
+          : `background:${col}`;
+        return `<div class="fc-task-line">
+          <span class="tdot" style="${dotStyle}"></span>
+          <span class="fc-task-lbl${t.done ? ' fc-task-done' : ''}">${t.title}</span>
+        </div>`;
+      }).join('');
+      return `<div class="fc-tasks">${lines}</div>`;
+    }
+
+    // Side cards: compact category-grouped dots
     const cats = ['prace','rodina','domacnost','ostatni'];
     const rows = cats.map(cat => {
       const catTasks = taskList.filter(t => t.tag === cat);
@@ -1497,7 +1518,7 @@ function renderMesic() {
       </div>
       <div class="fc-num">${day}</div>
       ${evHTML ? `<div class="fc-events">${evHTML}</div>` : ''}
-      ${taskDotsHTML(taskList)}
+      ${taskDotsHTML(taskList, role)}
     </div>`;
   }
 
