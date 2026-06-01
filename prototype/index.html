@@ -567,7 +567,7 @@
     }
     .cal-focus-grid {
       display: grid;
-      grid-template-columns: 1fr 1.65fr 1fr;
+      grid-template-columns: 1.65fr 1fr 1fr;
       gap: 8px;
     }
     .focus-card {
@@ -617,30 +617,38 @@
     .fc-cat-remain { font-family: var(--f-mono); font-size: 8px; color: var(--ink-3); margin-left: auto; }
 
     /* Mini calendar grid */
-    .cal-mini-wrap  { padding: 10px 12px 14px; }
-    .cal-mini-label { font-family: var(--f-hand); font-size: 13px; color: var(--ink-3); margin-bottom: 5px; }
-    .cal-mini-dow   { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 2px; }
-    .cal-mini-dow span { font-family: var(--f-hand); font-size: 10.5px; color: var(--ink-3); text-align: center; font-weight: 700; }
-    .cal-mini-dow span.wknd { color: rgba(185,48,102,.55); }
-    .cal-mini-grid  { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-mini-wrap  { padding: 10px 10px 14px; }
+    .cal-mini-label { font-family: var(--f-hand); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
+    .cal-mini-dow   { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 0; }
+    .cal-mini-dow span { font-family: var(--f-hand); font-size: 11px; color: var(--ink-3); text-align: center; font-weight: 700; padding: 2px 0 4px; }
+    .cal-mini-dow span.wknd { color: rgba(185,48,102,.6); }
+    .cal-mini-grid  {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
     .d-mini-cell {
       display: flex; flex-direction: column; align-items: center;
-      padding: 2px 1px 3px; gap: 2px; border-radius: 4px; cursor: pointer;
+      padding: 4px 2px 5px; gap: 2px; cursor: pointer; min-height: 60px;
+      border-right: 1px solid var(--border-faint);
+      border-bottom: 1px solid var(--border-faint);
+      background: var(--bg);
     }
-    .d-mini-cell.off { opacity: .28; pointer-events: none; }
+    .d-mini-cell.off { background: var(--bg-off); pointer-events: none; }
     .d-mini-cell:not(.off):hover { background: var(--primary-lt); }
+    .d-mini-cell.wknd:not(.d-today):not(.d-this-week) { background: rgba(185,48,102,.025); }
     .d-mini-num {
-      font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-2);
-      width: 18px; height: 18px; display: flex; align-items: center;
-      justify-content: center; border-radius: 50%; line-height: 1;
+      font-family: var(--f-mono); font-size: 11px; color: var(--ink-2);
+      width: 22px; height: 22px; display: flex; align-items: center;
+      justify-content: center; border-radius: 50%; line-height: 1; flex-shrink: 0;
     }
     .d-mini-cell.d-today     .d-mini-num { background: var(--primary); color: white; }
     .d-mini-cell.d-this-week .d-mini-num { background: var(--primary-lt); color: var(--primary); }
-    .d-mini-cell.wknd:not(.d-today):not(.d-this-week) .d-mini-num { color: rgba(185,48,102,.7); }
-    .d-mini-bars { display: flex; flex-direction: column; gap: 1px; width: 78%; }
-    .d-mini-bar  { height: 2px; border-radius: 1px; width: 100%; }
+    .d-mini-cell.wknd:not(.d-today):not(.d-this-week) .d-mini-num { color: rgba(185,48,102,.75); }
+    .d-mini-cell.off         .d-mini-num { color: var(--ink-3); }
+    .d-mini-bars { display: flex; flex-direction: column; gap: 1.5px; width: 80%; }
+    .d-mini-bar  { height: 3px; border-radius: 1.5px; width: 100%; }
     .d-mini-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
-    .d-mini-dot  { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+    .d-mini-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
     .d-mini-dot.ring { background: transparent !important; border: 1px solid; }
 
     /* Grid: equal-height cells with borders */
@@ -1425,9 +1433,9 @@ function renderMesic() {
 
   /* ── doodle SVG border paths (slightly different per role) ── */
   function doodleFrame(role) {
-    const s = role === 'today' ? 1.6 : 1.1;
-    const c = role === 'today' ? '#b93066' : '#ccc';
-    const o = role === 'today' ? '.55' : '.35';
+    const s = role === 'today' ? 1.15 : 0.95;
+    const c = role === 'today' ? '#b93066' : '#bbb';
+    const o = role === 'today' ? '.5'  : '.3';
     return `<svg class="doodle-frame" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none" aria-hidden="true">
       <path d="M3 8 C5 3,12 2,18 3 S38 4,50 2.5 S72 3,82 2 S93 4,97 8" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
       <path d="M97 8 C98 20,99 40,98 55 S99 78,97 92" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
@@ -1460,9 +1468,9 @@ function renderMesic() {
 
     const badge = role === 'today'
       ? `<span class="fc-badge">dnes</span>`
-      : role === 'yesterday'
-      ? `<span class="fc-badge badge-side">včera</span>`
-      : `<span class="fc-badge badge-side">zítra</span>`;
+      : role === 'tomorrow'
+      ? `<span class="fc-badge badge-side">zítra</span>`
+      : `<span class="fc-badge badge-side">pozítří</span>`;
 
     let metaHTML = '';
     if (meta.holiday) metaHTML += `<span class="fc-holiday">🎉 ${meta.holiday}</span>`;
@@ -1493,14 +1501,14 @@ function renderMesic() {
     </div>`;
   }
 
-  /* ── 3-day focus strip ── */
-  const yest = new Date(now); yest.setDate(now.getDate() - 1);
-  const tom  = new Date(now); tom.setDate(now.getDate() + 1);
+  /* ── 3-day focus strip: today + next 2 days ── */
+  const tom   = new Date(now); tom.setDate(now.getDate() + 1);
+  const tom2  = new Date(now); tom2.setDate(now.getDate() + 2);
 
   const focusHTML = `<div class="cal-focus-grid">
-    ${focusCardHTML(yest, 'yesterday')}
     ${focusCardHTML(now,  'today')}
     ${focusCardHTML(tom,  'tomorrow')}
+    ${focusCardHTML(tom2, 'dayafter')}
   </div>`;
   $('js-cal-focus').innerHTML = focusHTML;
 
