@@ -653,6 +653,20 @@
     .d-mini-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
     .d-mini-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
     .d-mini-dot.ring { background: transparent !important; border: 1px solid; }
+    .d-mini-ev-item {
+      font-size: 8px; color: var(--ink); line-height: 1.25;
+      padding: 0 2px 0 4px; border-left: 2px solid;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      width: 88%; align-self: flex-start; margin-left: 6%;
+    }
+    .d-mini-task-item {
+      display: flex; align-items: center; gap: 2px;
+      font-size: 8px; color: var(--ink-2); line-height: 1.25;
+      overflow: hidden; white-space: nowrap;
+      width: 88%; align-self: flex-start; margin-left: 6%;
+    }
+    .d-mini-task-item span { overflow: hidden; text-overflow: ellipsis; }
+    .d-mini-task-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
     /* Grid: equal-height cells with borders */
     .cal-cells {
@@ -1436,9 +1450,9 @@ function renderMesic() {
 
   /* ── doodle SVG border paths (slightly different per role) ── */
   function doodleFrame(role) {
-    const s = role === 'today' ? 0.85 : 0.9;
+    const s = role === 'today' ? 0.5 : 0.9;
     const c = role === 'today' ? '#b93066' : '#bbb';
-    const o = role === 'today' ? '.38' : '.28';
+    const o = role === 'today' ? '.55' : '.28';
     return `<svg class="doodle-frame" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none" aria-hidden="true">
       <path d="M3 8 C5 3,12 2,18 3 S38 4,50 2.5 S72 3,82 2 S93 4,97 8" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
       <path d="M97 8 C98 20,99 40,98 55 S99 78,97 92" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
@@ -1567,14 +1581,7 @@ function renderMesic() {
     const { evs, taskList } = getDayItems(cds);
     const active = taskList.filter(t => !t.done);
     const done   = taskList.filter(t =>  t.done);
-
-    const bars = evs.slice(0, 3).map(e =>
-      `<div class="d-mini-bar" style="background:${CAT[e.tag]?.color||'#999'}"></div>`).join('');
-    const tdots = [...active.map(t =>
-      `<span class="d-mini-dot" style="background:${CAT[t.tag]?.color||'#999'}"></span>`),
-      ...done.map(t =>
-      `<span class="d-mini-dot ring" style="border-color:${CAT[t.tag]?.color||'#999'}"></span>`)
-    ].slice(0, 4).join('');
+    const total  = evs.length + taskList.length;
 
     const cls = ['d-mini-cell',
       isToday   ? 'd-today'    : '',
@@ -1582,10 +1589,37 @@ function renderMesic() {
       isWknd    ? 'wknd'       : '',
     ].filter(Boolean).join(' ');
 
+    let cellContent = '';
+    if (total > 0 && total <= 3) {
+      // Text preview mode: show event titles + task names
+      const evItems = evs.slice(0, 2).map(e =>
+        `<div class="d-mini-ev-item" style="border-left-color:${CAT[e.tag]?.color||'#999'}">${e.title}</div>`
+      ).join('');
+      const taskItems = taskList.slice(0, 2).map(t => {
+        const col = CAT[t.tag]?.color || '#999';
+        const dotStyle = t.done ? `border:1px solid ${col};background:transparent` : `background:${col}`;
+        return `<div class="d-mini-task-item">
+          <span class="d-mini-task-dot" style="${dotStyle}"></span>
+          <span>${t.title}</span>
+        </div>`;
+      }).join('');
+      cellContent = evItems + taskItems;
+    } else if (total > 3) {
+      // Compact bars + dots mode for busy days
+      const bars = evs.slice(0, 3).map(e =>
+        `<div class="d-mini-bar" style="background:${CAT[e.tag]?.color||'#999'}"></div>`).join('');
+      const tdots = [...active.map(t =>
+        `<span class="d-mini-dot" style="background:${CAT[t.tag]?.color||'#999'}"></span>`),
+        ...done.map(t =>
+        `<span class="d-mini-dot ring" style="border-color:${CAT[t.tag]?.color||'#999'}"></span>`)
+      ].slice(0, 5).join('');
+      cellContent = (bars ? `<div class="d-mini-bars">${bars}</div>` : '')
+                  + (tdots ? `<div class="d-mini-dots">${tdots}</div>` : '');
+    }
+
     miniHtml += `<div class="${cls}" data-date="${cds}">
       <div class="d-mini-num">${dd}</div>
-      ${bars ? `<div class="d-mini-bars">${bars}</div>` : ''}
-      ${tdots ? `<div class="d-mini-dots">${tdots}</div>` : ''}
+      ${cellContent}
     </div>`;
   }
 
