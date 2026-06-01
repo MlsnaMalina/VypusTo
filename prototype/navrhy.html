@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VypusTo — Návrhy redesignu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Caveat:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #b93066;
+      --primary-lt: #fef0f6;
+      --bg: #ffffff;
+      --bg-off: #f7f7f7;
+      --border: #EBEBEB;
+      --ink: #111111;
+      --ink-2: #555555;
+      --ink-3: #999999;
+      --c-prace: #1C3557; --c-prace-bg: #EDF1F6;
+      --c-rodina: #C4614A; --c-rodina-bg: #F9EDE9;
+      --c-dom: #4A7C59; --c-dom-bg: #EBF3EE;
+      --c-ost: #7A6E8A; --c-ost-bg: #F0EEF3;
+      --f-display: 'Syne', sans-serif;
+      --f-hand: 'Caveat', cursive;
+      --f-mono: 'IBM Plex Mono', monospace;
+      --f-body: 'Space Grotesk', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--f-body); background: #18151f; color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    .page-header { padding: 48px 36px 32px; }
+    .page-eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 10px; }
+    .page-title { font-family: var(--f-display); font-size: clamp(28px, 5vw, 48px); font-weight: 800; color: #fff; letter-spacing: -.03em; line-height: .95; }
+    .page-subtitle { font-size: 13.5px; color: rgba(255,255,255,.42); margin-top: 10px; line-height: 1.55; max-width: 520px; }
+
+    .section { padding: 0 24px 60px; }
+    .section-head { margin-bottom: 16px; display: flex; align-items: baseline; gap: 12px; }
+    .section-title { font-family: var(--f-display); font-size: 18px; font-weight: 800; color: rgba(255,255,255,.85); letter-spacing: -.02em; }
+    .section-note { font-family: var(--f-mono); font-size: 10px; color: rgba(255,255,255,.28); letter-spacing: .05em; }
+
+    .opt { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.38); max-width: 540px; }
+    .opt-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); }
+    .opt-pill { display: inline-flex; padding: 2px 9px; border-radius: 20px; font-family: var(--f-mono); font-size: 10px; font-weight: 500; margin-bottom: 6px; background: var(--primary); color: white; }
+    .opt-name { font-family: var(--f-display); font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+    .opt-desc { font-size: 12px; color: var(--ink-2); margin-top: 3px; line-height: 1.55; }
+
+    /* ═══════════════════════════════════
+       CALENDAR D — v3
+    ═══════════════════════════════════ */
+    .cal-d { background: white; }
+
+    .cal-d-top {
+      padding: 12px 14px 9px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-d-month { font-family: var(--f-hand); font-size: 21px; font-weight: 700; color: var(--ink); }
+    .cal-d-nav { display: flex; gap: 5px; }
+    .cal-navbtn { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--ink-3); border: 1px solid var(--border); font-size: 12px; }
+
+    /* 3-day grid */
+    .cal-d-focus {
+      display: grid;
+      grid-template-columns: 1fr 1.7fr 1fr;
+      gap: 8px;
+      padding: 10px 10px 8px;
+      background: var(--bg-off);
+    }
+
+    /* Card wrapper */
+    .focus-card {
+      position: relative;
+      background: white;
+      border-radius: 9px;
+      display: flex; flex-direction: column;
+      padding: 9px 9px 9px;
+      min-height: 128px;
+    }
+    .focus-card.fc-today { padding: 10px 10px 10px; min-height: 155px; }
+    .focus-card.fc-side { opacity: .78; }
+
+    /* Doodle SVG border — position:absolute, pointer-events:none */
+    .doodle-frame {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; overflow: visible;
+    }
+
+    /* Card: top info row */
+    .fc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1px; }
+    .fc-dow-wrap { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .fc-dow { font-family: var(--f-hand); font-size: 13px; font-weight: 700; color: var(--ink-2); line-height: 1.2; }
+    .fc-today .fc-dow { color: var(--ink); }
+    .fc-badge {
+      font-family: var(--f-mono); font-size: 8.5px;
+      padding: 1px 5px; border-radius: 9px;
+      background: var(--primary); color: white; line-height: 1.4;
+    }
+    .fc-badge.badge-side { background: transparent; border: 1px solid var(--border); color: var(--ink-3); }
+
+    /* Context: svátek / narozeniny / svátek */
+    .fc-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; margin-left: 4px; }
+    .fc-holiday { font-family: var(--f-hand); font-size: 10px; font-weight: 700; color: var(--c-dom); line-height: 1.2; }
+    .fc-bday { font-size: 9.5px; color: var(--c-rodina); font-weight: 500; line-height: 1.2; white-space: nowrap; }
+    .fc-svatek { font-family: var(--f-hand); font-size: 10px; font-weight: 700; color: var(--primary); opacity: .7; line-height: 1.2; }
+
+    /* Big date number */
+    .fc-num {
+      font-family: var(--f-display); font-weight: 800; letter-spacing: -.04em;
+      line-height: .85; color: var(--ink); flex-shrink: 0;
+      font-size: 40px; margin: 5px 0 8px;
+    }
+    .fc-today .fc-num { font-size: 50px; margin: 6px 0 9px; }
+    .fc-side .fc-num { font-size: 32px; color: var(--ink-3); }
+
+    /* Events — left-border approach */
+    .fc-events { display: flex; flex-direction: column; gap: 2px; }
+    .fc-ev-row {
+      display: flex; align-items: baseline; gap: 5px;
+      padding: 2px 5px 2px 6px;
+      border-left: 2.5px solid;    /* color via style="" */
+      border-radius: 0 3px 3px 0;
+    }
+    .fc-ev-time {
+      font-family: var(--f-mono); font-size: 8.5px; color: var(--ink-3);
+      flex-shrink: 0; line-height: 1.5;
+    }
+    .fc-ev-title {
+      font-family: var(--f-body); font-size: 10.5px; color: var(--ink);
+      line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .fc-today .fc-ev-title { font-size: 11px; }
+    .fc-side .fc-ev-title { font-size: 10px; }
+
+    /* Task dot groups */
+    .fc-tasks {
+      margin-top: 8px; padding-top: 7px;
+      border-top: 1px solid rgba(0,0,0,.07);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .fc-today .fc-tasks { gap: 5px; }
+
+    .fc-cat-row { display: flex; align-items: center; gap: 4px; }
+    .fc-cat-dots { display: flex; gap: 3px; }
+    .tdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .tdot.ring { background: transparent !important; border: 1.5px solid; }
+    .fc-cat-name {
+      font-family: var(--f-hand); font-size: 10px; color: var(--ink-3);
+      line-height: 1; margin-left: 2px;
+    }
+    .fc-cat-remain {
+      font-family: var(--f-mono); font-size: 8px; color: var(--ink-3);
+      margin-left: auto;
+    }
+    /* Side cards: smaller dots */
+    .fc-side .tdot { width: 6px; height: 6px; }
+    /* Today: slightly larger dots */
+    .fc-today .tdot { width: 8px; height: 8px; }
+    .fc-today .tdot.ring { border-width: 1.5px; }
+
+
+    /* ── Mini-calendar ── */
+    .cal-d-mini-section { padding: 9px 11px 12px; }
+    .cal-d-mini-label { font-family: var(--f-hand); font-size: 12px; color: var(--ink-3); margin-bottom: 5px; }
+    .cal-d-dow-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 2px; }
+    .cal-d-dow-row span { font-family: var(--f-hand); font-size: 10.5px; color: var(--ink-3); text-align: center; font-weight: 700; }
+    .cal-d-dow-row span.wknd { color: rgba(185,48,102,.55); }
+    .cal-d-mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+
+    .d-mini-cell { display: flex; flex-direction: column; align-items: center; padding: 2px 1px 3px; gap: 2px; border-radius: 4px; }
+    .d-mini-num { font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-2); width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; line-height: 1; }
+    .d-mini-cell.d-today .d-mini-num { background: var(--primary); color: white; }
+    .d-mini-cell.d-this-week .d-mini-num { background: var(--primary-lt); color: var(--primary); }
+    .d-mini-cell.off { opacity: .28; }
+    .d-mini-cell.wknd:not(.d-today):not(.d-this-week) .d-mini-num { color: rgba(185,48,102,.7); }
+    .d-mini-bars { display: flex; flex-direction: column; gap: 1px; width: 78%; }
+    .d-mini-bar { height: 2px; border-radius: 1px; width: 100%; }
+    .d-mini-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
+    .d-mini-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+    .d-mini-dot.ring { background: transparent !important; border: 1px solid; }
+
+
+    /* ═══════════════════════════════════
+       TASKS — asymmetric (reference)
+    ═══════════════════════════════════ */
+    .tasks-body { display: grid; grid-template-columns: 1.6fr 1fr; min-height: 340px; }
+    .tb-main { border-right: 1px solid var(--border); padding: 13px; background: white; }
+    .tb-label { font-family: var(--f-hand); font-size: 26px; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 2px; }
+    .tb-wave { display: block; overflow: visible; height: 5px; margin-bottom: 11px; }
+    .tb-task { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.04); }
+    .tb-task:last-child { border-bottom: none; }
+    .tb-cb { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #ccc; flex-shrink: 0; margin-top: 1px; }
+    .tb-ttitle { font-size: 12.5px; color: var(--ink); line-height: 1.4; flex: 1; }
+    .tb-tag { font-family: var(--f-hand); font-size: 10.5px; font-weight: 700; padding: 0 5px; border-radius: 20px; flex-shrink: 0; align-self: flex-start; margin-top: 1px; }
+    .tb-sep { font-family: var(--f-hand); font-size: 19px; font-weight: 700; color: var(--ink-3); margin: 9px 0 2px; }
+    .tb-sep-wave { display: block; overflow: visible; height: 3px; margin-bottom: 9px; }
+    .tb-cats { background: white; display: flex; flex-direction: column; }
+    .tb-cat { padding: 9px 11px; border-bottom: 1px solid var(--border); flex: 1; }
+    .tb-cat:last-child { border-bottom: none; }
+    .tb-cat-head { display: flex; align-items: center; margin-bottom: 4px; }
+    .tb-cat-lbl { font-family: var(--f-hand); font-size: 15px; font-weight: 700; }
+    .tb-cat-cnt { font-family: var(--f-mono); font-size: 9px; color: var(--ink-3); margin-left: auto; }
+    .tb-cat-wave { display: block; overflow: visible; height: 3px; margin-bottom: 4px; }
+    .tb-mini-row { font-size: 11px; color: var(--ink-2); padding: 2px 0; border-bottom: 1px solid rgba(0,0,0,.04); display: flex; align-items: center; gap: 5px; }
+    .tb-mini-row:last-child { border-bottom: none; }
+    .tb-mini-cb { width: 11px; height: 11px; border-radius: 50%; border: 1px solid #ccc; flex-shrink: 0; }
+    .tasks-eyebrow { font-family: var(--f-hand); font-size: 13px; color: var(--primary); font-weight: 600; }
+    .tasks-h1 { font-family: var(--f-display); font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -.025em; line-height: 1; margin-top: 2px; }
+    .tasks-top { padding: 14px 16px 9px; border-bottom: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-eyebrow">VypusTo — Redesign — 2026</div>
+  <h1 class="page-title">Varianta D<br>v3</h1>
+  <p class="page-subtitle">Doodle rámečky s výraznějšími nerovnostmi + jemnější linka. Události jako řádky s tenkou barevnou čárkou vlevo — vejde se víc. Úkoly jako tečky per kategorie. Větší karta dnes = více info.</p>
+</div>
+
+<!-- LEGENDA -->
+<div class="section" style="padding-bottom: 28px;">
+  <div style="display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:rgba(255,255,255,.45);">
+    <span style="display:flex;align-items:center;gap:6px;">
+      <span style="width:3px;height:14px;background:var(--c-rodina);border-radius:1px;display:inline-block"></span>
+      událost (čárka vlevo + čas + název)
+    </span>
+    <span style="display:flex;align-items:center;gap:5px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--c-prace);display:inline-block"></span>
+      úkol čeká (plná tečka)
+    </span>
+    <span style="display:flex;align-items:center;gap:5px;">
+      <span style="width:8px;height:8px;border-radius:50%;border:1.5px solid var(--c-prace);display:inline-block"></span>
+      úkol hotov (prázdná tečka)
+    </span>
+  </div>
+</div>
+
+<!-- KALENDÁŘ -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-title">Kalendář — Měsíc</div>
+    <div class="section-note">Varianta D v3</div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head">
+      <div class="opt-pill">Varianta D</div>
+      <div class="opt-name">3denní lupa + mini měsíc</div>
+      <div class="opt-desc">Doodle rámečky (finer + wobbly). Události = řádek s barevnou levou čárkou, čas, název — vejde se více. Úkoly = tečky per kategorie. Mini mřížka sdílí stejný vizuální jazyk.</div>
+    </div>
+
+    <div class="cal-d">
+      <div class="cal-d-top">
+        <div class="cal-d-month">Červen 2026 ✦</div>
+        <div class="cal-d-nav">
+          <div class="cal-navbtn">‹</div>
+          <div class="cal-navbtn">›</div>
+        </div>
+      </div>
+
+      <div class="cal-d-focus">
+
+        <!-- YESTERDAY: Sun May 31 -->
+        <div class="focus-card fc-side">
+          <svg class="doodle-frame" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
+            <!-- Wobbly rect, fine line, light colour -->
+            <path d="M5 5.5 C12 4, 28 5.8, 50 4.8 C68 4, 84 5.5, 96.5 5 C98.8 4.9, 99.8 6.5, 99.5 9.5 L99.2 28 C99.5 42, 99 65, 99.3 88 C99.4 94, 98 98.5, 95.5 98.5 L52 98.8 C36 99.2, 18 98.4, 5.5 98.8 C2.5 98.9, 1 97, 0.8 94 L1.2 72 C0.8 55, 1.4 30, 1 11 C0.9 7.5, 3 5.8, 5 5.5 Z" stroke="#C8C8C8" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="fc-top">
+            <div class="fc-dow-wrap">
+              <span class="fc-dow">Neděle</span>
+              <span class="fc-badge badge-side">včera</span>
+            </div>
+            <div class="fc-meta">
+              <span class="fc-svatek">✧ Petronela</span>
+            </div>
+          </div>
+          <div class="fc-num">31</div>
+          <div class="fc-events">
+            <div class="fc-ev-row" style="border-left-color:var(--c-ost)">
+              <span class="fc-ev-time">10:00</span>
+              <span class="fc-ev-title">Jóga</span>
+            </div>
+          </div>
+          <div class="fc-tasks">
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot ring" style="border-color:var(--c-prace)"></span>
+              </div>
+              <span class="fc-cat-name">Práce</span>
+              <span class="fc-cat-remain">1 hotov</span>
+            </div>
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-ost)"></span>
+              </div>
+              <span class="fc-cat-name">Ostatní</span>
+              <span class="fc-cat-remain">1 čeká</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODAY: Mon June 1 -->
+        <div class="focus-card fc-today">
+          <svg class="doodle-frame" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
+            <!-- Outer wobbly path — main line -->
+            <path d="M6 5 C14 3.2, 35 5.5, 58 4.5 C74 3.8, 88 5.2, 96.5 4.8 C99 4.9, 100 7, 99.5 11 L99.8 38 C99.4 55, 100 72, 99.6 90 C99.5 95.5, 97.5 99.2, 94.5 99 L58 99.5 C40 100, 20 99, 6 99.2 C3 99.3, 0.5 97, 0.5 93.5 L0.8 65 C0.4 48, 1 28, 0.8 12 C0.7 7.5, 3.5 5.3, 6 5 Z" stroke="var(--primary)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+            <!-- Inner line — sketchbook double effect -->
+            <path d="M7.5 7 C18 5.5, 38 7.5, 60 6.5 C76 5.8, 89 7, 96 6.5 C97.8 6.4, 98.5 8, 98.2 11.5 L98.5 40 C98.2 55, 98.7 72, 98.4 89.5 C98.3 93.5, 96.5 97, 94 97.2 L58 97.8 C42 98.2, 22 97, 8 97.5 C5.5 97.6, 3.2 96, 3 93 L3.2 65 C2.8 48, 3.4 30, 3 13 C2.8 9.5, 5.5 7.5, 7.5 7 Z" stroke="var(--primary)" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round" opacity=".28"/>
+          </svg>
+          <div class="fc-top">
+            <div class="fc-dow-wrap">
+              <span class="fc-dow">Pondělí</span>
+              <span class="fc-badge">dnes</span>
+            </div>
+            <div class="fc-meta">
+              <span class="fc-holiday">Den dětí</span>
+              <span class="fc-bday">🎂 Markéta</span>
+              <span class="fc-svatek">✧ Laura</span>
+            </div>
+          </div>
+          <div class="fc-num">1</div>
+          <div class="fc-events">
+            <div class="fc-ev-row" style="border-left-color:var(--c-rodina)">
+              <span class="fc-ev-time">8:30</span>
+              <span class="fc-ev-title">Školka — odvoz</span>
+            </div>
+            <div class="fc-ev-row" style="border-left-color:var(--c-prace)">
+              <span class="fc-ev-time">14:00</span>
+              <span class="fc-ev-title">Meeting s Novotným</span>
+            </div>
+            <div class="fc-ev-row" style="border-left-color:var(--c-ost)">
+              <span class="fc-ev-time">18:30</span>
+              <span class="fc-ev-title">Jóga</span>
+            </div>
+          </div>
+          <div class="fc-tasks">
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-rodina)"></span>
+                <span class="tdot" style="background:var(--c-rodina)"></span>
+              </div>
+              <span class="fc-cat-name">Rodina</span>
+              <span class="fc-cat-remain">2 čekají</span>
+            </div>
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-prace)"></span>
+                <span class="tdot ring" style="border-color:var(--c-prace)"></span>
+              </div>
+              <span class="fc-cat-name">Práce</span>
+              <span class="fc-cat-remain">1 čeká</span>
+            </div>
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-dom)"></span>
+              </div>
+              <span class="fc-cat-name">Dom.</span>
+              <span class="fc-cat-remain">1 čeká</span>
+            </div>
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-ost)"></span>
+              </div>
+              <span class="fc-cat-name">Ostatní</span>
+              <span class="fc-cat-remain">1 čeká</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOMORROW: Tue June 2 -->
+        <div class="focus-card fc-side">
+          <svg class="doodle-frame" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
+            <path d="M4.5 6 C11 4.2, 30 6, 52 5 C70 4.2, 86 5.8, 97 5.2 C99.2 5.1, 100 6.8, 99.8 10 L99.5 30 C99.8 48, 99.2 68, 99.6 90 C99.7 95, 98.2 99, 95.8 99 L52 99.2 C35 99.6, 17 98.8, 5 99 C2.3 99.1, 0.8 97.2, 0.6 94 L1 68 C0.6 50, 1.2 28, 0.8 12 C0.7 8, 2.8 6.4, 4.5 6 Z" stroke="#C0C0C0" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="fc-top">
+            <div class="fc-dow-wrap">
+              <span class="fc-dow">Úterý</span>
+              <span class="fc-badge badge-side">zítra</span>
+            </div>
+            <div class="fc-meta">
+              <span class="fc-svatek">✧ Jarmila</span>
+            </div>
+          </div>
+          <div class="fc-num">2</div>
+          <div class="fc-events">
+            <div class="fc-ev-row" style="border-left-color:var(--c-prace)">
+              <span class="fc-ev-time">9:00</span>
+              <span class="fc-ev-title">Konference</span>
+            </div>
+            <div class="fc-ev-row" style="border-left-color:var(--c-prace)">
+              <span class="fc-ev-time">15:00</span>
+              <span class="fc-ev-title">Report Q2</span>
+            </div>
+          </div>
+          <div class="fc-tasks">
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-prace)"></span>
+                <span class="tdot" style="background:var(--c-prace)"></span>
+              </div>
+              <span class="fc-cat-name">Práce</span>
+              <span class="fc-cat-remain">2 čekají</span>
+            </div>
+            <div class="fc-cat-row">
+              <div class="fc-cat-dots">
+                <span class="tdot" style="background:var(--c-dom)"></span>
+              </div>
+              <span class="fc-cat-name">Dom.</span>
+              <span class="fc-cat-remain">1 čeká</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /focus -->
+
+      <!-- Mini month -->
+      <div class="cal-d-mini-section">
+        <div class="cal-d-mini-label">Celý měsíc</div>
+        <div class="cal-d-dow-row">
+          <span>Po</span><span>Út</span><span>St</span><span>Čt</span><span>Pá</span>
+          <span class="wknd">So</span><span class="wknd">Ne</span>
+        </div>
+        <div class="cal-d-mini-grid">
+          <!-- Week 1 (current) -->
+          <div class="d-mini-cell d-today">
+            <span class="d-mini-num">1</span>
+            <div class="d-mini-bars">
+              <div class="d-mini-bar" style="background:var(--c-rodina)"></div>
+              <div class="d-mini-bar" style="background:var(--c-prace)"></div>
+            </div>
+            <div class="d-mini-dots">
+              <span class="d-mini-dot" style="background:var(--c-rodina)"></span>
+              <span class="d-mini-dot" style="background:var(--c-rodina)"></span>
+              <span class="d-mini-dot" style="background:var(--c-prace)"></span>
+              <span class="d-mini-dot ring" style="border-color:var(--c-prace)"></span>
+            </div>
+          </div>
+          <div class="d-mini-cell d-this-week">
+            <span class="d-mini-num">2</span>
+            <div class="d-mini-bars"><div class="d-mini-bar" style="background:var(--c-prace)"></div><div class="d-mini-bar" style="background:var(--c-prace)"></div></div>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-prace)"></span><span class="d-mini-dot" style="background:var(--c-prace)"></span></div>
+          </div>
+          <div class="d-mini-cell d-this-week">
+            <span class="d-mini-num">3</span>
+            <div class="d-mini-bars"></div>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-dom)"></span></div>
+          </div>
+          <div class="d-mini-cell d-this-week"><span class="d-mini-num">4</span></div>
+          <div class="d-mini-cell d-this-week">
+            <span class="d-mini-num">5</span>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-rodina)"></span></div>
+          </div>
+          <div class="d-mini-cell d-this-week wknd"><span class="d-mini-num">6</span></div>
+          <div class="d-mini-cell d-this-week wknd"><span class="d-mini-num">7</span></div>
+          <!-- Week 2 -->
+          <div class="d-mini-cell"><span class="d-mini-num">8</span></div>
+          <div class="d-mini-cell"><span class="d-mini-num">9</span></div>
+          <div class="d-mini-cell">
+            <span class="d-mini-num">10</span>
+            <div class="d-mini-bars"><div class="d-mini-bar" style="background:var(--c-rodina)"></div></div>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-prace)"></span></div>
+          </div>
+          <div class="d-mini-cell"><span class="d-mini-num">11</span></div>
+          <div class="d-mini-cell">
+            <span class="d-mini-num">12</span>
+            <div class="d-mini-dots"><span class="d-mini-dot ring" style="border-color:var(--c-prace)"></span></div>
+          </div>
+          <div class="d-mini-cell wknd"><span class="d-mini-num">13</span></div>
+          <div class="d-mini-cell wknd"><span class="d-mini-num">14</span></div>
+          <!-- Week 3 -->
+          <div class="d-mini-cell">
+            <span class="d-mini-num">15</span>
+            <div class="d-mini-bars"><div class="d-mini-bar" style="background:var(--c-rodina)"></div></div>
+          </div>
+          <div class="d-mini-cell">
+            <span class="d-mini-num">16</span>
+            <div class="d-mini-bars"><div class="d-mini-bar" style="background:var(--c-ost)"></div></div>
+          </div>
+          <div class="d-mini-cell"><span class="d-mini-num">17</span></div>
+          <div class="d-mini-cell">
+            <span class="d-mini-num">18</span>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-dom)"></span></div>
+          </div>
+          <div class="d-mini-cell"><span class="d-mini-num">19</span></div>
+          <div class="d-mini-cell wknd"><span class="d-mini-num">20</span></div>
+          <div class="d-mini-cell wknd"><span class="d-mini-num">21</span></div>
+          <!-- Week 4 -->
+          <div class="d-mini-cell">
+            <span class="d-mini-num">22</span>
+            <div class="d-mini-bars"><div class="d-mini-bar" style="background:var(--c-prace)"></div></div>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-prace)"></span></div>
+          </div>
+          <div class="d-mini-cell"><span class="d-mini-num">23</span></div>
+          <div class="d-mini-cell"><span class="d-mini-num">24</span></div>
+          <div class="d-mini-cell"><span class="d-mini-num">25</span></div>
+          <div class="d-mini-cell"><span class="d-mini-num">26</span></div>
+          <div class="d-mini-cell wknd"><span class="d-mini-num">27</span></div>
+          <div class="d-mini-cell wknd">
+            <span class="d-mini-num">28</span>
+            <div class="d-mini-dots"><span class="d-mini-dot" style="background:var(--c-rodina)"></span></div>
+          </div>
+          <!-- Week 5 -->
+          <div class="d-mini-cell"><span class="d-mini-num">29</span></div>
+          <div class="d-mini-cell"><span class="d-mini-num">30</span></div>
+          <div class="d-mini-cell off"></div>
+          <div class="d-mini-cell off"></div>
+          <div class="d-mini-cell off"></div>
+          <div class="d-mini-cell wknd off"></div>
+          <div class="d-mini-cell wknd off"></div>
+        </div>
+      </div>
+
+    </div><!-- /cal-d -->
+  </div><!-- /opt -->
+</div><!-- /section calendar -->
+
+
+<!-- ÚKOLY -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-title">Úkoly — asymetrický layout</div>
+    <div class="section-note">bílá pravá strana, wavelines</div>
+  </div>
+  <div class="opt">
+    <div class="tasks-top">
+      <div class="tasks-eyebrow">VypusTo</div>
+      <div class="tasks-h1">Úkoly</div>
+    </div>
+    <div class="tasks-body">
+      <div class="tb-main">
+        <div class="tb-label">Dnes</div>
+        <svg class="tb-wave" viewBox="0 0 160 5" fill="none" preserveAspectRatio="none" style="width:100%">
+          <path d="M0 3 C20 1, 50 4.5, 80 2 S125 1, 160 3" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" opacity=".45"/>
+        </svg>
+        <div class="tb-task">
+          <div class="tb-cb"></div>
+          <span class="tb-ttitle">Zavolat zubařovi — Tomáš</span>
+          <span class="tb-tag" style="background:var(--c-rodina-bg);color:var(--c-rodina)">Rodina</span>
+        </div>
+        <div class="tb-task">
+          <div class="tb-cb"></div>
+          <span class="tb-ttitle">Odeslat fakturu klientovi</span>
+          <span class="tb-tag" style="background:var(--c-prace-bg);color:var(--c-prace)">Práce</span>
+        </div>
+        <div class="tb-task">
+          <div class="tb-cb"></div>
+          <span class="tb-ttitle">Čištění myčky</span>
+          <span class="tb-tag" style="background:var(--c-dom-bg);color:var(--c-dom)">Dom.</span>
+        </div>
+        <div class="tb-task">
+          <div class="tb-cb"></div>
+          <span class="tb-ttitle">Koupit dárek — Markéta</span>
+          <span class="tb-tag" style="background:var(--c-ost-bg);color:var(--c-ost)">Ostatní</span>
+        </div>
+        <div class="tb-sep">Zítra</div>
+        <svg class="tb-sep-wave" viewBox="0 0 120 3" fill="none" preserveAspectRatio="none" style="width:100%">
+          <path d="M0 2 C15 0.5, 40 3, 70 1.5 S100 0.5, 120 2" stroke="var(--ink-3)" stroke-width="1.2" stroke-linecap="round" opacity=".38"/>
+        </svg>
+        <div class="tb-task">
+          <div class="tb-cb"></div>
+          <span class="tb-ttitle">Nákup na víkend</span>
+          <span class="tb-tag" style="background:var(--c-dom-bg);color:var(--c-dom)">Dom.</span>
+        </div>
+        <div class="tb-task">
+          <div class="tb-cb"></div>
+          <span class="tb-ttitle">Zaplatit pojistné</span>
+          <span class="tb-tag" style="background:var(--c-ost-bg);color:var(--c-ost)">Ostatní</span>
+        </div>
+      </div>
+      <div class="tb-cats">
+        <div class="tb-cat">
+          <div class="tb-cat-head">
+            <span class="tb-cat-lbl" style="color:var(--c-prace)">Práce</span>
+            <span class="tb-cat-cnt">1/3</span>
+          </div>
+          <svg class="tb-cat-wave" viewBox="0 0 80 3" fill="none" preserveAspectRatio="none" style="width:100%">
+            <path d="M0 2 C10 0.5, 30 3, 50 1.5 S70 0.5, 80 2" stroke="var(--c-prace)" stroke-width="1.2" stroke-linecap="round" opacity=".35"/>
+          </svg>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Odeslat fakturu</div>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Newsletter červen</div>
+        </div>
+        <div class="tb-cat">
+          <div class="tb-cat-head">
+            <span class="tb-cat-lbl" style="color:var(--c-rodina)">Rodina</span>
+            <span class="tb-cat-cnt">0/3</span>
+          </div>
+          <svg class="tb-cat-wave" viewBox="0 0 80 3" fill="none" preserveAspectRatio="none" style="width:100%">
+            <path d="M0 1.5 C15 3, 40 0.5, 60 2 S75 3, 80 1.5" stroke="var(--c-rodina)" stroke-width="1.2" stroke-linecap="round" opacity=".35"/>
+          </svg>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Zavolat zubaři</div>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Přihlásit Honzíka</div>
+        </div>
+        <div class="tb-cat">
+          <div class="tb-cat-head">
+            <span class="tb-cat-lbl" style="color:var(--c-dom)">Dom.</span>
+            <span class="tb-cat-cnt">0/4</span>
+          </div>
+          <svg class="tb-cat-wave" viewBox="0 0 80 3" fill="none" preserveAspectRatio="none" style="width:100%">
+            <path d="M0 2 C20 0.5, 45 3, 65 1 S78 0.5, 80 2" stroke="var(--c-dom)" stroke-width="1.2" stroke-linecap="round" opacity=".35"/>
+          </svg>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Čištění myčky</div>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Revize komínu</div>
+        </div>
+        <div class="tb-cat">
+          <div class="tb-cat-head">
+            <span class="tb-cat-lbl" style="color:var(--c-ost)">Ostatní</span>
+            <span class="tb-cat-cnt">0/2</span>
+          </div>
+          <svg class="tb-cat-wave" viewBox="0 0 80 3" fill="none" preserveAspectRatio="none" style="width:100%">
+            <path d="M0 1.5 C18 3, 42 0.5, 62 2 S76 3, 80 1" stroke="var(--c-ost)" stroke-width="1.2" stroke-linecap="round" opacity=".35"/>
+          </svg>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Koupit dárek</div>
+          <div class="tb-mini-row"><div class="tb-mini-cb"></div>Pojistné auto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /section tasks -->
+
+<div style="padding: 0 36px 60px; color: rgba(255,255,255,.22); font-size: 12px; font-family: 'IBM Plex Mono', monospace;">
+  Dej vědět co ještě upravit — pak jdeme implementovat.
+</div>
+
+</body>
+</html>
