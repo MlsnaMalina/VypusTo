@@ -770,16 +770,13 @@
     .bday-sec-wave { display: block; height: 6px; overflow: visible; width: 110px; margin-top: 2px; margin-bottom: 2px; }
     .bday-sec-lbl-badge { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-left: 7px; }
 
-    /* Today birthday — compact celebration card */
-    .bday-today-card {
-      margin: 8px 20px 0; padding: 14px 16px;
-      display: flex; align-items: center; gap: 12px;
-      border: 1px solid rgba(185,48,102,.22); border-radius: 10px;
+    /* Today birthday tile — same grid, special styling */
+    .bday-tile.today-tile {
       background: var(--primary-lt);
+      border-color: rgba(185,48,102,.25);
     }
-    .bday-today-icon { font-size: 26px; flex-shrink: 0; }
-    .bday-today-name { font-family: var(--f-hand); font-size: 21px; font-weight: 700; color: var(--primary); line-height: 1; }
-    .bday-today-sub  { font-size: 11.5px; color: rgba(185,48,102,.65); margin-top: 2px; }
+    .bday-tile.today-tile .bday-tile-name { color: var(--primary); }
+    .bday-tile.today-tile .bday-tile-avatar { background: var(--primary); color: #fff; }
 
     /* Tile grid — upcoming + all birthdays */
     .bday-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 8px 20px 12px; }
@@ -1992,44 +1989,35 @@ function renderNarozeniny() {
     </div>`;
   }
 
-  function todayCardHTML(b) {
-    const age = b.yearBorn ? (todY - b.yearBorn) : null;
-    const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
-    return `<div class="bday-today-card">
-      <span class="bday-today-icon">🎂</span>
-      <div>
-        <div class="bday-today-name">${b.name}</div>
-        <div class="bday-today-sub">${age ? `Slaví ${age} let · ` : ''}${dateTxt}</div>
-      </div>
-    </div>`;
-  }
-
-  function tileHTML(b) {
-    const days    = daysUntil(b.month, b.day);
+  function tileHTML(b, isToday) {
+    const days    = isToday ? 0 : daysUntil(b.month, b.day);
     const initials= b.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
     const col     = avatarColor(b.name);
+    const age     = b.yearBorn ? (todY - b.yearBorn) : null;
     const nextAge = b.yearBorn ? (todY - b.yearBorn + (days > 0 ? 1 : 0)) : null;
     const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
-    const cls     = days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
-    const badge   = days === 1 ? 'zítra' : days <= 14 ? `za ${days} dní` : dateTxt;
+    const cls     = isToday ? 'soon' : days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
+    const badge   = isToday ? '🎂 dnes' : days === 1 ? 'zítra' : days <= 14 ? `za ${days} dní` : dateTxt;
     const firstName = b.name.split(' ')[0];
-    return `<div class="bday-tile">
+    const extraCls  = isToday ? ' today-tile' : '';
+    const ageShow   = isToday ? age : nextAge;
+    return `<div class="bday-tile${extraCls}">
       <div class="bday-tile-avatar" style="background:${col.bg};color:${col.fg}">${initials}</div>
       <div class="bday-tile-name">${firstName}</div>
-      ${nextAge ? `<div class="bday-tile-age">${nextAge} let</div>` : ''}
+      ${ageShow ? `<div class="bday-tile-age">${ageShow} let</div>` : ''}
       <span class="bday-tile-badge ${cls}">${badge}</span>
     </div>`;
   }
 
-  function gridSection(label, badge, list) {
+  function gridSection(label, badge, list, isToday) {
     if (!list.length) return '';
-    return secHeader(label, badge) + `<div class="bday-grid">${list.map(tileHTML).join('')}</div>`;
+    return secHeader(label, badge) + `<div class="bday-grid">${list.map(b => tileHTML(b, isToday)).join('')}</div>`;
   }
 
   let html = '';
-  if (todays.length)   html += secHeader('🎉 Dnes slaví', null) + todays.map(todayCardHTML).join('');
-  if (upcoming.length) html += gridSection('Nadcházející', 'příštích 30 dní', upcoming);
-  if (rest.length)     html += gridSection('Všechny narozeniny', null, rest);
+  if (todays.length)   html += gridSection('🎉 Dnes slaví', null, todays, true);
+  if (upcoming.length) html += gridSection('Nadcházející', 'příštích 30 dní', upcoming, false);
+  if (rest.length)     html += gridSection('Všechny narozeniny', null, rest, false);
   if (!birthdays.length) {
     html = `<div class="empty" style="margin-top:40px">
       <div class="empty-icon">🎂</div>
