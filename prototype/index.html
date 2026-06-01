@@ -765,49 +765,43 @@
     .bday-h1  { font-family: var(--f-display); font-size: 32px; font-weight: 800; color: var(--ink); letter-spacing: -.025em; line-height: 1; margin-top: 4px; }
     @media (min-width: 720px) { .bday-wm { display: none; } .bday-top { padding-left: 24px; padding-right: 24px; } }
 
-    .bday-section { padding: 18px 24px 4px; }
+    .bday-section { padding: 18px 20px 2px; }
     .bday-sec-lbl { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--ink-2); }
     .bday-sec-wave { display: block; height: 6px; overflow: visible; width: 110px; margin-top: 2px; margin-bottom: 2px; }
     .bday-sec-lbl-badge { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-left: 7px; }
 
-    .bday-list { margin: 4px 0 0; }
-    .bday-row {
-      display: flex; align-items: center; gap: 13px;
-      padding: 11px 24px; border-bottom: 1px solid var(--border-faint);
-      transition: background .12s; cursor: default;
+    /* Today birthday — compact celebration card */
+    .bday-today-card {
+      margin: 8px 20px 0; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      border: 1px solid rgba(185,48,102,.22); border-radius: 10px;
+      background: var(--primary-lt);
     }
-    .bday-row:last-child { border-bottom: none; }
-    .bday-row.today-bday { background: var(--primary-lt); }
-    .bday-row:hover { background: var(--bg-off); }
-    .bday-row.today-bday:hover { background: #fde8f1; }
+    .bday-today-icon { font-size: 26px; flex-shrink: 0; }
+    .bday-today-name { font-family: var(--f-hand); font-size: 21px; font-weight: 700; color: var(--primary); line-height: 1; }
+    .bday-today-sub  { font-size: 11.5px; color: rgba(185,48,102,.65); margin-top: 2px; }
 
-    .bday-avatar {
-      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    /* Tile grid — upcoming + all birthdays */
+    .bday-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 8px 20px 12px; }
+    @media (min-width: 480px) { .bday-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 720px) { .bday-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .bday-tile {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding: 14px 8px 11px; gap: 3px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg);
+    }
+    .bday-tile-avatar {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; margin-bottom: 6px;
       display: flex; align-items: center; justify-content: center;
       font-family: var(--f-display); font-size: 15px; font-weight: 800;
-      border: 1.5px solid;
     }
-    .bday-row.today-bday .bday-avatar { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-    .bday-info { flex: 1; min-width: 0; }
-    .bday-name-main { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.1; }
-    .bday-row.today-bday .bday-name-main { color: var(--primary); }
-    .bday-sub-row { display: flex; align-items: center; gap: 6px; margin-top: 1px; }
-    .bday-date-txt { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
-    .bday-age-pill {
-      font-family: var(--f-hand); font-size: 12px; font-weight: 700;
-      padding: 0 6px; border-radius: 20px; background: var(--bg-off); color: var(--ink-2); border: 1px solid var(--border);
-    }
-    .bday-row.today-bday .bday-age-pill { background: rgba(185,48,102,.12); color: var(--primary); border-color: rgba(185,48,102,.2); }
-
-    .bday-right { flex-shrink: 0; display: flex; align-items: center; }
-    .bday-cake  { font-size: 20px; line-height: 1; }
-    .bday-days-badge {
-      font-family: var(--f-hand); font-size: 13px; font-weight: 700;
-      white-space: nowrap; color: var(--ink-3);
-    }
-    .bday-days-badge.soon  { color: var(--primary); }
-    .bday-days-badge.near  { color: var(--c-rodina); }
+    .bday-tile-name  { font-family: var(--f-hand); font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+    .bday-tile-age   { font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-3); }
+    .bday-tile-badge { font-family: var(--f-hand); font-size: 12px; font-weight: 700; margin-top: 3px; }
+    .bday-tile-badge.soon { color: var(--primary); }
+    .bday-tile-badge.near { color: var(--c-rodina); }
+    .bday-tile-badge.far  { color: var(--ink-3); }
 
     .bday-add-fab {
       position: fixed; right: 20px;
@@ -1989,52 +1983,53 @@ function renderNarozeniny() {
     return daysUntil(b.month, b.day) > 30;
   });
 
-  function rowHTML(b) {
-    const isToday = b.month === todM && b.day === todD;
-    const days    = daysUntil(b.month, b.day);
-    const initials= b.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-    const col     = avatarColor(b.name);
-    const age     = b.yearBorn ? (todY - b.yearBorn + (isToday ? 0 : 0)) : null;
-    const nextAge = b.yearBorn ? (todY - b.yearBorn + (isToday ? 0 : (days > 0 ? 1 : 0))) : null;
-    const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
-    const urgency = isToday ? 'today' : days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
-    const badgeCls = urgency === 'soon' ? ' soon' : urgency === 'near' ? ' near' : '';
-    const right   = isToday
-      ? `<span class="bday-cake">🎂</span>`
-      : days === 1
-        ? `<span class="bday-days-badge soon">zítra</span>`
-        : days <= 14
-          ? `<span class="bday-days-badge${badgeCls}">za ${days} dní</span>`
-          : `<span class="bday-days-badge">${dateTxt}</span>`;
-
-    return `<div class="bday-row${isToday?' today-bday':''}">
-      <div class="bday-avatar" style="${isToday ? '' : `background:${col.bg};color:${col.fg};border-color:${col.bg}`}">${initials}</div>
-      <div class="bday-info">
-        <div class="bday-name-main">${b.name}</div>
-        <div class="bday-sub-row">
-          <span class="bday-date-txt">${dateTxt}</span>
-          ${nextAge ? `<span class="bday-age-pill">${nextAge} let</span>` : ''}
-        </div>
-      </div>
-      <div class="bday-right">${right}</div>
-    </div>`;
-  }
-
-  function section(label, badge, list) {
-    if (!list.length) return '';
+  function secHeader(label, badge) {
     return `<div class="bday-section">
       <div class="bday-sec-lbl">${label}${badge ? `<span class="bday-sec-lbl-badge">${badge}</span>` : ''}</div>
       <svg class="bday-sec-wave" viewBox="0 0 110 6" fill="none" aria-hidden="true" preserveAspectRatio="none">
         <path d="M0 4 C14 1,32 5.5,52 3 S80 1,100 4 L110 3" stroke="#b93066" stroke-width="1.4" stroke-linecap="round" opacity=".35"/>
       </svg>
-    </div>
-    <div class="bday-list">${list.map(rowHTML).join('')}</div>`;
+    </div>`;
+  }
+
+  function todayCardHTML(b) {
+    const age = b.yearBorn ? (todY - b.yearBorn) : null;
+    const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
+    return `<div class="bday-today-card">
+      <span class="bday-today-icon">🎂</span>
+      <div>
+        <div class="bday-today-name">${b.name}</div>
+        <div class="bday-today-sub">${age ? `Slaví ${age} let · ` : ''}${dateTxt}</div>
+      </div>
+    </div>`;
+  }
+
+  function tileHTML(b) {
+    const days    = daysUntil(b.month, b.day);
+    const initials= b.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const col     = avatarColor(b.name);
+    const nextAge = b.yearBorn ? (todY - b.yearBorn + (days > 0 ? 1 : 0)) : null;
+    const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
+    const cls     = days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
+    const badge   = days === 1 ? 'zítra' : days <= 14 ? `za ${days} dní` : dateTxt;
+    const firstName = b.name.split(' ')[0];
+    return `<div class="bday-tile">
+      <div class="bday-tile-avatar" style="background:${col.bg};color:${col.fg}">${initials}</div>
+      <div class="bday-tile-name">${firstName}</div>
+      ${nextAge ? `<div class="bday-tile-age">${nextAge} let</div>` : ''}
+      <span class="bday-tile-badge ${cls}">${badge}</span>
+    </div>`;
+  }
+
+  function gridSection(label, badge, list) {
+    if (!list.length) return '';
+    return secHeader(label, badge) + `<div class="bday-grid">${list.map(tileHTML).join('')}</div>`;
   }
 
   let html = '';
-  if (todays.length)   html += section('🎉 Dnes slaví', null, todays);
-  if (upcoming.length) html += section('Nadcházející', 'příštích 30 dní', upcoming);
-  if (rest.length)     html += section('Všechny narozeniny', null, rest);
+  if (todays.length)   html += secHeader('🎉 Dnes slaví', null) + todays.map(todayCardHTML).join('');
+  if (upcoming.length) html += gridSection('Nadcházející', 'příštích 30 dní', upcoming);
+  if (rest.length)     html += gridSection('Všechny narozeniny', null, rest);
   if (!birthdays.length) {
     html = `<div class="empty" style="margin-top:40px">
       <div class="empty-icon">🎂</div>
