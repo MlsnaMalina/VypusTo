@@ -156,26 +156,31 @@
     .date-accent { margin-top: 14px; height: 18px; overflow: visible; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       BIRTHDAY BANNER
+       BIRTHDAY NOTE (compact inline, Dnes view)
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .bday-banner {
-      margin: 14px 24px 0; background: var(--primary-lt);
-      border: 1px solid #f2c0d2; border-radius: 12px;
-      padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+      display: none; margin: 10px 24px 0;
     }
-    .bday-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
-    .bday-name { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--primary); }
-    .bday-sub  { font-family: var(--f-body); font-size: 12px; color: #bf5c7a; margin-top: 2px; }
+    .bday-banner.visible {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--primary-lt); border: 1px solid rgba(185,48,102,.18);
+      border-radius: 20px; padding: 4px 12px 4px 8px;
+    }
+    .bday-icon { font-size: 15px; flex-shrink: 0; line-height: 1; }
+    .bday-name { font-family: var(--f-hand); font-size: 15px; font-weight: 700; color: var(--primary); }
+    .bday-sub  { display: none; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        SECTION HEADER
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .sec-head {
-      display: flex; align-items: baseline; justify-content: space-between;
+      display: flex; align-items: flex-start; justify-content: space-between;
       padding: 20px 24px 10px;
     }
-    .sec-lbl { font-family: var(--f-hand); font-size: 19px; font-weight: 700; color: var(--ink); }
-    .sec-cnt { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+    .sec-lbl-wrap { display: flex; flex-direction: column; }
+    .sec-lbl  { font-family: var(--f-hand); font-size: 19px; font-weight: 700; color: var(--ink); line-height: 1; }
+    .sec-wave { display: block; height: 6px; overflow: visible; width: 130px; margin-top: 2px; }
+    .sec-cnt  { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); padding-top: 3px; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        EVENT CARDS
@@ -761,14 +766,15 @@
     @media (min-width: 720px) { .bday-wm { display: none; } .bday-top { padding-left: 24px; padding-right: 24px; } }
 
     .bday-section { padding: 18px 24px 4px; }
-    .bday-sec-lbl { font-family: var(--f-hand); font-size: 16px; font-weight: 700; color: var(--ink-2); display: flex; align-items: center; gap: 7px; }
-    .bday-sec-lbl-badge { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); background: var(--bg-off); border: 1px solid var(--border); border-radius: 20px; padding: 1px 7px; }
+    .bday-sec-lbl { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--ink-2); }
+    .bday-sec-wave { display: block; height: 6px; overflow: visible; width: 110px; margin-top: 2px; margin-bottom: 2px; }
+    .bday-sec-lbl-badge { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-left: 7px; }
 
-    .bday-list { margin: 8px 24px 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .bday-list { margin: 4px 0 0; }
     .bday-row {
       display: flex; align-items: center; gap: 13px;
-      padding: 12px 14px; border-bottom: 1px solid var(--border-faint);
-      background: var(--bg); transition: background .12s; cursor: default;
+      padding: 11px 24px; border-bottom: 1px solid var(--border-faint);
+      transition: background .12s; cursor: default;
     }
     .bday-row:last-child { border-bottom: none; }
     .bday-row.today-bday { background: var(--primary-lt); }
@@ -776,7 +782,7 @@
     .bday-row.today-bday:hover { background: #fde8f1; }
 
     .bday-avatar {
-      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       font-family: var(--f-display); font-size: 15px; font-weight: 800;
       border: 1.5px solid;
@@ -784,23 +790,24 @@
     .bday-row.today-bday .bday-avatar { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .bday-info { flex: 1; min-width: 0; }
-    .bday-name-main { font-size: 14.5px; font-weight: 500; color: var(--ink); line-height: 1.2; }
-    .bday-row.today-bday .bday-name-main { color: var(--primary); font-weight: 600; }
-    .bday-sub-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+    .bday-name-main { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+    .bday-row.today-bday .bday-name-main { color: var(--primary); }
+    .bday-sub-row { display: flex; align-items: center; gap: 6px; margin-top: 1px; }
     .bday-date-txt { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
     .bday-age-pill {
       font-family: var(--f-hand); font-size: 12px; font-weight: 700;
-      padding: 0px 7px; border-radius: 20px; background: var(--bg-off); color: var(--ink-2); border: 1px solid var(--border);
+      padding: 0 6px; border-radius: 20px; background: var(--bg-off); color: var(--ink-2); border: 1px solid var(--border);
     }
     .bday-row.today-bday .bday-age-pill { background: rgba(185,48,102,.12); color: var(--primary); border-color: rgba(185,48,102,.2); }
 
     .bday-right { flex-shrink: 0; display: flex; align-items: center; }
     .bday-cake  { font-size: 20px; line-height: 1; }
     .bday-days-badge {
-      font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
-      background: var(--bg-off); border: 1px solid var(--border); border-radius: 8px;
-      padding: 2px 8px; white-space: nowrap;
+      font-family: var(--f-hand); font-size: 13px; font-weight: 700;
+      white-space: nowrap; color: var(--ink-3);
     }
+    .bday-days-badge.soon  { color: var(--primary); }
+    .bday-days-badge.near  { color: var(--c-rodina); }
 
     .bday-add-fab {
       position: fixed; right: 20px;
@@ -922,25 +929,32 @@
         </svg>
       </div>
 
-      <div class="bday-banner" id="js-bday" style="display:none">
-        <div class="bday-icon">🎂</div>
-        <div>
-          <div class="bday-name" id="js-bday-txt"></div>
-          <div class="bday-sub">Nezapomeň popřát</div>
-        </div>
+      <div class="bday-banner" id="js-bday">
+        <span class="bday-icon">🎂</span>
+        <span class="bday-name" id="js-bday-txt"></span>
       </div>
 
       <div class="dnes-grid">
         <div class="dnes-col-events">
           <div class="sec-head">
-            <span class="sec-lbl">Kde musím být</span>
+            <div class="sec-lbl-wrap">
+              <span class="sec-lbl">Kde musím být</span>
+              <svg class="sec-wave" viewBox="0 0 130 6" fill="none" aria-hidden="true" preserveAspectRatio="none">
+                <path d="M0 4 C16 1,36 5.5,58 3 S90 1,115 4 L130 3.5" stroke="#b93066" stroke-width="1.4" stroke-linecap="round" opacity=".35"/>
+              </svg>
+            </div>
             <span class="sec-cnt" id="js-ev-cnt"></span>
           </div>
           <div class="ev-stack" id="js-events"></div>
         </div>
         <div class="dnes-col-tasks">
           <div class="sec-head">
-            <span class="sec-lbl">Co dnes udělám</span>
+            <div class="sec-lbl-wrap">
+              <span class="sec-lbl">Co dnes udělám</span>
+              <svg class="sec-wave" viewBox="0 0 130 6" fill="none" aria-hidden="true" preserveAspectRatio="none">
+                <path d="M0 3 C18 5.5,40 1,62 4 S96 5,118 2.5 L130 3" stroke="#b93066" stroke-width="1.4" stroke-linecap="round" opacity=".35"/>
+              </svg>
+            </div>
             <span class="sec-cnt" id="js-today-cnt"></span>
           </div>
           <div class="task-stack" id="js-today-active"></div>
@@ -1324,8 +1338,8 @@ function renderDnes(animate = false) {
   const now = new Date();
   const bday = birthdays.find(b => b.month === now.getMonth()+1 && b.day === now.getDate());
   const bd = $('js-bday');
-  if (bday) { $('js-bday-txt').textContent = `Dnes slaví ${bday.name}`; bd.style.display='flex'; }
-  else       { bd.style.display = 'none'; }
+  if (bday) { $('js-bday-txt').textContent = `Dnes slaví ${bday.name}`; bd.classList.add('visible'); }
+  else       { bd.classList.remove('visible'); }
 
   $('js-ev-cnt').textContent = `${events.length}`;
   $('js-events').innerHTML = events.map(e => `
@@ -1983,12 +1997,14 @@ function renderNarozeniny() {
     const age     = b.yearBorn ? (todY - b.yearBorn + (isToday ? 0 : 0)) : null;
     const nextAge = b.yearBorn ? (todY - b.yearBorn + (isToday ? 0 : (days > 0 ? 1 : 0))) : null;
     const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
+    const urgency = isToday ? 'today' : days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
+    const badgeCls = urgency === 'soon' ? ' soon' : urgency === 'near' ? ' near' : '';
     const right   = isToday
       ? `<span class="bday-cake">🎂</span>`
       : days === 1
-        ? `<span class="bday-days-badge">zítra</span>`
-        : days <= 30
-          ? `<span class="bday-days-badge">za ${days} dní</span>`
+        ? `<span class="bday-days-badge soon">zítra</span>`
+        : days <= 14
+          ? `<span class="bday-days-badge${badgeCls}">za ${days} dní</span>`
           : `<span class="bday-days-badge">${dateTxt}</span>`;
 
     return `<div class="bday-row${isToday?' today-bday':''}">
@@ -2007,7 +2023,10 @@ function renderNarozeniny() {
   function section(label, badge, list) {
     if (!list.length) return '';
     return `<div class="bday-section">
-      <div class="bday-sec-lbl">${label}${badge ? ` <span class="bday-sec-lbl-badge">${badge}</span>` : ''}</div>
+      <div class="bday-sec-lbl">${label}${badge ? `<span class="bday-sec-lbl-badge">${badge}</span>` : ''}</div>
+      <svg class="bday-sec-wave" viewBox="0 0 110 6" fill="none" aria-hidden="true" preserveAspectRatio="none">
+        <path d="M0 4 C14 1,32 5.5,52 3 S80 1,100 4 L110 3" stroke="#b93066" stroke-width="1.4" stroke-linecap="round" opacity=".35"/>
+      </svg>
     </div>
     <div class="bday-list">${list.map(rowHTML).join('')}</div>`;
   }
