@@ -770,10 +770,9 @@
     .bday-sec-wave { display: block; height: 6px; overflow: visible; width: 110px; margin-top: 2px; margin-bottom: 2px; }
     .bday-sec-lbl-badge { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-left: 7px; }
 
-    /* Today birthday tile — same grid, special styling */
+    /* Today birthday tile — doodle border only, no pink background */
     .bday-tile.today-tile {
-      background: var(--primary-lt);
-      border-color: rgba(185,48,102,.25);
+      border-color: transparent;
     }
     .bday-tile.today-tile .bday-tile-name { color: var(--primary); }
     .bday-tile.today-tile .bday-tile-avatar { background: var(--primary); color: #fff; }
@@ -787,7 +786,9 @@
       display: flex; flex-direction: column; align-items: center; text-align: center;
       padding: 14px 8px 11px; gap: 3px; border-radius: 10px;
       border: 1px solid var(--border); background: var(--bg);
+      position: relative;
     }
+    .bday-tile-doodle { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
     .bday-tile-avatar {
       width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; margin-bottom: 6px;
       display: flex; align-items: center; justify-content: center;
@@ -1450,16 +1451,16 @@ function renderMesic() {
     };
   }
 
-  /* ── doodle SVG border paths (slightly different per role) ── */
+  /* ── doodle SVG border — very gentle hand-drawn feel, ~1px wobble ── */
   function doodleFrame(role) {
-    const s = role === 'today' ? 0.5 : 0.9;
+    const s = role === 'today' ? 0.5 : 0.75;
     const c = role === 'today' ? '#b93066' : '#bbb';
     const o = role === 'today' ? '.55' : '.28';
     return `<svg class="doodle-frame" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M3 8 C5 3,12 2,18 3 S38 4,50 2.5 S72 3,82 2 S93 4,97 8" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-      <path d="M97 8 C98 20,99 40,98 55 S99 78,97 92" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-      <path d="M97 92 C90 98,78 97,65 98 S38 97,22 98 S8 97,3 92" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-      <path d="M3 92 C2 78,1 60,2 45 S1 22,3 8" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
+      <path d="M5 5 C30 4.2,60 5.6,95 5" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
+      <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
+      <path d="M95 95 C70 95.8,40 94.4,5 95" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
+      <path d="M5 95 C4.2 70,3.6 40,5 5" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
     </svg>`;
   }
 
@@ -2001,7 +2002,14 @@ function renderNarozeniny() {
     const firstName = b.name.split(' ')[0];
     const extraCls  = isToday ? ' today-tile' : '';
     const ageShow   = isToday ? age : nextAge;
+    const todayDoodle = isToday ? `<svg class="bday-tile-doodle" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M5 5 C30 4.2,60 5.6,95 5" stroke="#b93066" stroke-width="0.6" stroke-linecap="round" opacity=".5"/>
+      <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="#b93066" stroke-width="0.6" stroke-linecap="round" opacity=".5"/>
+      <path d="M95 95 C70 95.8,40 94.4,5 95" stroke="#b93066" stroke-width="0.6" stroke-linecap="round" opacity=".5"/>
+      <path d="M5 95 C4.2 70,3.6 40,5 5" stroke="#b93066" stroke-width="0.6" stroke-linecap="round" opacity=".5"/>
+    </svg>` : '';
     return `<div class="bday-tile${extraCls}">
+      ${todayDoodle}
       <div class="bday-tile-avatar" style="background:${col.bg};color:${col.fg}">${initials}</div>
       <div class="bday-tile-name">${firstName}</div>
       ${ageShow ? `<div class="bday-tile-age">${ageShow} let</div>` : ''}
