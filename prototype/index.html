@@ -274,6 +274,238 @@
     }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       OPAKUJÍCÍ SE VIEW
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #v-opak { padding-bottom: 80px; }
+    .opak-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 20px 8px;
+    }
+    .opak-hd-title {
+      font-family: var(--f-display); font-size: 22px; font-weight: 800;
+      color: var(--ink); line-height: 1;
+    }
+    .opak-add-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 20px;
+      font-family: var(--f-body); font-size: 13px; font-weight: 600;
+      padding: 7px 14px; cursor: pointer;
+    }
+    .opak-cats {
+      display: flex; gap: 6px; padding: 4px 20px 12px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .opak-cats::-webkit-scrollbar { display: none; }
+    .opak-cat {
+      flex-shrink: 0; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--ink-2);
+      font-family: var(--f-body); font-size: 12px; font-weight: 500;
+      border-radius: 20px; padding: 5px 12px; cursor: pointer;
+      transition: all .12s;
+    }
+    .opak-cat.on {
+      background: var(--ink); color: #fff; border-color: var(--ink);
+    }
+    .opak-cal-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px 20px 8px;
+    }
+    .opak-cal-nav-lbl {
+      font-family: var(--f-hand); font-size: 17px; font-weight: 700; color: var(--ink);
+    }
+    .opak-cal-nav-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--ink-2); font-size: 20px; padding: 4px 8px; line-height: 1;
+    }
+
+    /* recurring event chip in calendar grid */
+    .cal-fc-rec {
+      display: flex; align-items: center; gap: 3px;
+      width: 100%; overflow: hidden; line-height: 1.3; white-space: nowrap;
+      font-family: var(--f-body); font-size: 9px; color: var(--ink-2);
+    }
+    .cal-fc-rec span { overflow: hidden; text-overflow: ellipsis; }
+    .cal-fc-rec-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    @media (min-width: 720px) { .cal-fc-rec { font-size: 10px; } }
+
+    /* recurring event list */
+    .opak-list { padding: 0 16px 16px; }
+    .opak-list-hd {
+      font-family: var(--f-hand); font-size: 15px; color: var(--ink-2);
+      padding: 12px 20px 4px; font-weight: 700;
+    }
+    .rec-group { margin-bottom: 20px; }
+    .rec-group-hd {
+      font-family: var(--f-hand); font-size: 13px; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase;
+      padding: 0 0 8px 4px;
+    }
+    .rec-item {
+      display: flex; align-items: stretch; gap: 0;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+      transition: box-shadow .12s;
+    }
+    .rec-item.overdue   { border-color: #f0b4b4; background: #fff8f8; }
+    .rec-item.due-today { border-color: rgba(185,48,102,.35); background: rgba(185,48,102,.03); }
+    .rec-item-accent { width: 4px; flex-shrink: 0; }
+    .rec-item-body  { flex: 1; padding: 10px 8px 10px 12px; min-width: 0; }
+    .rec-item-title {
+      font-family: var(--f-body); font-size: 14px; font-weight: 600;
+      color: var(--ink); line-height: 1.3; margin-bottom: 3px;
+    }
+    .rec-item-meta {
+      display: flex; gap: 5px; align-items: center;
+      font-family: var(--f-mono); font-size: 10px; color: var(--ink-3);
+      margin-bottom: 3px;
+    }
+    .rec-meta-sep { color: var(--border); }
+    .rec-item-status {
+      font-family: var(--f-mono); font-size: 10px; color: var(--ink-2); margin-bottom: 4px;
+    }
+    .rec-item-status.is-overdue { color: #c0392b; font-weight: 600; }
+    .rec-item-status.is-today   { color: var(--primary); font-weight: 600; }
+    .rec-item-lastdone          { color: var(--ink-3); }
+    .rec-item-desc {
+      font-family: var(--f-body); font-size: 11px; color: var(--ink-2);
+      line-height: 1.45; margin-top: 4px; white-space: pre-line;
+      border-top: 1px solid var(--border); padding-top: 5px;
+    }
+    .rec-item-actions {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 4px; padding: 8px 10px;
+      border-left: 1px solid var(--border);
+    }
+    .rec-btn-done, .rec-btn-push, .rec-btn-edit {
+      background: none; border: 1.5px solid var(--border); border-radius: 6px;
+      cursor: pointer; font-size: 12px; width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-3); transition: all .12s;
+    }
+    .rec-btn-done:hover { background: #eafbea; border-color: #4A7C59; color: #4A7C59; }
+    .rec-btn-push.on    { background: rgba(185,48,102,.08); border-color: var(--primary); color: var(--primary); }
+    .rec-btn-edit:hover { background: var(--bg-off); color: var(--ink); }
+
+    /* recurring event modal */
+    .rec-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 800; opacity: 0; pointer-events: none;
+      transition: opacity .22s;
+    }
+    .rec-overlay.open { opacity: 1; pointer-events: auto; }
+    .rec-sheet {
+      background: var(--bg); border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 600px; max-height: 90vh;
+      overflow-y: auto; padding: 12px 20px 32px;
+      transform: translateY(100%); transition: transform .25s cubic-bezier(.22,1,.36,1);
+    }
+    .rec-overlay.open .rec-sheet { transform: translateY(0); }
+    .rec-pill { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+    .rec-title-row {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+    }
+    .rec-sheet-title { font-family: var(--f-display); font-size: 18px; font-weight: 800; color: var(--ink); }
+    .rec-close-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--ink-3); font-size: 20px; line-height: 1; padding: 2px;
+    }
+    .rec-field { margin-bottom: 14px; }
+    .rec-field-lbl {
+      font-family: var(--f-body); font-size: 11px; font-weight: 600;
+      color: var(--ink-2); letter-spacing: .04em; text-transform: uppercase;
+      margin-bottom: 6px; display: block;
+    }
+    .rec-input {
+      width: 100%; box-sizing: border-box;
+      font-family: var(--f-body); font-size: 14px; color: var(--ink);
+      background: var(--bg-off); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 9px 12px; outline: none;
+    }
+    .rec-input:focus { border-color: var(--primary); background: #fff; }
+    .rec-textarea {
+      resize: vertical; min-height: 80px; line-height: 1.5;
+      font-size: 13px; color: var(--ink);
+    }
+    .rec-cat-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .rec-cat-btn {
+      border: 1.5px solid var(--border); background: var(--bg-off);
+      font-family: var(--f-body); font-size: 12px; font-weight: 500;
+      color: var(--ink-2); border-radius: 20px; padding: 5px 13px;
+      cursor: pointer; transition: all .12s;
+    }
+    .rec-cat-btn.on { border-width: 2px; font-weight: 700; }
+    .rec-row { display: flex; gap: 10px; }
+    .rec-row .rec-field { flex: 1; }
+    .rec-custom-wrap { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+    .rec-custom-n {
+      width: 72px; font-family: var(--f-mono); font-size: 13px;
+      background: var(--bg-off); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; outline: none; color: var(--ink);
+    }
+    .rec-custom-n:focus { border-color: var(--primary); }
+    .rec-custom-lbl { font-family: var(--f-body); font-size: 13px; color: var(--ink-2); }
+    .rec-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+    }
+    .rec-toggle-lbl-wrap { }
+    .rec-toggle-main { font-family: var(--f-body); font-size: 13px; font-weight: 600; color: var(--ink); }
+    .rec-toggle-sub  { font-family: var(--f-body); font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+    .rec-switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+    .rec-switch input { opacity: 0; width: 0; height: 0; }
+    .rec-switch-track {
+      position: absolute; inset: 0; background: var(--border); border-radius: 12px;
+      cursor: pointer; transition: background .15s;
+    }
+    .rec-switch-track::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+      transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .rec-switch input:checked ~ .rec-switch-track { background: var(--primary); }
+    .rec-switch input:checked ~ .rec-switch-track::after { transform: translateX(18px); }
+    .rec-sheet-footer {
+      display: flex; gap: 10px; margin-top: 18px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .rec-save-btn {
+      flex: 1; background: var(--primary); color: #fff; border: none;
+      border-radius: 10px; font-family: var(--f-body); font-size: 14px; font-weight: 600;
+      padding: 12px; cursor: pointer;
+    }
+    .rec-cancel-btn {
+      background: var(--bg-off); color: var(--ink-2); border: 1.5px solid var(--border);
+      border-radius: 10px; font-family: var(--f-body); font-size: 14px;
+      padding: 12px 18px; cursor: pointer;
+    }
+    .rec-delete-btn {
+      background: none; border: 1.5px solid #f0b4b4; color: #c0392b;
+      border-radius: 10px; font-family: var(--f-body); font-size: 13px;
+      padding: 12px 14px; cursor: pointer;
+    }
+
+    /* recurring events in main Měsíc calendar (pushToMain) */
+    .cal-fc-rec-main {
+      display: flex; align-items: center; gap: 3px;
+      width: 100%; overflow: hidden; line-height: 1.3; white-space: nowrap;
+      font-family: var(--f-body); font-size: 9px; opacity: .8;
+    }
+    .cal-fc-rec-main span { overflow: hidden; text-overflow: ellipsis; }
+    .cal-fc-rec-icon { width: 9px; height: 9px; flex-shrink: 0; display: block; }
+
+    @media (min-width: 720px) {
+      .opak-hd { padding: 28px 28px 10px; }
+      .opak-cats { padding: 0 28px 14px; }
+      .opak-cal-nav { padding: 4px 28px 8px; }
+      .opak-list { padding: 0 24px 24px; }
+      .opak-list-hd { padding: 12px 28px 4px; }
+      .rec-sheet { border-radius: 16px; margin: auto; max-height: 85vh; }
+      .rec-overlay { align-items: center; }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        BIRTHDAY NOTE (compact inline, Dnes view)
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .bday-banner {
@@ -1235,6 +1467,10 @@
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M9 13h6M12 10v6"/></svg>
         Narozeniny
       </button>
+      <button class="sb-item" data-v="opak">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Opakující se
+      </button>
     </nav>
   </aside>
 
@@ -1361,6 +1597,28 @@
       <button class="bday-add-fab" id="js-bday-add" aria-label="Přidat narozeniny">+</button>
     </div>
 
+    <!-- ─── OPAKUJÍCÍ SE ─── -->
+    <div id="v-opak" class="view">
+      <div class="opak-hd">
+        <div class="opak-hd-title">Opakující se</div>
+        <button class="opak-add-btn" id="js-opak-add">+ Přidat</button>
+      </div>
+      <div class="opak-cats" id="js-opak-cats">
+        <button class="opak-cat on" data-ocat="all">Vše</button>
+        <button class="opak-cat" data-ocat="domacnost">Domácnost</button>
+        <button class="opak-cat" data-ocat="osobni">Osobní</button>
+        <button class="opak-cat" data-ocat="ostatni">Ostatní</button>
+      </div>
+      <div class="opak-cal-nav">
+        <button class="opak-cal-nav-btn" id="js-opak-prev">‹</button>
+        <span class="opak-cal-nav-lbl" id="js-opak-month-lbl"></span>
+        <button class="opak-cal-nav-btn" id="js-opak-next">›</button>
+      </div>
+      <div id="js-opak-grid"></div>
+      <div class="opak-list-hd">Přehled</div>
+      <div id="js-opak-list" class="opak-list"></div>
+    </div>
+
   </div><!-- /.main-panel -->
 </div><!-- /#app -->
 
@@ -1388,6 +1646,10 @@
   <button class="nav-btn" data-v="narozeniny">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M9 13h6M12 10v6"/></svg>
     <span class="nav-lbl">Narozeniny</span>
+  </button>
+  <button class="nav-btn" data-v="opak">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+    <span class="nav-lbl">Opakující</span>
   </button>
 </nav>
 
@@ -1508,6 +1770,90 @@
   </div>
 </div>
 
+<!-- RECURRING EVENT MODAL -->
+<div class="rec-overlay" id="js-rec-overlay">
+  <div class="rec-sheet">
+    <div class="rec-pill"></div>
+    <div class="rec-title-row">
+      <div class="rec-sheet-title" id="js-rec-sheet-title">Nová událost</div>
+      <button class="rec-close-btn" id="js-rec-close">×</button>
+    </div>
+
+    <div class="rec-field">
+      <label class="rec-field-lbl" for="js-rec-title">Název *</label>
+      <input type="text" class="rec-input" id="js-rec-title" placeholder="Co se opakuje?" autocomplete="off" spellcheck="false"/>
+    </div>
+
+    <div class="rec-field">
+      <label class="rec-field-lbl">Kategorie</label>
+      <div class="rec-cat-row">
+        <button class="rec-cat-btn on" data-rcat="domacnost" style="--rc:#4A7C59">Domácnost</button>
+        <button class="rec-cat-btn" data-rcat="osobni" style="--rc:#b93066">Osobní</button>
+        <button class="rec-cat-btn" data-rcat="ostatni" style="--rc:#7A6E8A">Ostatní</button>
+      </div>
+    </div>
+
+    <div class="rec-field">
+      <label class="rec-field-lbl" for="js-rec-notes">Poznámky</label>
+      <textarea class="rec-input rec-textarea" id="js-rec-notes" placeholder="Co je potřeba pamatovat? Kontakty, přípravy, kde co najít, kdo to dělá…" spellcheck="false"></textarea>
+    </div>
+
+    <div class="rec-row">
+      <div class="rec-field">
+        <label class="rec-field-lbl" for="js-rec-interval">Jak často?</label>
+        <select class="rec-input" id="js-rec-interval">
+          <option value="daily">Každý den</option>
+          <option value="weekly">Každý týden</option>
+          <option value="biweekly">Každé 2 týdny</option>
+          <option value="monthly" selected>Každý měsíc</option>
+          <option value="quarterly">Každé 3 měsíce</option>
+          <option value="yearly">Každý rok</option>
+          <option value="custom">Vlastní interval…</option>
+        </select>
+        <div class="rec-custom-wrap" id="js-rec-custom-wrap" style="display:none">
+          <input type="number" class="rec-custom-n" id="js-rec-custom-n" value="7" min="1" max="999"/>
+          <span class="rec-custom-lbl">dní</span>
+        </div>
+      </div>
+      <div class="rec-field">
+        <label class="rec-field-lbl" for="js-rec-start">Od kdy?</label>
+        <input type="date" class="rec-input" id="js-rec-start"/>
+      </div>
+    </div>
+
+    <div class="rec-row">
+      <div class="rec-field">
+        <label class="rec-field-lbl" for="js-rec-lastdone">Naposledy splněno</label>
+        <input type="date" class="rec-input" id="js-rec-lastdone"/>
+      </div>
+      <div class="rec-field">
+        <label class="rec-field-lbl" for="js-rec-mins">Odhadovaný čas</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" class="rec-input" id="js-rec-mins" placeholder="—" min="1" max="999" style="flex:1"/>
+          <span style="font-family:var(--f-body);font-size:13px;color:var(--ink-3);white-space:nowrap">min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rec-toggle-row">
+      <div class="rec-toggle-lbl-wrap">
+        <div class="rec-toggle-main">Zobrazit v hlavním kalendáři</div>
+        <div class="rec-toggle-sub">Událost se objeví v záložkách Měsíc a Dnes</div>
+      </div>
+      <label class="rec-switch">
+        <input type="checkbox" id="js-rec-push"/>
+        <span class="rec-switch-track"></span>
+      </label>
+    </div>
+
+    <div class="rec-sheet-footer">
+      <button class="rec-delete-btn" id="js-rec-delete" style="display:none">Smazat</button>
+      <button class="rec-cancel-btn" id="js-rec-cancel">Zrušit</button>
+      <button class="rec-save-btn" id="js-rec-save">Uložit</button>
+    </div>
+  </div>
+</div>
+
 <!-- UNDO TOAST -->
 <div class="undo-toast" id="js-undo-toast">
   <span class="undo-msg">Úkol splněn</span>
@@ -1564,10 +1910,45 @@ const events = [
   { title:'Lekce jógy',                      time:'18:30', tag:'ostatni' },
 ];
 
+/* ─── RECURRING EVENTS DATA ─── */
+const REC_CAT = {
+  domacnost: { label: 'Domácnost', color: '#4A7C59', bg: '#EBF3EE' },
+  osobni:    { label: 'Osobní',    color: '#b93066', bg: '#fef0f6' },
+  ostatni:   { label: 'Ostatní',   color: '#7A6E8A', bg: '#F0EEF3' },
+};
+
+let recurringEvents = [
+  { id: 1, title: 'Vysávání a mopování bytu', category: 'domacnost',
+    interval: { type: 'biweekly' }, startDate: '2026-05-23', lastDone: '2026-05-23',
+    description: 'Začít od ložnice, nezapomenout vysát pod postelí. Mop jen v kuchyni a koupelně.',
+    pushToMain: false, estimatedMinutes: 60 },
+  { id: 2, title: 'Platba nájmu', category: 'ostatni',
+    interval: { type: 'monthly' }, startDate: '2026-06-01', lastDone: '2026-06-01',
+    description: 'Převod do 5. dne v měsíci.\nČíslo účtu: 1234567890/0300. Částka: 18 500 Kč.',
+    pushToMain: true, estimatedMinutes: 5 },
+  { id: 3, title: 'Zubař — pravidelná kontrola', category: 'osobni',
+    interval: { type: 'custom', every: 180 }, startDate: '2026-01-15', lastDone: null,
+    description: 'MUDr. Novák, tel. 777 234 567. Ordinace Po–Pá 8–17 h.\nObjednat minimálně 2 týdny předem.',
+    pushToMain: false, estimatedMinutes: 45 },
+  { id: 4, title: 'Výměna filtru v digestoři', category: 'domacnost',
+    interval: { type: 'quarterly' }, startDate: '2026-03-01', lastDone: '2026-03-01',
+    description: 'Filtr je v zásuvce pod dřezem. Náhradní díl: IKEA NYTTIG FIL 700.',
+    pushToMain: false, estimatedMinutes: 15 },
+  { id: 5, title: 'Kontrola pojištění auta', category: 'ostatni',
+    interval: { type: 'yearly' }, startDate: '2026-09-15', lastDone: null,
+    description: 'Platí do 15. 9. Srovnat ceny na srovnavac.cz.\nSoučasná pojišťovna: Allianz, smlouva č. 123456.',
+    pushToMain: true, estimatedMinutes: 30 },
+  { id: 6, title: 'Praní ložního prádla', category: 'domacnost',
+    interval: { type: 'weekly' }, startDate: '2026-06-02', lastDone: '2026-06-02',
+    description: 'Prát na 60 °C. Přikrývky a polštáře 1× měsíčně na 60 °C.',
+    pushToMain: false, estimatedMinutes: 20 },
+];
+
 /* ─── PERSISTENCE ─── */
 const STORE_TASKS  = 'vypusto-tasks-v1';
 const STORE_BDAYS  = 'vypusto-bdays-v1';
 const STORE_NOTES  = 'vypusto-notes-v1';
+const STORE_REC    = 'vypusto-rec-v1';
 
 function saveTasks() {
   localStorage.setItem(STORE_TASKS, JSON.stringify(tasks.map(t => ({
@@ -1623,6 +2004,18 @@ function loadNotes() {
   } catch(e) { /* use defaults */ }
 }
 
+function saveRec() {
+  localStorage.setItem(STORE_REC, JSON.stringify(recurringEvents));
+}
+
+function loadRec() {
+  try {
+    const raw = localStorage.getItem(STORE_REC);
+    if (!raw) return;
+    recurringEvents = JSON.parse(raw);
+  } catch(e) { /* use defaults */ }
+}
+
 let tasks     = DEFAULT_TASKS.map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
 let birthdays = DEFAULT_BIRTHDAYS.map(b => ({ ...b }));
 let notes     = DEFAULT_NOTES.map(n => ({ ...n }));
@@ -1636,6 +2029,8 @@ const S = {
   noteFilter: 'vse',
   showDone:   false,
   mesicDate:  new Date(),
+  opakDate:   new Date(),
+  opakCat:    'all',
   form:       { title:'', tag:null, date:'today', rec:'none' },
   noteForm:   { title:'', body:'', tag:null },
   activeNoteId: null,
@@ -1769,6 +2164,321 @@ function hideUndo() {
 }
 
 /* ─── RENDER DNES ─── */
+/* ─── RECURRING EVENTS HELPERS ─── */
+function parseLocalDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function occursOnDate(ev, dateStr) {
+  const date  = parseLocalDate(dateStr);
+  const start = parseLocalDate(ev.startDate);
+  if (date < start) return false;
+  const diffDays = Math.round((date - start) / 86400000);
+  switch (ev.interval.type) {
+    case 'daily':     return true;
+    case 'weekly':    return diffDays % 7 === 0;
+    case 'biweekly':  return diffDays % 14 === 0;
+    case 'monthly':   return date.getDate() === start.getDate();
+    case 'quarterly': {
+      if (date.getDate() !== start.getDate()) return false;
+      const md = (date.getFullYear() - start.getFullYear()) * 12 + (date.getMonth() - start.getMonth());
+      return md % 3 === 0;
+    }
+    case 'yearly': return date.getDate() === start.getDate() && date.getMonth() === start.getMonth();
+    case 'custom':    return diffDays % (ev.interval.every || 1) === 0;
+  }
+  return false;
+}
+
+function advanceRecDate(d, ev) {
+  switch (ev.interval.type) {
+    case 'daily':     d.setDate(d.getDate() + 1); break;
+    case 'weekly':    d.setDate(d.getDate() + 7); break;
+    case 'biweekly':  d.setDate(d.getDate() + 14); break;
+    case 'monthly':   d.setMonth(d.getMonth() + 1); break;
+    case 'quarterly': d.setMonth(d.getMonth() + 3); break;
+    case 'yearly':    d.setFullYear(d.getFullYear() + 1); break;
+    case 'custom':    d.setDate(d.getDate() + (ev.interval.every || 1)); break;
+  }
+}
+
+function getNextOccurrence(ev) {
+  const t0    = new Date(); t0.setHours(0, 0, 0, 0);
+  const start = parseLocalDate(ev.startDate);
+  const anchor = ev.lastDone ? parseLocalDate(ev.lastDone) : start;
+  let cur = new Date(anchor);
+  if (cur < start) cur = new Date(start);
+  while (cur < t0) advanceRecDate(cur, ev);
+  return cur;
+}
+
+function intervalLabel(ev) {
+  const map = { daily:'Každý den', weekly:'Každý týden', biweekly:'Každé 2 týdny',
+                monthly:'Každý měsíc', quarterly:'Každé 3 měsíce', yearly:'Každý rok',
+                custom:`Každých ${ev.interval.every || '?'} dní` };
+  return map[ev.interval.type] || '';
+}
+
+function formatDateCz(d) {
+  return `${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}`;
+}
+
+/* ─── RENDER OPAKUJÍCÍ SE ─── */
+function renderOpak() {
+  renderOpakGrid();
+  renderOpakList();
+}
+
+function renderOpakGrid() {
+  const base = S.opakDate;
+  const y = base.getFullYear(), m = base.getMonth();
+  const CZ_MONTHS = ['Leden','Únor','Březen','Duben','Květen','Červen',
+                     'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+  $('js-opak-month-lbl').textContent = `${CZ_MONTHS[m]} ${y}`;
+
+  const first  = new Date(y, m, 1);
+  const last   = new Date(y, m + 1, 0).getDate();
+  const todStr = dStr(new Date());
+  const offset = (first.getDay() + 6) % 7;
+
+  const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
+  let html = `<div class="cal-grid-wrap">
+    <div class="cal-grid-dow">
+      ${DOW.map((d,i) => `<div class="cal-grid-dow-cell${i>=5?' wknd':''}">${d}</div>`).join('')}
+    </div>
+    <div class="cal-grid">`;
+
+  for (let i = 0; i < offset; i++)
+    html += `<div class="cal-fc off"><div class="cal-fc-num"></div></div>`;
+
+  const activeRecs = recurringEvents.filter(r => S.opakCat === 'all' || r.category === S.opakCat);
+
+  for (let dd = 1; dd <= last; dd++) {
+    const cds    = `${y}-${String(m+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    const colIdx = (offset + dd - 1) % 7;
+    const isWknd = colIdx >= 5;
+    const isTod  = cds === todStr;
+    const cls    = ['cal-fc', isTod ? 'is-today' : '', isWknd ? 'wknd' : ''].filter(Boolean).join(' ');
+
+    const dayRecs = activeRecs.filter(r => occursOnDate(r, cds));
+    const MAX = 3;
+    let itemsHTML = '';
+    if (dayRecs.length) {
+      const rows = dayRecs.map(r => {
+        const col = REC_CAT[r.category]?.color || '#999';
+        return `<div class="cal-fc-rec" style="cursor:pointer" data-rid="${r.id}">
+          <span class="cal-fc-rec-dot" style="background:${col}"></span>
+          <span>${r.title}</span>
+        </div>`;
+      });
+      const visible = rows.slice(0, MAX).join('');
+      const more = dayRecs.length > MAX ? `<div class="cal-fc-more">+${dayRecs.length - MAX}</div>` : '';
+      itemsHTML = `<div class="cal-fc-items">${visible}${more}</div>`;
+    }
+
+    html += `<div class="${cls}" data-date="${cds}">${'<div class="cal-fc-num">' + dd + '</div>'}${itemsHTML}</div>`;
+  }
+
+  html += `</div></div>`;
+  $('js-opak-grid').innerHTML = html;
+
+  // click on rec chip → open edit
+  $('js-opak-grid').querySelectorAll('[data-rid]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openRecModal(Number(el.dataset.rid));
+    });
+  });
+}
+
+function renderOpakList() {
+  const todayD = new Date(); todayD.setHours(0,0,0,0);
+  const todStr = dStr(todayD);
+  const cats = ['domacnost','osobni','ostatni'];
+  let html = '';
+
+  cats.forEach(cat => {
+    if (S.opakCat !== 'all' && S.opakCat !== cat) return;
+    const items = recurringEvents.filter(r => r.category === cat);
+    if (!items.length) return;
+    const { label, color } = REC_CAT[cat];
+    html += `<div class="rec-group"><div class="rec-group-hd" style="color:${color}">${label}</div>`;
+
+    items.forEach(r => {
+      const next      = getNextOccurrence(r);
+      const nextStr   = dStr(next);
+      const isOverdue = nextStr < todStr;
+      const isDueToday = nextStr === todStr;
+
+      let statusTxt;
+      if (isDueToday)    statusTxt = 'Dnes!';
+      else if (isOverdue) statusTxt = `⚠ Mělo být ${formatDateCz(next)}`;
+      else                statusTxt = `Příště: ${formatDateCz(next)}`;
+
+      let lastDoneTxt = 'nikdy';
+      if (r.lastDone) {
+        const ld = parseLocalDate(r.lastDone);
+        const dd = Math.round((todayD - ld) / 86400000);
+        lastDoneTxt = dd === 0 ? 'dnes' : `před ${dd} d.`;
+      }
+
+      const minsHtml = r.estimatedMinutes
+        ? `<span class="rec-meta-sep">·</span><span class="rec-meta-mins">⏱ ${r.estimatedMinutes} min</span>` : '';
+
+      html += `<div class="rec-item${isOverdue?' overdue':isDueToday?' due-today':''}">
+        <div class="rec-item-accent" style="background:${color}"></div>
+        <div class="rec-item-body">
+          <div class="rec-item-title">${r.title}</div>
+          <div class="rec-item-meta">
+            <span class="rec-meta-interval">${intervalLabel(r)}</span>${minsHtml}
+          </div>
+          <div class="rec-item-status${isOverdue?' is-overdue':isDueToday?' is-today':''}">
+            ${statusTxt}
+            <span class="rec-meta-sep">·</span>
+            <span class="rec-item-lastdone">naposledy: ${lastDoneTxt}</span>
+          </div>
+          ${r.description ? `<div class="rec-item-desc">${r.description.replace(/</g,'&lt;')}</div>` : ''}
+        </div>
+        <div class="rec-item-actions">
+          <button class="rec-btn-done" data-rid="${r.id}" title="Splněno dnes">✓</button>
+          <button class="rec-btn-push${r.pushToMain?' on':''}" data-rid="${r.id}" title="Zobrazit v hlavním kalendáři">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
+          <button class="rec-btn-edit" data-rid="${r.id}" title="Upravit">✎</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  if (!html) {
+    html = `<div class="empty">
+      <div class="empty-icon">🔁</div>
+      <div class="empty-txt">Žádné opakující se události.</div>
+      <div class="empty-sub">Přidej první kliknutím na + Přidat.</div>
+    </div>`;
+  }
+  $('js-opak-list').innerHTML = html;
+}
+
+/* ─── RECURRING MODAL ─── */
+let editingRecId = null;
+
+function openRecModal(id = null) {
+  editingRecId = id;
+  if (id !== null) {
+    const r = recurringEvents.find(x => x.id === id);
+    if (!r) return;
+    $('js-rec-sheet-title').textContent = r.title;
+    $('js-rec-title').value    = r.title;
+    $('js-rec-notes').value    = r.description || '';
+    $('js-rec-start').value    = r.startDate;
+    $('js-rec-interval').value = r.interval.type;
+    $('js-rec-custom-n').value = r.interval.every || 7;
+    $('js-rec-lastdone').value = r.lastDone || '';
+    $('js-rec-mins').value     = r.estimatedMinutes || '';
+    $('js-rec-push').checked   = r.pushToMain;
+    document.querySelectorAll('.rec-cat-btn').forEach(b => b.classList.toggle('on', b.dataset.rcat === r.category));
+    $('js-rec-delete').style.display = '';
+  } else {
+    $('js-rec-sheet-title').textContent = 'Nová událost';
+    $('js-rec-title').value    = '';
+    $('js-rec-notes').value    = '';
+    $('js-rec-start').value    = dStr(new Date());
+    $('js-rec-interval').value = 'monthly';
+    $('js-rec-custom-n').value = 7;
+    $('js-rec-lastdone').value = '';
+    $('js-rec-mins').value     = '';
+    $('js-rec-push').checked   = false;
+    document.querySelectorAll('.rec-cat-btn').forEach((b, i) => b.classList.toggle('on', i === 0));
+    $('js-rec-delete').style.display = 'none';
+  }
+  updateRecCatColors();
+  updateRecIntervalUI();
+  $('js-rec-overlay').classList.add('open');
+}
+
+function closeRecModal() {
+  $('js-rec-overlay').classList.remove('open');
+}
+
+function updateRecCatColors() {
+  document.querySelectorAll('.rec-cat-btn').forEach(b => {
+    const col = REC_CAT[b.dataset.rcat]?.color || '#999';
+    const bg  = REC_CAT[b.dataset.rcat]?.bg   || '#f5f5f5';
+    if (b.classList.contains('on')) {
+      b.style.borderColor = col; b.style.color = col; b.style.background = bg;
+    } else {
+      b.style.borderColor = ''; b.style.color = ''; b.style.background = '';
+    }
+  });
+}
+
+function updateRecIntervalUI() {
+  const v = $('js-rec-interval').value;
+  $('js-rec-custom-wrap').style.display = v === 'custom' ? '' : 'none';
+}
+
+function saveRecurringEvent() {
+  const title = $('js-rec-title').value.trim();
+  if (!title) { $('js-rec-title').focus(); return; }
+
+  const cat  = document.querySelector('.rec-cat-btn.on')?.dataset.rcat || 'domacnost';
+  const type = $('js-rec-interval').value;
+  const interval = { type };
+  if (type === 'custom') interval.every = Math.max(1, parseInt($('js-rec-custom-n').value) || 7);
+
+  const rec = {
+    id:                 editingRecId !== null ? editingRecId : Date.now(),
+    title,
+    category:           cat,
+    interval,
+    startDate:          $('js-rec-start').value || dStr(new Date()),
+    lastDone:           $('js-rec-lastdone').value || null,
+    description:        $('js-rec-notes').value.trim(),
+    pushToMain:         $('js-rec-push').checked,
+    estimatedMinutes:   parseInt($('js-rec-mins').value) || null,
+  };
+
+  if (editingRecId !== null) {
+    const idx = recurringEvents.findIndex(x => x.id === editingRecId);
+    if (idx >= 0) recurringEvents[idx] = rec; else recurringEvents.push(rec);
+  } else {
+    recurringEvents.push(rec);
+  }
+
+  saveRec();
+  closeRecModal();
+  if (S.view === 'opak') renderOpak();
+  if (S.view === 'mesic') renderMesic();
+}
+
+function deleteRecurringEvent(id) {
+  recurringEvents = recurringEvents.filter(x => x.id !== id);
+  saveRec();
+  closeRecModal();
+  if (S.view === 'opak') renderOpak();
+  if (S.view === 'mesic') renderMesic();
+}
+
+function markRecDone(id) {
+  const r = recurringEvents.find(x => x.id === id);
+  if (!r) return;
+  r.lastDone = dStr(new Date());
+  saveRec();
+  renderOpakList();
+}
+
+function toggleRecPush(id) {
+  const r = recurringEvents.find(x => x.id === id);
+  if (!r) return;
+  r.pushToMain = !r.pushToMain;
+  saveRec();
+  renderOpakList();
+  if (S.view === 'mesic') renderMesic();
+}
+
 /* ─── TIMELINE STRIP ─── */
 function renderTimeline() {
   const el = $('js-tl');
@@ -1929,6 +2639,11 @@ function getDayItems(dateStr) {
   } else {
     evs = calExtra[dateStr] || [];
   }
+  // add pushToMain recurring events
+  const recEvs = recurringEvents
+    .filter(r => r.pushToMain && occursOnDate(r, dateStr))
+    .map(r => ({ title: r.title, time: '', tag: r.category === 'osobni' ? 'rodina' : r.category, _isRec: true, _recId: r.id }));
+  evs = [...evs, ...recEvs];
   return { evs, taskList };
 }
 
@@ -2091,10 +2806,18 @@ function renderMesic() {
 
     evs.forEach(e => {
       const c = CAT[e.tag]?.color || '#999';
-      rows.push(`<div class="cal-fc-ev">
-        <span class="cal-fc-ev-dash" style="background:${c}"></span>
-        <span class="cal-fc-ev-name">${e.title}</span>
-      </div>`);
+      if (e._isRec) {
+        const rc = REC_CAT[recurringEvents.find(r=>r.id===e._recId)?.category]?.color || c;
+        rows.push(`<div class="cal-fc-rec-main">
+          <svg class="cal-fc-rec-icon" viewBox="0 0 24 24" fill="none" stroke="${rc}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          <span style="color:${rc}">${e.title}</span>
+        </div>`);
+      } else {
+        rows.push(`<div class="cal-fc-ev">
+          <span class="cal-fc-ev-dash" style="background:${c}"></span>
+          <span class="cal-fc-ev-name">${e.title}</span>
+        </div>`);
+      }
     });
 
     taskList.forEach(t => {
@@ -2411,12 +3134,13 @@ function setView(v) {
   document.getElementById(`v-${v}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.sb-item').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('js-fab').style.display = (v === 'narozeniny' || v === 'poznamky') ? 'none' : '';
+  $('js-fab').style.display = (v === 'narozeniny' || v === 'poznamky' || v === 'opak') ? 'none' : '';
   if (v === 'mesic')      renderMesic();
   if (v === 'ukoly')      renderUkoly(true);
   if (v === 'dnes')       renderDnes(true);
   if (v === 'narozeniny') renderNarozeniny();
   if (v === 'poznamky')   renderPoznamky();
+  if (v === 'opak')       renderOpak();
 }
 
 /* ─── FILTER (mobile only) ─── */
@@ -2914,6 +3638,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTasks();
   loadBdays();
   loadNotes();
+  loadRec();
   initDate();
   renderDnes(true);
 
@@ -3123,6 +3848,54 @@ document.addEventListener('DOMContentLoaded', () => {
   $('js-cal-next').addEventListener('click', () => {
     S.mesicDate = new Date(S.mesicDate.getFullYear(), S.mesicDate.getMonth()+1, 1);
     renderMesic();
+  });
+
+  /* ── Opakující se ── */
+  $('js-opak-add').addEventListener('click', () => openRecModal(null));
+  $('js-opak-prev').addEventListener('click', () => {
+    S.opakDate = new Date(S.opakDate.getFullYear(), S.opakDate.getMonth()-1, 1);
+    renderOpakGrid();
+  });
+  $('js-opak-next').addEventListener('click', () => {
+    S.opakDate = new Date(S.opakDate.getFullYear(), S.opakDate.getMonth()+1, 1);
+    renderOpakGrid();
+  });
+
+  $('js-opak-cats').addEventListener('click', e => {
+    const btn = e.target.closest('.opak-cat');
+    if (!btn) return;
+    S.opakCat = btn.dataset.ocat;
+    $('js-opak-cats').querySelectorAll('.opak-cat').forEach(b => b.classList.toggle('on', b.dataset.ocat === S.opakCat));
+    renderOpak();
+  });
+
+  // list action buttons (delegated)
+  document.addEventListener('click', e => {
+    const doneBtn = e.target.closest('.rec-btn-done');
+    if (doneBtn) { markRecDone(Number(doneBtn.dataset.rid)); return; }
+    const pushBtn = e.target.closest('.rec-btn-push');
+    if (pushBtn) { toggleRecPush(Number(pushBtn.dataset.rid)); return; }
+    const editBtn2 = e.target.closest('.rec-btn-edit');
+    if (editBtn2) { openRecModal(Number(editBtn2.dataset.rid)); return; }
+  });
+
+  // modal wiring
+  $('js-rec-close').addEventListener('click', closeRecModal);
+  $('js-rec-cancel').addEventListener('click', closeRecModal);
+  $('js-rec-overlay').addEventListener('click', e => { if (e.target === $('js-rec-overlay')) closeRecModal(); });
+  $('js-rec-save').addEventListener('click', saveRecurringEvent);
+  $('js-rec-delete').addEventListener('click', () => {
+    if (editingRecId !== null) deleteRecurringEvent(editingRecId);
+  });
+  $('js-rec-interval').addEventListener('change', updateRecIntervalUI);
+  $('js-rec-title').addEventListener('keydown', e => { if (e.key === 'Escape') closeRecModal(); });
+
+  document.querySelectorAll('.rec-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rec-cat-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      updateRecCatColors();
+    });
   });
 
   setInterval(() => { if (S.view === 'dnes') renderTimeline(); }, 60000);
