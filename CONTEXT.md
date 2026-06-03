@@ -252,6 +252,26 @@ Doodle rámečky v aplikaci (note cards, bday tiles today):
 
 ---
 
+## Měsíc view — architektura (upd.)
+
+### Redesign gridu (session 2026-06-03)
+- Mini grid (`d-mini-cell`) nahrazen full-size gridem (`.cal-fc` buňky)
+- Buňky: min-height 80px mobile / 116px desktop; `var(--border)` ohraničení
+- Event řádek: barevná pomlčka (`cal-fc-ev-dash`) + zkrácený název
+- Task řádek: barevný puntík (`cal-fc-task-dot`) + název (proškrtnutý když done)
+- Narozeniny: gift SVG ikona z Narozeniny view + jméno kontaktu (rodina barva)
+- Svátky: flower SVG ikona + jméno, **pouze pro kontakty v seznamu** (ne všechny české svátky)
+- Přetékající položky: `+N` indikátor (MAX=3 na buňku)
+- Aktuální týden: 2.5px raspberry proužek na spodní hraně buněk
+- DOW hlavička: Caveat font, víkendy v raspberry barvě
+- Oprava bugu: focus karta používala `meta.bday.name` → opraveno na `firstName+lastName`
+
+### Pomocné SVG konstanty v renderMesic()
+- `giftSVG` — dárek (stroke #C4614A, viewBox 0 0 44 44)
+- `flowerSVG` — květ (stroke #b93066, viewBox 0 0 44 44)
+
+---
+
 ## Co chybí / další kroky
 
 - Swipe gestures pro přepínání měsíců (mobile)
@@ -260,3 +280,4 @@ Doodle rámečky v aplikaci (note cards, bday tiles today):
 - Editace/smazání úkolu
 - Repeated tasks logic (rec field existuje, ale není plně implementován)
 - Přidání výročí ke kontaktu přímo z inline tabulky (teď jen přes modal ✎)
+- Kliknutí na den ve focus stripu → day sheet (zatím funguje, ale focus strip nereflektuje nový grid styl)
