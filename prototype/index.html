@@ -156,6 +156,124 @@
     .date-accent { margin-top: 14px; height: 18px; overflow: visible; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       TIMELINE STRIP (Dnes view)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .tl-wrap {
+      margin: 10px -24px 14px;   /* escape dnes-top padding */
+      padding: 0 16px;
+      position: relative;
+    }
+    .tl-inner {
+      position: relative;
+      height: 68px;
+      width: 100%;
+    }
+    /* Horizontal track */
+    .tl-track {
+      position: absolute;
+      left: 0; right: 0;
+      top: 44px;
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .tl-track-past {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: rgba(185,48,102,.18);
+      border-radius: 2px 0 0 2px;
+    }
+    /* Hour ticks + labels */
+    .tl-tick {
+      position: absolute;
+      top: 44px;
+      width: 1px; height: 6px;
+      background: #d8d8d8;
+      transform: translateX(-50%);
+    }
+    .tl-hlbl {
+      position: absolute;
+      top: 54px;
+      font-family: var(--f-mono);
+      font-size: 8px;
+      color: var(--ink-3);
+      transform: translateX(-50%);
+      white-space: nowrap;
+      line-height: 1;
+    }
+    /* Event pins: time label → dot → stem touching track */
+    .tl-pin {
+      position: absolute;
+      top: 5px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      z-index: 5;
+    }
+    .tl-pin-time {
+      position: absolute;
+      top: -12px;
+      font-family: var(--f-mono);
+      font-size: 7.5px;
+      color: var(--ink-2);
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .tl-pin-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tl-pin-stem {
+      width: 1.5px;
+      height: 22px;
+      opacity: .2;
+      flex-shrink: 0;
+    }
+    .tl-pin.is-past { opacity: .35; }
+    /* Now indicator */
+    .tl-now {
+      position: absolute;
+      top: 4px; bottom: 0;
+      width: 2px;
+      background: var(--primary);
+      transform: translateX(-50%);
+      border-radius: 1px;
+      z-index: 10;
+    }
+    .tl-now-dot {
+      position: absolute;
+      top: 31px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px; height: 12px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(185,48,102,.18);
+    }
+    .tl-now-time {
+      position: absolute;
+      top: 43px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--f-mono);
+      font-size: 8px;
+      font-weight: 500;
+      color: var(--primary);
+      white-space: nowrap;
+      background: var(--bg);
+      padding: 0 2px;
+      border-radius: 2px;
+      line-height: 1.4;
+    }
+    @media (min-width: 720px) {
+      .tl-wrap { margin-left: 0; margin-right: 0; padding: 0 8px; }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        BIRTHDAY NOTE (compact inline, Dnes view)
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .bday-banner {
@@ -1141,6 +1259,7 @@
         <svg class="date-accent" viewBox="0 0 200 18" fill="none" preserveAspectRatio="none" style="width:100%;max-width:280px">
           <path d="M 0 12 C 20 8, 50 16, 90 11 S 150 14, 200 10" stroke="#b93066" stroke-width="2" stroke-linecap="round" fill="none" opacity=".4"/>
         </svg>
+        <div id="js-tl" class="tl-wrap"></div>
       </div>
 
       <div class="bday-banner" id="js-bday">
@@ -1653,7 +1772,67 @@ function hideUndo() {
 }
 
 /* ─── RENDER DNES ─── */
+/* ─── TIMELINE STRIP ─── */
+function renderTimeline() {
+  const el = $('js-tl');
+  if (!el) return;
+
+  const now   = new Date();
+  const hNow  = now.getHours() + now.getMinutes() / 60;
+  const START = 7, END = 22;
+
+  // hide outside working hours
+  if (hNow < START || hNow > END) { el.style.display = 'none'; return; }
+  el.style.display = '';
+
+  const pct = (h) => ((h - START) / (END - START)) * 100;
+  const nowPct = pct(hNow);
+
+  // tick marks every 2h
+  let ticks = '';
+  for (let h = START; h <= END; h += 2) {
+    const p = pct(h);
+    const lbl = h < 10 ? `0${h}:00` : `${h}:00`;
+    ticks += `<div class="tl-tick" style="left:${p}%"></div>
+              <div class="tl-hlbl" style="left:${p}%">${lbl}</div>`;
+  }
+
+  // event pins from today's events (only those with a time)
+  const todayEvs = events.filter(e => e.time);
+  let pins = '';
+  todayEvs.forEach(e => {
+    const [hh, mm] = e.time.split(':').map(Number);
+    const eh = hh + mm / 60;
+    if (eh < START || eh > END) return;
+    const ep = pct(eh);
+    const isPast = eh < hNow;
+    const col = CAT[e.tag]?.color || '#999';
+    pins += `<div class="tl-pin${isPast ? ' is-past' : ''}" style="left:${ep}%">
+      <div class="tl-pin-time">${e.time}</div>
+      <div class="tl-pin-dot" style="background:${col}"></div>
+      <div class="tl-pin-stem" style="background:${col}"></div>
+    </div>`;
+  });
+
+  // now marker
+  const hStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const nowMarker = `<div class="tl-now" style="left:${nowPct}%">
+    <div class="tl-now-dot"></div>
+    <div class="tl-now-time">${hStr}</div>
+  </div>`;
+
+  el.innerHTML = `<div class="tl-inner">
+    ${pins}
+    <div class="tl-track">
+      <div class="tl-track-past" style="width:${nowPct}%"></div>
+    </div>
+    ${ticks}
+    ${nowMarker}
+  </div>`;
+}
+
 function renderDnes(animate = false) {
+  renderTimeline();
   const now = new Date();
   const bday = birthdays.find(b => b.month === now.getMonth()+1 && b.day === now.getDate());
   const bd = $('js-bday');
@@ -2948,6 +3127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     S.mesicDate = new Date(S.mesicDate.getFullYear(), S.mesicDate.getMonth()+1, 1);
     renderMesic();
   });
+
+  setInterval(() => { if (S.view === 'dnes') renderTimeline(); }, 60000);
 });
 </script>
 </body>
