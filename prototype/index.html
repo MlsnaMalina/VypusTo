@@ -849,8 +849,7 @@
     .note-sec-lbl span { font-size: 13px; }
     .poz-notes-stack { display: flex; flex-direction: column; gap: 6px; }
     @media (min-width: 720px) {
-      .poz-notes-stack { columns: 2; column-gap: 14px; display: block; }
-      .note-card { break-inside: avoid; margin-bottom: 8px; }
+      .poz-notes-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     }
 
     .note-card {
