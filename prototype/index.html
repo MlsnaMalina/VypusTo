@@ -506,6 +506,30 @@
     }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       COLOR PICKER
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .cp-row {
+      display: flex; flex-wrap: wrap; gap: 9px; padding: 2px 0;
+    }
+    .cp-swatch {
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+      border: none; outline: 2.5px solid transparent; outline-offset: 2.5px;
+      transition: transform .13s, outline-color .13s; flex-shrink: 0;
+      position: relative;
+    }
+    .cp-swatch:hover { transform: scale(1.18); }
+    .cp-swatch.on   { transform: scale(1.1); }
+    .cp-clear {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: none; border: 1.5px dashed var(--border);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--ink-3); font-size: 13px; flex-shrink: 0;
+      transition: border-color .12s, color .12s;
+    }
+    .cp-clear:hover { border-color: var(--ink-2); color: var(--ink); }
+    .cp-clear.on    { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        BIRTHDAY NOTE (compact inline, Dnes view)
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .bday-banner {
@@ -1680,6 +1704,8 @@
       <button class="s-rec" data-r="monthly">Měsíčně</button>
       <button class="s-rec" data-r="quarterly">Každé 3 měs.</button>
     </div>
+    <div class="sheet-sec">Barva</div>
+    <div class="cp-row" id="js-task-colors"></div>
     <button class="sheet-save" id="js-save" disabled>Přidat úkol</button>
   </div>
 </div>
@@ -1798,6 +1824,11 @@
       <textarea class="rec-input rec-textarea" id="js-rec-notes" placeholder="Co je potřeba pamatovat? Kontakty, přípravy, kde co najít, kdo to dělá…" spellcheck="false"></textarea>
     </div>
 
+    <div class="rec-field">
+      <label class="rec-field-lbl">Barva</label>
+      <div class="cp-row" id="js-rec-colors"></div>
+    </div>
+
     <div class="rec-row">
       <div class="rec-field">
         <label class="rec-field-lbl" for="js-rec-interval">Jak často?</label>
@@ -1911,6 +1942,26 @@ const events = [
 ];
 
 /* ─── RECURRING EVENTS DATA ─── */
+const COLOR_PALETTE = [
+  '#b93066','#C4614A','#4A7C59','#1C3557',
+  '#7A6E8A','#D97706','#0F766E','#7C3AED',
+  '#0284C7','#BE185D','#15803D','#78350F',
+];
+
+function colorSwatchesHTML(selected, inputId) {
+  const swatches = COLOR_PALETTE.map(c => {
+    const on = c === selected;
+    return `<button type="button" class="cp-swatch${on?' on':''}" data-cp="${c}" data-target="${inputId}"
+      style="background:${c};outline-color:${on?c:'transparent'}" title="${c}"></button>`;
+  }).join('');
+  const clearOn = !selected;
+  return swatches +
+    `<button type="button" class="cp-clear${clearOn?' on':''}" data-cp="" data-target="${inputId}" title="Výchozí barva kategorie">✕</button>`;
+}
+
+function taskEffectiveColor(t) { return t.color || CAT[t.tag]?.color || '#999'; }
+function recEffectiveColor(r)  { return r.color || REC_CAT[r.category]?.color || '#999'; }
+
 const REC_CAT = {
   domacnost: { label: 'Domácnost', color: '#4A7C59', bg: '#EBF3EE' },
   osobni:    { label: 'Osobní',    color: '#b93066', bg: '#fef0f6' },
@@ -2031,7 +2082,7 @@ const S = {
   mesicDate:  new Date(),
   opakDate:   new Date(),
   opakCat:    'all',
-  form:       { title:'', tag:null, date:'today', rec:'none' },
+  form:       { title:'', tag:null, date:'today', rec:'none', color:null },
   noteForm:   { title:'', body:'', tag:null },
   activeNoteId: null,
 };
@@ -2077,14 +2128,17 @@ function taskHTML(t) {
   const rec  = t.rec && t.rec !== 'none';
   const dlbl = t.date === 'tomorrow' ? 'zítra' : '';
   const doneAt = t.done && t.completedAt ? formatCompletedAt(t.completedAt) : '';
+  const col  = taskEffectiveColor(t);
+  const dotStyle  = t.color ? `style="background:${col}"` : `data-tag="${t.tag}"`;
+  const badgeStyle = t.color ? `style="color:${col};background:${col}1a"` : `data-tag="${t.tag}"`;
   return `
 <div class="task-item${t.done?' is-done':''}" data-id="${t.id}" data-tag="${t.tag}">
-  <div class="task-dot" data-tag="${t.tag}"></div>
+  <div class="task-dot" ${dotStyle}></div>
   <div class="task-cb" data-id="${t.id}">${CHECK_SVG}</div>
   <div class="task-body">
     <div class="task-tw"><span class="task-title">${t.title}</span></div>
     <div class="task-meta">
-      <span class="task-badge" data-tag="${t.tag}">${CAT[t.tag].label}</span>
+      <span class="task-badge" ${badgeStyle}>${CAT[t.tag].label}</span>
       ${dlbl    ? `<span class="task-date-lbl">${dlbl}</span>` : ''}
       ${rec     ? `<span class="task-rec-icon" title="Opakuje se">${RECUR_SVG}</span>` : ''}
       ${doneAt  ? `<span class="task-done-at">· ${doneAt}</span>` : ''}
@@ -2266,7 +2320,7 @@ function renderOpakGrid() {
     let itemsHTML = '';
     if (dayRecs.length) {
       const rows = dayRecs.map(r => {
-        const col = REC_CAT[r.category]?.color || '#999';
+        const col = recEffectiveColor(r);
         return `<div class="cal-fc-rec" style="cursor:pointer" data-rid="${r.id}">
           <span class="cal-fc-rec-dot" style="background:${col}"></span>
           <span>${r.title}</span>
@@ -2326,8 +2380,9 @@ function renderOpakList() {
       const minsHtml = r.estimatedMinutes
         ? `<span class="rec-meta-sep">·</span><span class="rec-meta-mins">⏱ ${r.estimatedMinutes} min</span>` : '';
 
+      const effectiveCol = recEffectiveColor(r);
       html += `<div class="rec-item${isOverdue?' overdue':isDueToday?' due-today':''}">
-        <div class="rec-item-accent" style="background:${color}"></div>
+        <div class="rec-item-accent" style="background:${effectiveCol}"></div>
         <div class="rec-item-body">
           <div class="rec-item-title">${r.title}</div>
           <div class="rec-item-meta">
@@ -2381,6 +2436,7 @@ function openRecModal(id = null) {
     $('js-rec-push').checked   = r.pushToMain;
     document.querySelectorAll('.rec-cat-btn').forEach(b => b.classList.toggle('on', b.dataset.rcat === r.category));
     $('js-rec-delete').style.display = '';
+    $('js-rec-colors').innerHTML = colorSwatchesHTML(r.color || null, 'rec');
   } else {
     $('js-rec-sheet-title').textContent = 'Nová událost';
     $('js-rec-title').value    = '';
@@ -2393,6 +2449,7 @@ function openRecModal(id = null) {
     $('js-rec-push').checked   = false;
     document.querySelectorAll('.rec-cat-btn').forEach((b, i) => b.classList.toggle('on', i === 0));
     $('js-rec-delete').style.display = 'none';
+    $('js-rec-colors').innerHTML = colorSwatchesHTML(null, 'rec');
   }
   updateRecCatColors();
   updateRecIntervalUI();
@@ -2439,6 +2496,7 @@ function saveRecurringEvent() {
     description:        $('js-rec-notes').value.trim(),
     pushToMain:         $('js-rec-push').checked,
     estimatedMinutes:   parseInt($('js-rec-mins').value) || null,
+    color:              $('js-rec-colors').querySelector('.cp-swatch.on')?.dataset.cp || null,
   };
 
   if (editingRecId !== null) {
@@ -2821,7 +2879,7 @@ function renderMesic() {
     });
 
     taskList.forEach(t => {
-      const c = CAT[t.tag]?.color || '#999';
+      const c = taskEffectiveColor(t);
       rows.push(`<div class="cal-fc-task">
         <span class="cal-fc-task-dot${t.done ? ' done-ring' : ''}" style="${t.done ? `border-color:${c}` : `background:${c}`}"></span>
         <span class="cal-fc-task-name${t.done ? ' is-done' : ''}">${t.title}</span>
@@ -3153,13 +3211,14 @@ function setFilter(f) {
 /* ─── MODAL ─── */
 function openModal(presetDate) {
   const date = presetDate || 'today';
-  S.form = { title:'', tag:null, date:date, rec:'none' };
+  S.form = { title:'', tag:null, date:date, rec:'none', color:null };
   $('js-overlay').classList.add('open');
   $('js-task-input').value = '';
   $('js-save').disabled = true;
   document.querySelectorAll('.s-tag').forEach(b => b.classList.remove('on'));
   document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === date));
   document.querySelectorAll('.s-rec').forEach(b  => b.classList.toggle('on', b.dataset.r === 'none'));
+  $('js-task-colors').innerHTML = colorSwatchesHTML(null, 'task');
   setTimeout(() => $('js-task-input').focus(), 320);
 }
 
@@ -3174,6 +3233,7 @@ function saveTask() {
     done:  false,
     date:  S.form.date === 'none' ? null : S.form.date,
     rec:   S.form.rec,
+    color: S.form.color || null,
   });
   saveTasks();
   closeModal();
@@ -3867,6 +3927,23 @@ document.addEventListener('DOMContentLoaded', () => {
     S.opakCat = btn.dataset.ocat;
     $('js-opak-cats').querySelectorAll('.opak-cat').forEach(b => b.classList.toggle('on', b.dataset.ocat === S.opakCat));
     renderOpak();
+  });
+
+  // color picker (delegated — swatches rendered dynamically)
+  document.addEventListener('click', e => {
+    const sw = e.target.closest('.cp-swatch, .cp-clear');
+    if (!sw) return;
+    const target = sw.dataset.target;
+    const color  = sw.dataset.cp || null; // empty string → null (clear)
+    const container = target === 'task' ? $('js-task-colors') : $('js-rec-colors');
+    if (!container) return;
+    container.querySelectorAll('.cp-swatch, .cp-clear').forEach(b => {
+      b.classList.remove('on');
+      if (b.classList.contains('cp-swatch')) b.style.outlineColor = 'transparent';
+    });
+    sw.classList.add('on');
+    if (sw.classList.contains('cp-swatch') && color) sw.style.outlineColor = color;
+    if (target === 'task') S.form.color = color;
   });
 
   // list action buttons (delegated)
