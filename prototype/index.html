@@ -822,17 +822,14 @@
     .bday-trow td { padding: 3px 4px; vertical-align: middle; }
     .bday-trow td:first-child { padding-left: 0; }
     .bday-cell-in {
-      width: 100%; font-family: var(--f-hand); font-size: 14px; font-weight: 700; color: var(--ink);
+      width: 100%; font-family: var(--f-body); font-size: 13.5px; font-weight: 500; color: var(--ink);
       border: none; border-bottom: 1.5px solid transparent; padding: 5px 5px 4px;
       background: transparent; outline: none; border-radius: 4px 4px 0 0;
       transition: border-color .15s, background .12s;
     }
     .bday-cell-in:focus { border-bottom-color: var(--primary); background: rgba(185,48,102,.04); }
-    .bday-cell-nd {
-      font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
-      white-space: nowrap; padding: 4px 6px;
-    }
-    .bday-cell-date { font-family: var(--f-mono) !important; font-weight: 400 !important; font-size: 12px !important; }
+    .bday-cell-in::placeholder { font-weight: 400; color: var(--ink-3); }
+    .bday-cell-date { font-family: var(--f-mono) !important; font-size: 12px !important; font-weight: 400 !important; }
     .bday-row-btn.del {
       width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -2205,6 +2202,40 @@ function saveTask() {
   rerender();
 }
 
+/* ─── NAROZENINY HELPERS (global) ─── */
+function lookupNamedayGlobal(firstName) {
+  const fn = firstName.trim().toLowerCase();
+  if (!fn) return null;
+  for (const [key, val] of Object.entries(NAMEDAYS)) {
+    // split on whitespace/comma/parens only; filter out Czech conjunction 'a'
+    const names = val.split(/[\s,()]+/).map(n => n.toLowerCase()).filter(n => n.length > 1 && n !== 'a');
+    if (names.includes(fn)) {
+      const [m, d] = key.split('-').map(Number);
+      return { month: m, day: d };
+    }
+  }
+  return null;
+}
+
+function getEffectiveNameday(b) {
+  if (b.namedayOverride === false) return null;        // explicitly cleared
+  if (b.namedayOverride && b.namedayOverride.day) return b.namedayOverride; // manual
+  return lookupNamedayGlobal(b.firstName);             // auto
+}
+
+function formatNdStr(nd) {
+  if (!nd) return '';
+  return `${String(nd.day).padStart(2,'0')}.${String(nd.month).padStart(2,'0')}.`;
+}
+
+function parseNdStr(str) {
+  const m = str.trim().match(/^(\d{1,2})\.(\d{1,2})\.?$/);
+  if (!m) return null;
+  const day = parseInt(m[1]), month = parseInt(m[2]);
+  if (day < 1 || day > 31 || month < 1 || month > 12) return null;
+  return { day, month };
+}
+
 /* ─── RENDER NAROZENINY ─── */
 function renderNarozeniny() {
   const now  = new Date();
@@ -2222,18 +2253,7 @@ function renderNarozeniny() {
     return ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'][m-1];
   }
 
-  function lookupNameday(firstName) {
-    const fn = firstName.trim().toLowerCase();
-    if (!fn) return null;
-    for (const [key, val] of Object.entries(NAMEDAYS)) {
-      const names = val.split(/[\s,()a]+/).map(n => n.toLowerCase()).filter(n => n.length > 1);
-      if (names.includes(fn)) {
-        const [m, d] = key.split('-').map(Number);
-        return { month: m, day: d };
-      }
-    }
-    return null;
-  }
+  const lookupNameday = lookupNamedayGlobal;
 
   function parseBdayInput(str) {
     const m = str.trim().match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
@@ -2357,17 +2377,20 @@ function renderNarozeniny() {
   function renderBdayList() {
     const bySorted = [...birthdays].sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
     const rows = bySorted.map(b => {
-      const nd = lookupNameday(b.firstName);
-      const ndStr = nd ? `${nd.day}. ${czMonthShort(nd.month)}.` : '—';
-      const bdayStr = formatBdayInput(b);
+      const autoNd   = lookupNameday(b.firstName);
+      const effNd    = getEffectiveNameday(b);
+      const ndVal    = formatNdStr(effNd);
+      const ndAuto   = formatNdStr(autoNd);
+      const bdayStr  = formatBdayInput(b);
+      const annCount = (b.anniversaries || []).length;
       return `<tr class="bday-trow" data-bid="${b.id}">
         <td><input class="bday-cell-in" data-field="firstName" value="${b.firstName}" placeholder="Jméno"/></td>
         <td><input class="bday-cell-in" data-field="lastName"  value="${b.lastName||''}" placeholder="Příjmení"/></td>
-        <td class="bday-cell-nd">${ndStr}</td>
-        <td><input class="bday-cell-in bday-cell-date" data-field="bday" value="${bdayStr}" placeholder="dd.mm.rrrr"/></td>
+        <td><input class="bday-cell-in bday-cell-date" data-field="nameday" value="${ndVal}" placeholder="${ndAuto || 'dd.mm.'}"/></td>
+        <td><input class="bday-cell-in bday-cell-date" data-field="bday"    value="${bdayStr}" placeholder="dd.mm.rrrr"/></td>
         <td>
           <div style="display:flex;gap:2px;align-items:center">
-            <button class="bday-row-btn edit" data-bid="${b.id}" aria-label="Upravit" title="Upravit / výročí">✎</button>
+            <button class="bday-row-btn edit" data-bid="${b.id}" aria-label="Upravit" title="Upravit / výročí${annCount ? ' (' + annCount + ')' : ''}">✎${annCount ? `<sup style="font-size:8px;margin-left:1px">${annCount}</sup>` : ''}</button>
             <button class="bday-row-btn del"  data-bid="${b.id}" aria-label="Smazat">✕</button>
           </div>
         </td>
@@ -2719,24 +2742,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const field = inp.dataset.field;
     if (field === 'firstName') {
       b.firstName = inp.value.trim();
-      const ndCell = row.querySelector('.bday-cell-nd');
-      if (ndCell) {
-        // look up nameday inline without calling renderNarozeniny
-        const fn = b.firstName.toLowerCase();
-        let ndStr = '—';
-        for (const [key, val] of Object.entries(NAMEDAYS)) {
-          const names = val.split(/[\s,()a]+/).map(n => n.toLowerCase()).filter(n => n.length > 1);
-          if (names.includes(fn)) {
-            const [m, d] = key.split('-').map(Number);
-            const czM = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'][m-1];
-            ndStr = `${d}. ${czM}.`;
-            break;
-          }
+      // if no manual override, refresh the nameday placeholder from auto-lookup
+      if (!b.namedayOverride) {
+        const ndInp = row.querySelector('[data-field="nameday"]');
+        if (ndInp) {
+          const autoNd = lookupNamedayGlobal(b.firstName);
+          ndInp.placeholder = formatNdStr(autoNd) || 'dd.mm.';
+          ndInp.value = ''; // clear value so auto shows via placeholder
         }
-        ndCell.textContent = ndStr;
       }
     } else if (field === 'lastName') {
       b.lastName = inp.value.trim();
+    } else if (field === 'nameday') {
+      const val = inp.value.trim();
+      if (val === '') {
+        // explicitly cleared — override to false (suppress auto)
+        b.namedayOverride = false;
+      } else {
+        const nd = parseNdStr(val);
+        if (nd) {
+          b.namedayOverride = nd;
+          inp.value = formatNdStr(nd); // normalize display
+        } else {
+          // invalid format — revert to effective value
+          inp.value = formatNdStr(getEffectiveNameday(b));
+        }
+      }
     } else if (field === 'bday') {
       const m2 = inp.value.trim().match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
       if (m2) {
