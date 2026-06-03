@@ -2212,10 +2212,9 @@ function noteDate(dateStr) {
 function noteHTML(n) {
   const color = CAT[n.tag]?.color || '#999';
   const doodle = n.pinned ? `<svg class="note-doodle" viewBox="0 0 100 100" width="100%" height="100%" fill="none" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M5 5 C30 4.2,60 5.6,95 5" stroke="${color}" stroke-width="0.5" stroke-linecap="round" opacity=".45"/>
-    <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${color}" stroke-width="0.5" stroke-linecap="round" opacity=".45"/>
-    <path d="M95 95 C70 95.8,40 94.4,5 95" stroke="${color}" stroke-width="0.5" stroke-linecap="round" opacity=".45"/>
-    <path d="M5 95 C4.2 70,3.6 40,5 5" stroke="${color}" stroke-width="0.5" stroke-linecap="round" opacity=".45"/>
+    <path d="M8 5 C33 4.2,63 5.6,95 5" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
+    <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
+    <path d="M95 95 C63 95.8,33 94.4,8 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
   </svg>` : '';
   return `<div class="note-card${n.pinned ? ' is-pinned' : ''}" data-nid="${n.id}" style="border-left-color:${color}">
     ${doodle}
