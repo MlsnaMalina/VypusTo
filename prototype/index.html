@@ -534,33 +534,6 @@
     }
     .cal-btn:hover { background: var(--bg-off); color: var(--ink); }
 
-    /* Paper body — subtle dot grid */
-    .cal-body {
-      padding: 10px 12px 0;
-      background-image: radial-gradient(circle, rgba(185,48,102,.07) 1px, transparent 1px);
-      background-size: 20px 20px;
-      background-position: 10px 10px;
-    }
-
-    /* DOW header — Caveat for handwritten feel */
-    .cal-dow {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      margin-bottom: 0;
-    }
-    .cal-dow span {
-      font-family: var(--f-hand);
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--ink-3);
-      text-align: center;
-      padding: 8px 0 6px;
-    }
-    .cal-dow span.wknd { color: var(--primary); opacity: .7; }
-
-    /* Hand-drawn wavy separator below DOW */
-    .cal-doodle-sep {
-      width: 100%; height: 10px; display: block; margin-bottom: 2px; overflow: visible;
-    }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        CALENDAR — FOCUS STRIP + MINI GRID
@@ -624,70 +597,41 @@
     .fc-task-lbl   { font-size: 10.5px; color: var(--ink); line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
     .fc-task-done  { opacity: .45; text-decoration: line-through; }
 
-    /* Mini calendar grid */
-    .cal-mini-wrap  { padding: 10px 10px 14px; }
-    .cal-mini-label { font-family: var(--f-hand); font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
-    .cal-mini-dow   { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 0; }
-    .cal-mini-dow span { font-family: var(--f-hand); font-size: 11px; color: var(--ink-3); text-align: center; font-weight: 700; padding: 2px 0 4px; }
-    .cal-mini-dow span.wknd { color: rgba(185,48,102,.6); }
-    .cal-mini-grid  {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
-    }
-    .d-mini-cell {
-      display: flex; flex-direction: column; align-items: center;
-      padding: 4px 2px 5px; gap: 2px; cursor: pointer; min-height: 60px;
-      border-right: 1px solid var(--border-faint);
-      border-bottom: 1px solid var(--border-faint);
-      background: var(--bg);
-    }
-    .d-mini-cell.off { background: var(--bg-off); pointer-events: none; }
-    .d-mini-cell:not(.off):hover { background: var(--primary-lt); }
-    .d-mini-cell.wknd:not(.d-today):not(.d-this-week) { background: rgba(185,48,102,.025); }
-    .d-mini-num {
-      font-family: var(--f-mono); font-size: 11px; color: var(--ink-2);
-      width: 22px; height: 22px; display: flex; align-items: center;
-      justify-content: center; border-radius: 50%; line-height: 1; flex-shrink: 0;
-    }
-    .d-mini-cell.d-today     .d-mini-num { background: var(--primary); color: white; }
-    .d-mini-cell.d-this-week .d-mini-num { background: var(--primary-lt); color: var(--primary); }
-    .d-mini-cell.wknd:not(.d-today):not(.d-this-week) .d-mini-num { color: rgba(185,48,102,.75); }
-    .d-mini-cell.off         .d-mini-num { color: var(--ink-3); }
-    .d-mini-bars { display: flex; flex-direction: column; gap: 1.5px; width: 80%; }
-    .d-mini-bar  { height: 3px; border-radius: 1.5px; width: 100%; }
-    .d-mini-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
-    .d-mini-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
-    .d-mini-dot.ring { background: transparent !important; border: 1px solid; }
-    .d-mini-ev-item {
-      font-size: 8px; color: var(--ink); line-height: 1.25;
-      padding: 0 2px 0 4px; border-left: 2px solid;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      width: 88%; align-self: flex-start; margin-left: 6%;
-    }
-    .d-mini-task-item {
-      display: flex; align-items: center; gap: 2px;
-      font-size: 8px; color: var(--ink-2); line-height: 1.25;
-      overflow: hidden; white-space: nowrap;
-      width: 88%; align-self: flex-start; margin-left: 6%;
-    }
-    .d-mini-task-item span { overflow: hidden; text-overflow: ellipsis; }
-    .d-mini-task-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+    /* Month title sparkle */
+    .cal-title-wrap { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+    @media (min-width: 720px) { .cal-title-wrap { justify-content: flex-start; } }
+    .cal-title-spark { color: var(--primary); opacity: .55; flex-shrink: 0; }
 
-    /* Grid: equal-height cells with borders */
-    .cal-cells {
+    /* ── Full month calendar grid ── */
+    .cal-grid-wrap {
+      padding: 0 12px 16px;
+    }
+    .cal-grid-dow {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: 72px;   /* equal heights — no more stretching */
-      gap: 0;
+      margin-bottom: 4px;
+    }
+    .cal-grid-dow span {
+      font-family: var(--f-hand);
+      font-size: 11px;
+      color: var(--ink-3);
+      text-align: center;
+      font-weight: 700;
+      padding: 2px 0 5px;
+    }
+    .cal-grid-dow span.wknd { color: rgba(185,48,102,.65); }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
     }
 
-    .cal-cell {
-      height: 72px;           /* fixed — all cells equal */
-      padding: 5px 3px 3px;
-      border-radius: 0;
+    .cal-fc {
+      min-height: 80px;
+      padding: 5px 3px 5px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -698,65 +642,164 @@
       border-bottom: 1px solid var(--border-faint);
       transition: background .12s;
       overflow: hidden;
+      position: relative;
     }
-    .cal-cell.off       { background: var(--bg-off); pointer-events: none; }
-    .cal-cell.wknd:not(.today):not(.off) { background: rgba(185,48,102,.028); }
-    .cal-cell:not(.off):hover { background: var(--primary-lt); }
-    .cal-cell.today { background: var(--bg); }
-    .cal-cell.today .cal-dn { background: var(--primary); color: #fff; box-shadow: 0 0 0 3px rgba(185,48,102,.18); }
+    .cal-fc.off     { background: var(--bg-off); pointer-events: none; }
+    .cal-fc.wknd:not(.is-today):not(.off) { background: rgba(185,48,102,.025); }
+    .cal-fc:not(.off):hover { background: var(--primary-lt); }
 
-    .cal-dn {
-      font-family: var(--f-mono); font-size: 12.5px; font-weight: 500; color: var(--ink);
-      width: 25px; height: 25px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; flex-shrink: 0; transition: background .12s; line-height: 1;
+    /* Current-week accent bar at bottom */
+    .cal-fc.cur-week:not(.off)::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2.5px;
+      background: rgba(185,48,102,.22);
+      border-radius: 0;
     }
-    .cal-cell.wknd:not(.today) .cal-dn { color: var(--ink-2); }
-    .cal-cell.off .cal-dn { color: var(--ink-3); }
 
-    /* Mobile dots — events (solid) and tasks (rings) in separate rows */
-    .cal-evs  { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; }
-    .cal-ev-r { display: flex; gap: 2px; justify-content: center; min-height: 5px; }
-    .cal-tk-r { display: flex; gap: 2px; justify-content: center; min-height: 4px; }
-    .cal-ev   { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .cal-tdot { width: 4px; height: 4px; border-radius: 50%; border: 1.3px solid; flex-shrink: 0; }
-    .cal-tdot[data-t="prace"]     { border-color: var(--c-prace); }
-    .cal-tdot[data-t="rodina"]    { border-color: var(--c-rodina); }
-    .cal-tdot[data-t="domacnost"] { border-color: var(--c-dom); }
-    .cal-tdot[data-t="ostatni"]   { border-color: var(--c-ost); }
-    .cal-tc   { font-family: var(--f-mono); font-size: 9px; color: var(--ink-3); line-height: 1; }
-
-    /* Desktop chips */
-    .cal-chips { display: none; flex-direction: column; gap: 2px; width: 100%; padding: 0 2px; }
-    .cal-chip  {
-      font-family: var(--f-body); font-size: 10px; font-weight: 500;
-      padding: 1px 4px 2px; border-radius: 3px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.45;
+    /* Day number circle */
+    .cal-fc-num {
+      font-family: var(--f-mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--ink-2);
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      flex-shrink: 0;
+      line-height: 1;
     }
-    .cal-chip[data-tag="prace"]     { background: var(--c-prace-bg);  color: var(--c-prace); }
-    .cal-chip[data-tag="rodina"]    { background: var(--c-rodina-bg); color: var(--c-rodina); }
-    .cal-chip[data-tag="domacnost"] { background: var(--c-dom-bg);    color: var(--c-dom); }
-    .cal-chip[data-tag="ostatni"]   { background: var(--c-ost-bg);    color: var(--c-ost); }
-    /* Task chips on desktop: outlined style, no fill — visually distinct from event chips */
-    .cal-chip.task-chip { background: transparent !important; border: 1px solid; opacity: .82; }
-    .cal-more { font-family: var(--f-mono); font-size: 9px; color: var(--ink-3); display: none; padding: 0 4px; }
+    .cal-fc.is-today .cal-fc-num { background: var(--primary); color: #fff; }
+    .cal-fc.off      .cal-fc-num { color: var(--ink-3); }
+    .cal-fc.wknd:not(.is-today) .cal-fc-num { color: rgba(185,48,102,.75); }
 
-    /* Month title tiny doodle sparkle */
-    .cal-title-wrap { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
-    @media (min-width: 720px) { .cal-title-wrap { justify-content: flex-start; } }
-    .cal-title-spark { color: var(--primary); opacity: .55; flex-shrink: 0; }
+    /* Items container */
+    .cal-fc-items {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5px;
+      width: 100%;
+    }
 
-    /* Desktop calendar overrides */
+    /* Event row: colored dash + title */
+    .cal-fc-ev {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      overflow: hidden;
+    }
+    .cal-fc-ev-dash {
+      width: 8px;
+      height: 2.5px;
+      border-radius: 1.5px;
+      flex-shrink: 0;
+    }
+    .cal-fc-ev-name {
+      font-family: var(--f-body);
+      font-size: 9.5px;
+      color: var(--ink);
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    /* Task row: colored dot + title */
+    .cal-fc-task {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      overflow: hidden;
+    }
+    .cal-fc-task-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cal-fc-task-dot.done-ring {
+      background: transparent !important;
+      border-width: 1.5px;
+      border-style: solid;
+    }
+    .cal-fc-task-name {
+      font-family: var(--f-body);
+      font-size: 9.5px;
+      color: var(--ink);
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .cal-fc-task-name.is-done { opacity: .4; text-decoration: line-through; }
+
+    /* Birthday */
+    .cal-fc-bday {
+      font-family: var(--f-hand);
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--c-rodina);
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    /* Holiday */
+    .cal-fc-holiday {
+      font-family: var(--f-hand);
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--c-dom);
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    /* Nameday (dimmer than birthday) */
+    .cal-fc-nd {
+      font-family: var(--f-hand);
+      font-size: 8.5px;
+      color: var(--primary);
+      opacity: .6;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    /* Overflow indicator */
+    .cal-fc-more {
+      font-family: var(--f-mono);
+      font-size: 8.5px;
+      color: var(--ink-3);
+      line-height: 1;
+      align-self: flex-start;
+      padding-left: 2px;
+    }
+
+    /* Desktop overrides */
     @media (min-width: 720px) {
-      .cal-body  { padding: 12px 14px 0; }
+      .cal-grid-wrap  { padding: 2px 14px 16px; }
+      .cal-grid-dow span { font-size: 12px; padding: 4px 0 6px; }
       .cal-title { font-size: 28px; text-align: left; }
-      .cal-cells { grid-auto-rows: 108px; border-radius: 10px; }
-      .cal-cell  { height: 108px; padding: 7px 3px 4px; align-items: flex-start; }
-      .cal-dn    { margin-left: 2px; }
-      .cal-evs   { display: none; }
-      .cal-tc    { display: none; }
-      .cal-chips { display: flex; }
-      .cal-more  { display: block; }
+      .cal-fc { min-height: 108px; padding: 8px 5px 6px; align-items: flex-start; gap: 3px; }
+      .cal-fc-num { font-size: 12.5px; width: 24px; height: 24px; margin-left: 1px; }
+      .cal-fc-ev-name, .cal-fc-task-name { font-size: 10.5px; }
+      .cal-fc-bday  { font-size: 10.5px; }
+      .cal-fc-nd    { font-size: 9.5px; }
+      .cal-fc-more  { font-size: 9.5px; }
+      .cal-fc-items { gap: 2px; }
     }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1161,7 +1204,7 @@
         </div>
       </div>
       <div id="js-cal-focus" class="cal-focus-wrap"></div>
-      <div id="js-cal-mini"  class="cal-mini-wrap"></div>
+      <div id="js-cal-grid"></div>
     </div><!-- /v-mesic -->
 
     <!-- ─── POZNÁMKY ─── -->
@@ -1772,8 +1815,10 @@ function renderMesic() {
 
     let metaHTML = '';
     if (meta.holiday) metaHTML += `<span class="fc-holiday">🎉 ${meta.holiday}</span>`;
-    if (meta.bday)    metaHTML += `<span class="fc-bday">🎂 ${meta.bday.name}</span>`;
-    else if (meta.nameday) metaHTML += `<span class="fc-svatek">✦ ${meta.nameday}</span>`;
+    if (meta.bday) {
+      const bdayName = meta.bday.firstName + (meta.bday.lastName ? ` ${meta.bday.lastName}` : '');
+      metaHTML += `<span class="fc-bday">🎂 ${bdayName}</span>`;
+    } else if (meta.nameday) metaHTML += `<span class="fc-svatek">✦ ${meta.nameday}</span>`;
 
     const evHTML = evs.slice(0, role === 'today' ? 5 : 3).map(e =>
       `<div class="fc-ev-row" style="border-left-color:${CAT[e.tag]?.color||'#999'}">
@@ -1813,82 +1858,92 @@ function renderMesic() {
     card.addEventListener('click', () => openDaySheet(card.dataset.date));
   });
 
-  /* ── mini month grid ── */
+  /* ── full month grid ── */
   const first  = new Date(y, m, 1);
   const last   = new Date(y, m + 1, 0).getDate();
   const rawDow = first.getDay();
   const offset = rawDow === 0 ? 6 : rawDow - 1;
 
-  const now7   = now.getDay() === 0 ? 6 : now.getDay() - 1; // Mon-indexed weekday of today
+  const now7      = now.getDay() === 0 ? 6 : now.getDay() - 1;
   const weekStart = new Date(now); weekStart.setDate(now.getDate() - now7);
   const weekEnd   = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
 
-  let miniHtml = `<div class="cal-mini-label">${czMon[m]} ${y}</div>
-  <div class="cal-mini-dow">
-    <span>Po</span><span>Út</span><span>St</span><span>Čt</span><span>Pá</span>
-    <span class="wknd">So</span><span class="wknd">Ne</span>
+  const czDow = ['Po','Út','St','Čt','Pá','So','Ne'];
+  let gridHtml = `<div class="cal-grid-wrap">
+  <div class="cal-grid-dow">
+    ${czDow.map((d, i) => `<span${i >= 5 ? ' class="wknd"' : ''}>${d}</span>`).join('')}
   </div>
-  <div class="cal-mini-grid">`;
+  <div class="cal-grid">`;
 
-  for (let i = 0; i < offset; i++) miniHtml += `<div class="d-mini-cell off"></div>`;
+  for (let i = 0; i < offset; i++) {
+    gridHtml += `<div class="cal-fc off"><div class="cal-fc-num"></div></div>`;
+  }
 
   for (let dd = 1; dd <= last; dd++) {
-    const cd   = new Date(y, m, dd);
-    const cds  = dStr(cd);
-    const col  = (offset + dd - 1) % 7;
-    const isWknd  = col >= 5;
+    const cd      = new Date(y, m, dd);
+    const cds     = dStr(cd);
+    const colIdx  = (offset + dd - 1) % 7;
+    const isWknd  = colIdx >= 5;
     const isToday = cds === todStr;
-    const isThisW = cd >= weekStart && cd <= weekEnd && !isToday;
+    const isCurW  = cd >= weekStart && cd <= weekEnd;
 
+    const meta              = getDayMeta(cds);
     const { evs, taskList } = getDayItems(cds);
-    const active = taskList.filter(t => !t.done);
-    const done   = taskList.filter(t =>  t.done);
-    const total  = evs.length + taskList.length;
 
-    const cls = ['d-mini-cell',
-      isToday   ? 'd-today'    : '',
-      isThisW   ? 'd-this-week': '',
-      isWknd    ? 'wknd'       : '',
+    const cls = ['cal-fc',
+      isToday ? 'is-today' : '',
+      isWknd  ? 'wknd'     : '',
+      isCurW  ? 'cur-week' : '',
     ].filter(Boolean).join(' ');
 
-    let cellContent = '';
-    if (total > 0 && total <= 3) {
-      // Text preview mode: show event titles + task names
-      const evItems = evs.slice(0, 2).map(e =>
-        `<div class="d-mini-ev-item" style="border-left-color:${CAT[e.tag]?.color||'#999'}">${e.title}</div>`
-      ).join('');
-      const taskItems = taskList.slice(0, 2).map(t => {
-        const col = CAT[t.tag]?.color || '#999';
-        const dotStyle = t.done ? `border:1px solid ${col};background:transparent` : `background:${col}`;
-        return `<div class="d-mini-task-item">
-          <span class="d-mini-task-dot" style="${dotStyle}"></span>
-          <span>${t.title}</span>
-        </div>`;
-      }).join('');
-      cellContent = evItems + taskItems;
-    } else if (total > 3) {
-      // Compact bars + dots mode for busy days
-      const bars = evs.slice(0, 3).map(e =>
-        `<div class="d-mini-bar" style="background:${CAT[e.tag]?.color||'#999'}"></div>`).join('');
-      const tdots = [...active.map(t =>
-        `<span class="d-mini-dot" style="background:${CAT[t.tag]?.color||'#999'}"></span>`),
-        ...done.map(t =>
-        `<span class="d-mini-dot ring" style="border-color:${CAT[t.tag]?.color||'#999'}"></span>`)
-      ].slice(0, 5).join('');
-      cellContent = (bars ? `<div class="d-mini-bars">${bars}</div>` : '')
-                  + (tdots ? `<div class="d-mini-dots">${tdots}</div>` : '');
+    const rows = [];
+
+    if (meta.holiday) {
+      rows.push(`<div class="cal-fc-holiday">${meta.holiday}</div>`);
     }
 
-    miniHtml += `<div class="${cls}" data-date="${cds}">
-      <div class="d-mini-num">${dd}</div>
-      ${cellContent}
+    evs.forEach(e => {
+      const c = CAT[e.tag]?.color || '#999';
+      rows.push(`<div class="cal-fc-ev">
+        <span class="cal-fc-ev-dash" style="background:${c}"></span>
+        <span class="cal-fc-ev-name">${e.title}</span>
+      </div>`);
+    });
+
+    taskList.forEach(t => {
+      const c = CAT[t.tag]?.color || '#999';
+      rows.push(`<div class="cal-fc-task">
+        <span class="cal-fc-task-dot${t.done ? ' done-ring' : ''}" style="${t.done ? `border-color:${c}` : `background:${c}`}"></span>
+        <span class="cal-fc-task-name${t.done ? ' is-done' : ''}">${t.title}</span>
+      </div>`);
+    });
+
+    if (meta.bday) {
+      const nm = meta.bday.firstName + (meta.bday.lastName ? ` ${meta.bday.lastName}` : '');
+      rows.push(`<div class="cal-fc-bday">🎂 ${nm}</div>`);
+    } else if (meta.nameday) {
+      rows.push(`<div class="cal-fc-nd">✦ ${meta.nameday}</div>`);
+    }
+
+    const MAX = 3;
+    let itemsHTML = '';
+    if (rows.length > 0) {
+      const visible = rows.slice(0, MAX).join('');
+      const more    = rows.length > MAX
+        ? `<div class="cal-fc-more">+${rows.length - MAX}</div>` : '';
+      itemsHTML = `<div class="cal-fc-items">${visible}${more}</div>`;
+    }
+
+    gridHtml += `<div class="${cls}" data-date="${cds}">
+      <div class="cal-fc-num">${dd}</div>
+      ${itemsHTML}
     </div>`;
   }
 
-  miniHtml += '</div>';
-  $('js-cal-mini').innerHTML = miniHtml;
+  gridHtml += `</div></div>`;
+  $('js-cal-grid').innerHTML = gridHtml;
 
-  $('js-cal-mini').querySelectorAll('.d-mini-cell:not(.off)').forEach(cell => {
+  $('js-cal-grid').querySelectorAll('.cal-fc:not(.off)').forEach(cell => {
     cell.addEventListener('click', () => openDaySheet(cell.dataset.date));
   });
 }
