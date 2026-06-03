@@ -574,15 +574,16 @@
       gap: 12px;
     }
     .focus-card {
-      position: relative; z-index: 0;
+      position: relative;
       padding: 10px 12px 32px; display: flex; flex-direction: column;
+      border-radius: 10px; border: 1px solid rgba(0,0,0,.09);
     }
-    .focus-card.fc-today { padding: 16px 16px 52px; }
+    .focus-card.fc-today {
+      padding: 16px 16px 52px;
+      border-color: rgba(185,48,102,.35);
+      background: rgba(185,48,102,.04);
+    }
     .focus-card.fc-side  { opacity: .75; }
-    .doodle-frame {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; overflow: visible; border-radius: 9px;
-    }
     .fc-top { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1px; }
     .fc-dow-wrap { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
     .fc-dow { font-family: var(--f-hand); font-size: 13px; font-weight: 700; color: var(--ink-2); line-height: 1.2; }
@@ -1613,19 +1614,6 @@ function renderMesic() {
     };
   }
 
-  /* ── doodle SVG border — very gentle hand-drawn feel, ~1px wobble ── */
-  function doodleFrame(role) {
-    const s = role === 'today' ? 0.5 : 0.75;
-    const c = role === 'today' ? '#b93066' : '#bbb';
-    const o = role === 'today' ? '.55' : '.28';
-    return `<svg class="doodle-frame" viewBox="0 0 100 100" fill="none" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M5 5 C30 4.2,60 5.6,95 5" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-      <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-      <path d="M95 95 C70 95.8,40 94.4,5 95" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-      <path d="M5 95 C4.2 70,3.6 40,5 5" stroke="${c}" stroke-width="${s}" stroke-linecap="round" opacity="${o}"/>
-    </svg>`;
-  }
-
   /* ── task dot rows per category ── */
   function taskDotsHTML(taskList, role) {
     if (!taskList.length) return '';
@@ -1687,7 +1675,6 @@ function renderMesic() {
     const cardClass = `focus-card fc-${role === 'today' ? 'today' : 'side'}`;
 
     return `<div class="${cardClass}" data-date="${ds}">
-      ${doodleFrame(role)}
       <div class="fc-top">
         <div class="fc-dow-wrap">
           <span class="fc-dow">${dow}</span>
