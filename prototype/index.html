@@ -795,12 +795,13 @@
 
     .bday-tile-name  { font-family: var(--f-hand); font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.1; }
     .bday-tile-age   { font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-3); }
+    .bday-tile-type  { font-family: var(--f-mono); font-size: 9px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; }
     .bday-tile-badge { font-family: var(--f-hand); font-size: 12px; font-weight: 700; margin-top: 3px; }
     .bday-tile-badge.soon { color: var(--primary); }
     .bday-tile-badge.near { color: var(--c-rodina); }
     .bday-tile-badge.far  { color: var(--ink-3); }
 
-    /* ── Contacts management list ── */
+    /* ── Contacts management table ── */
     .bday-contacts { padding: 0 20px 80px; }
     .bday-contacts-hdr {
       display: flex; align-items: center; justify-content: space-between;
@@ -808,26 +809,36 @@
     }
     .bday-contacts-title { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--ink-2); }
     .bday-contacts-count { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); }
-    .bday-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.055);
+
+    .bday-table { width: 100%; border-collapse: collapse; }
+    .bday-table thead th {
+      font-family: var(--f-mono); font-size: 10px; font-weight: 600; color: var(--ink-3);
+      text-transform: uppercase; letter-spacing: .05em;
+      text-align: left; padding: 4px 6px 8px; border-bottom: 1px solid var(--border);
     }
-    .bday-row-chip {
-      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--f-display); font-size: 10px; font-weight: 800;
+    .bday-table thead th:last-child { width: 30px; }
+    .bday-trow { border-bottom: 1px solid rgba(0,0,0,.042); }
+    .bday-trow:last-child { border-bottom: none; }
+    .bday-trow td { padding: 3px 4px; vertical-align: middle; }
+    .bday-trow td:first-child { padding-left: 0; }
+    .bday-cell-in {
+      width: 100%; font-family: var(--f-hand); font-size: 14px; font-weight: 700; color: var(--ink);
+      border: none; border-bottom: 1.5px solid transparent; padding: 5px 5px 4px;
+      background: transparent; outline: none; border-radius: 4px 4px 0 0;
+      transition: border-color .15s, background .12s;
     }
-    .bday-row-info { flex: 1; min-width: 0; }
-    .bday-row-name { font-family: var(--f-hand); font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.2; }
-    .bday-row-date { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-top: 1px; }
-    .bday-row-actions { display: flex; gap: 2px; flex-shrink: 0; }
-    .bday-row-btn {
-      width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent;
+    .bday-cell-in:focus { border-bottom-color: var(--primary); background: rgba(185,48,102,.04); }
+    .bday-cell-nd {
+      font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+      white-space: nowrap; padding: 4px 6px;
+    }
+    .bday-cell-date { font-family: var(--f-mono) !important; font-weight: 400 !important; font-size: 12px !important; }
+    .bday-row-btn.del {
+      width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 13px; color: var(--ink-3); transition: background .12s;
+      font-size: 11px; color: var(--ink-3); opacity: .55; transition: opacity .12s, background .12s;
     }
-    .bday-row-btn:hover { background: rgba(0,0,0,.06); }
-    .bday-row-btn.del:hover { background: rgba(196,97,74,.1); }
+    .bday-row-btn.del:hover { opacity: 1; background: rgba(196,97,74,.1); color: #c4614a; }
     .bday-add-row {
       display: flex; align-items: center; gap: 10px; padding: 12px 0 4px;
       color: var(--primary); font-family: var(--f-hand); font-size: 15px; font-weight: 700;
@@ -863,6 +874,9 @@
 
     .bday-field { margin-bottom: 18px; }
     .bday-field-lbl { font-family: var(--f-hand); font-size: 16px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; display: block; }
+    .bday-optional { font-weight: 400; font-size: 12px; color: var(--ink-3); }
+    .bday-name-row { display: flex; gap: 14px; }
+    .bday-name-row > div { flex: 1; min-width: 0; }
     .bday-field input[type="text"], .bday-field input[type="number"] {
       width: 100%; font-family: var(--f-body); font-size: 17px; color: var(--ink);
       border: none; border-bottom: 2px solid var(--border); padding: 6px 0 10px;
@@ -1227,9 +1241,15 @@
   <div class="sheet">
     <div class="sheet-pill"></div>
     <div class="sheet-title" id="js-bday-overlay-title">Nové narozeniny</div>
-    <div class="bday-field">
-      <label class="bday-field-lbl">Jméno</label>
-      <input type="text" id="js-bday-name" placeholder="Kdo slaví?" autocomplete="off" spellcheck="false"/>
+    <div class="bday-field bday-name-row">
+      <div>
+        <label class="bday-field-lbl">Jméno</label>
+        <input type="text" id="js-bday-firstname" placeholder="Jméno" autocomplete="off" spellcheck="false"/>
+      </div>
+      <div>
+        <label class="bday-field-lbl">Příjmení <small class="bday-optional">(nepovinné)</small></label>
+        <input type="text" id="js-bday-lastname" placeholder="Příjmení" autocomplete="off" spellcheck="false"/>
+      </div>
     </div>
     <div class="bday-field">
       <label class="bday-field-lbl">Datum narození</label>
@@ -1321,12 +1341,12 @@ const DEFAULT_NOTES = [
 ];
 
 const DEFAULT_BIRTHDAYS = [
-  { id:1, name:'Markéta',  month:6,  day:1,  yearBorn:1985 },
-  { id:2, name:'Honzík',   month:8,  day:15, yearBorn:2020 },
-  { id:3, name:'Maminka',  month:5,  day:15, yearBorn:1958 },
-  { id:4, name:'Táta',     month:10, day:22, yearBorn:1955 },
-  { id:5, name:'Terka',    month:3,  day:7,  yearBorn:1990 },
-  { id:6, name:'Lukáš',    month:7,  day:30, yearBorn:1987 },
+  { id:1, firstName:'Markéta', lastName:'',       day:1,  month:6,  yearBorn:1985, anniversaries:[] },
+  { id:2, firstName:'Honzík',  lastName:'',       day:15, month:8,  yearBorn:2020, anniversaries:[] },
+  { id:3, firstName:'Maminka', lastName:'',       day:15, month:5,  yearBorn:1958, anniversaries:[] },
+  { id:4, firstName:'Táta',    lastName:'',       day:22, month:10, yearBorn:1955, anniversaries:[] },
+  { id:5, firstName:'Terka',   lastName:'',       day:7,  month:3,  yearBorn:1990, anniversaries:[] },
+  { id:6, firstName:'Lukáš',   lastName:'Novák',  day:30, month:7,  yearBorn:1987, anniversaries:[] },
 ];
 
 const events = [
@@ -1366,7 +1386,17 @@ function loadBdays() {
   try {
     const raw = localStorage.getItem(STORE_BDAYS);
     if (!raw) return;
-    birthdays = JSON.parse(raw);
+    birthdays = JSON.parse(raw).map(b => {
+      // migrate old {name} → {firstName, lastName}
+      if (b.name && !b.firstName) {
+        const parts = b.name.trim().split(/\s+/);
+        b.firstName = parts[0] || '';
+        b.lastName  = parts.slice(1).join(' ') || '';
+        delete b.name;
+      }
+      if (!b.anniversaries) b.anniversaries = [];
+      return b;
+    });
   } catch(e) { /* use defaults */ }
 }
 
@@ -2132,10 +2162,10 @@ function saveTask() {
 
 /* ─── RENDER NAROZENINY ─── */
 function renderNarozeniny() {
-  const now   = new Date();
-  const todM  = now.getMonth() + 1;
-  const todD  = now.getDate();
-  const todY  = now.getFullYear();
+  const now  = new Date();
+  const todM = now.getMonth() + 1;
+  const todD = now.getDate();
+  const todY = now.getFullYear();
 
   function daysUntil(month, day) {
     const next = new Date(todY, month - 1, day);
@@ -2147,30 +2177,38 @@ function renderNarozeniny() {
     return ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'][m-1];
   }
 
-  function bdayIllus(name, col) {
-    let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
-    const t = h % 4;
+  function lookupNameday(firstName) {
+    const fn = firstName.trim().toLowerCase();
+    if (!fn) return null;
+    for (const [key, val] of Object.entries(NAMEDAYS)) {
+      const names = val.split(/[\s,()a]+/).map(n => n.toLowerCase()).filter(n => n.length > 1);
+      if (names.includes(fn)) {
+        const [m, d] = key.split('-').map(Number);
+        return { month: m, day: d };
+      }
+    }
+    return null;
+  }
+
+  function parseBdayInput(str) {
+    const m = str.trim().match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+    if (!m) return null;
+    const day = parseInt(m[1]), month = parseInt(m[2]), year = m[3] ? parseInt(m[3]) : null;
+    if (day < 1 || day > 31 || month < 1 || month > 12) return null;
+    return { day, month, year };
+  }
+
+  function formatBdayInput(b) {
+    if (!b.day || !b.month) return '';
+    const d = String(b.day).padStart(2,'0');
+    const mo = String(b.month).padStart(2,'0');
+    return b.yearBorn ? `${d}.${mo}.${b.yearBorn}` : `${d}.${mo}.`;
+  }
+
+  function bdayIllus(type, col) {
     const attr = `fill="none" stroke="${col}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"`;
     const svg = (body) => `<svg class="bday-illus" viewBox="0 0 44 44" ${attr}>${body}</svg>`;
-    // 0: cake
-    if (t === 0) return svg(
-      `<path d="M6 40 L6 28 Q6 26 8 26 L36 26 Q38 26 38 28 L38 40 Q38 42 36 42 L8 42 Q6 42 6 40Z"/>` +
-      `<path d="M6 26 Q9 22 12 26 Q15 22 18 26 Q21 22 24 26 Q27 22 30 26 Q33 22 36 26"/>` +
-      `<line x1="22" y1="14" x2="22" y2="26"/>` +
-      `<path d="M22 14 C20 10,25 8,22 14Z"/>` +
-      `<circle cx="14" cy="35" r="1.5"/><circle cx="22" cy="36" r="1.5"/><circle cx="30" cy="35" r="1.5"/>`
-    );
-    // 1: gift
-    if (t === 1) return svg(
-      `<rect x="7" y="22" width="30" height="20" rx="2"/>` +
-      `<rect x="5" y="15" width="34" height="8" rx="2"/>` +
-      `<line x1="22" y1="15" x2="22" y2="42"/>` +
-      `<line x1="5" y1="19" x2="39" y2="19"/>` +
-      `<path d="M22 15 C19 11,13 9,14 5 C15 1,21 3,22 9"/>` +
-      `<path d="M22 15 C25 11,31 9,30 5 C29 1,23 3,22 9"/>`
-    );
-    // 2: flower
-    if (t === 2) return svg(
+    if (type === 'nameday') return svg(
       `<circle cx="22" cy="22" r="4.5"/>` +
       `<ellipse cx="22" cy="12" rx="3" ry="5"/>` +
       `<ellipse cx="22" cy="12" rx="3" ry="5" transform="rotate(60 22 22)"/>` +
@@ -2179,12 +2217,20 @@ function renderNarozeniny() {
       `<ellipse cx="22" cy="12" rx="3" ry="5" transform="rotate(240 22 22)"/>` +
       `<ellipse cx="22" cy="12" rx="3" ry="5" transform="rotate(300 22 22)"/>`
     );
-    // 3: balloon
-    return svg(
+    if (type === 'anniversary') return svg(
       `<path d="M22 5 C13 5,8 12,8 19 C8 27,14 33,22 33 C30 33,36 27,36 19 C36 12,31 5,22 5Z"/>` +
       `<path d="M18 33 Q22 37 26 33"/>` +
       `<path d="M22 37 C20 40,24 42,22 44"/>` +
       `<path d="M13 13 C13 10,17 9,17 12" stroke-width="1" opacity=".4"/>`
+    );
+    // birthday: gift
+    return svg(
+      `<rect x="7" y="22" width="30" height="20" rx="2"/>` +
+      `<rect x="5" y="15" width="34" height="8" rx="2"/>` +
+      `<line x1="22" y1="15" x2="22" y2="42"/>` +
+      `<line x1="5" y1="19" x2="39" y2="19"/>` +
+      `<path d="M22 15 C19 11,13 9,14 5 C15 1,21 3,22 9"/>` +
+      `<path d="M22 15 C25 11,31 9,30 5 C29 1,23 3,22 9"/>`
     );
   }
 
@@ -2198,16 +2244,31 @@ function renderNarozeniny() {
     return palette[h % palette.length];
   }
 
-  const sorted = [...birthdays].sort((a, b) => daysUntil(a.month, a.day) - daysUntil(b.month, b.day));
-  const todays  = sorted.filter(b => b.month === todM && b.day === todD);
-  const upcoming= sorted.filter(b => {
-    if (b.month === todM && b.day === todD) return false;
-    const d = daysUntil(b.month, b.day);
-    return d <= 30;
+  // Build flat events list: birthday + nameday + anniversary for each contact
+  const allEvents = [];
+  for (const b of birthdays) {
+    const fullName = (b.firstName + (b.lastName ? ' ' + b.lastName : '')).trim();
+    allEvents.push({ type:'birthday', firstName:b.firstName, lastName:b.lastName||'', fullName, month:b.month, day:b.day, yearBorn:b.yearBorn, id:b.id });
+    const nd = lookupNameday(b.firstName);
+    if (nd) {
+      allEvents.push({ type:'nameday', firstName:b.firstName, lastName:b.lastName||'', fullName, month:nd.month, day:nd.day, id:b.id });
+    }
+    if (b.anniversaries) {
+      b.anniversaries.forEach((ann, i) => {
+        allEvents.push({ type:'anniversary', firstName:b.firstName, lastName:b.lastName||'', fullName, month:ann.month, day:ann.day, yearStart:ann.year, annTitle:ann.title||'výročí', id:b.id, annIdx:i });
+      });
+    }
+  }
+
+  const sortedEvs  = [...allEvents].sort((a, b) => daysUntil(a.month, a.day) - daysUntil(b.month, b.day));
+  const todays     = sortedEvs.filter(ev => ev.month === todM && ev.day === todD);
+  const upcoming   = sortedEvs.filter(ev => {
+    if (ev.month === todM && ev.day === todD) return false;
+    return daysUntil(ev.month, ev.day) <= 30;
   });
-  const rest    = sorted.filter(b => {
-    if (b.month === todM && b.day === todD) return false;
-    return daysUntil(b.month, b.day) > 30;
+  const rest       = sortedEvs.filter(ev => {
+    if (ev.month === todM && ev.day === todD) return false;
+    return daysUntil(ev.month, ev.day) > 30;
   });
 
   function secHeader(label, badge) {
@@ -2219,57 +2280,60 @@ function renderNarozeniny() {
     </div>`;
   }
 
-  function tileHTML(b, isToday) {
-    const days    = isToday ? 0 : daysUntil(b.month, b.day);
-    const col     = avatarColor(b.name);
-    const age     = b.yearBorn ? (todY - b.yearBorn) : null;
-    const nextAge = b.yearBorn ? (todY - b.yearBorn + (days > 0 ? 1 : 0)) : null;
-    const dateTxt = `${b.day}. ${czMonthShort(b.month)}.`;
-    const cls     = isToday ? 'soon' : days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
-    const badge   = isToday ? '🎂 dnes' : days === 1 ? 'zítra' : days <= 14 ? `za ${days} dní` : dateTxt;
-    const firstName = b.name.split(' ')[0];
-    const extraCls  = isToday ? ' today-tile' : '';
-    const ageShow   = isToday ? age : nextAge;
-    const illusCol  = isToday ? '#b93066' : col.fg;
+  function tileHTML(ev, isToday) {
+    const days = isToday ? 0 : daysUntil(ev.month, ev.day);
+    const col  = avatarColor(ev.fullName);
+    const illusCol = isToday ? '#b93066' : col.fg;
+    const dateTxt  = `${ev.day}. ${czMonthShort(ev.month)}.`;
+    const cls      = isToday ? 'soon' : days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
+    const todayEmoji = ev.type === 'nameday' ? '🌸 dnes' : ev.type === 'anniversary' ? '🎈 dnes' : '🎂 dnes';
+    const badge    = isToday ? todayEmoji : days === 1 ? 'zítra' : days <= 14 ? `za ${days} dní` : dateTxt;
+    const extraCls = isToday ? ' today-tile' : '';
+    let age = null;
+    if (ev.type === 'birthday' && ev.yearBorn) age = todY - ev.yearBorn + (days > 0 ? 1 : 0);
+    if (ev.type === 'anniversary' && ev.yearStart) age = todY - ev.yearStart + (days > 0 ? 1 : 0);
+    const typeLbl = ev.type === 'nameday' ? 'svátek' : ev.type === 'anniversary' ? ev.annTitle : '';
     return `<div class="bday-tile${extraCls}">
       <div class="bday-illus-wrap" style="background:${isToday ? 'rgba(185,48,102,.1)' : col.bg}">
-        ${bdayIllus(b.name, illusCol)}
+        ${bdayIllus(ev.type, illusCol)}
       </div>
-      <div class="bday-tile-name">${firstName}</div>
-      ${ageShow ? `<div class="bday-tile-age">${ageShow} let</div>` : ''}
+      <div class="bday-tile-name">${ev.firstName}</div>
+      ${typeLbl ? `<div class="bday-tile-type">${typeLbl}</div>` : ''}
+      ${age ? `<div class="bday-tile-age">${age} let</div>` : ''}
       <span class="bday-tile-badge ${cls}">${badge}</span>
     </div>`;
   }
 
   function gridSection(label, badge, list, isToday) {
     if (!list.length) return '';
-    return secHeader(label, badge) + `<div class="bday-grid">${list.map(b => tileHTML(b, isToday)).join('')}</div>`;
+    return secHeader(label, badge) + `<div class="bday-grid">${list.map(ev => tileHTML(ev, isToday)).join('')}</div>`;
   }
 
   function renderBdayList() {
     const bySorted = [...birthdays].sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
     const rows = bySorted.map(b => {
-      const col = avatarColor(b.name);
-      const ini = b.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-      const yr  = b.yearBorn ? ` ${b.yearBorn}` : '';
-      return `<div class="bday-row">
-        <div class="bday-row-chip" style="background:${col.bg};color:${col.fg}">${ini}</div>
-        <div class="bday-row-info">
-          <div class="bday-row-name">${b.name}</div>
-          <div class="bday-row-date">${b.day}. ${czMonthShort(b.month)}.${yr}</div>
-        </div>
-        <div class="bday-row-actions">
-          <button class="bday-row-btn edit" data-bid="${b.id}" aria-label="Upravit">✏️</button>
-          <button class="bday-row-btn del"  data-bid="${b.id}" aria-label="Smazat">🗑️</button>
-        </div>
-      </div>`;
+      const nd = lookupNameday(b.firstName);
+      const ndStr = nd ? `${nd.day}. ${czMonthShort(nd.month)}.` : '—';
+      const bdayStr = formatBdayInput(b);
+      return `<tr class="bday-trow" data-bid="${b.id}">
+        <td><input class="bday-cell-in" data-field="firstName" value="${b.firstName}" placeholder="Jméno"/></td>
+        <td><input class="bday-cell-in" data-field="lastName"  value="${b.lastName||''}" placeholder="Příjmení"/></td>
+        <td class="bday-cell-nd">${ndStr}</td>
+        <td><input class="bday-cell-in bday-cell-date" data-field="bday" value="${bdayStr}" placeholder="dd.mm.rrrr"/></td>
+        <td><button class="bday-row-btn del" data-bid="${b.id}" aria-label="Smazat">✕</button></td>
+      </tr>`;
     }).join('');
     return `<div class="bday-contacts">
       <div class="bday-contacts-hdr">
-        <span class="bday-contacts-title">Všichni</span>
-        <span class="bday-contacts-count">${bySorted.length} kontaktů</span>
+        <span class="bday-contacts-title">Kontakty</span>
+        <span class="bday-contacts-count">${bySorted.length} záznamů</span>
       </div>
-      ${rows}
+      <table class="bday-table">
+        <thead><tr>
+          <th>Jméno</th><th>Příjmení</th><th>Svátek</th><th>Narozeniny</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
       <button class="bday-add-row" id="js-bday-add-inline">
         <div class="bday-add-row-icon">+</div>
         Přidat kontakt
@@ -2280,7 +2344,7 @@ function renderNarozeniny() {
   let html = '';
   if (todays.length)   html += gridSection('🎉 Dnes slaví', null, todays, true);
   if (upcoming.length) html += gridSection('Nadcházející', 'příštích 30 dní', upcoming, false);
-  if (rest.length)     html += gridSection('Všechny narozeniny', null, rest, false);
+  if (rest.length)     html += gridSection('Všechny', null, rest, false);
   if (!birthdays.length) {
     html = `<div class="empty" style="margin-top:40px">
       <div class="empty-icon">🎂</div>
@@ -2406,13 +2470,14 @@ function openBdayModal() {
   editingBdayId = null;
   $('js-bday-overlay-title').textContent = 'Nové narozeniny';
   $('js-bday-overlay').classList.add('open');
-  $('js-bday-name').value  = '';
-  $('js-bday-day').value   = '';
-  $('js-bday-month').value = '';
-  $('js-bday-year').value  = '';
+  $('js-bday-firstname').value = '';
+  $('js-bday-lastname').value  = '';
+  $('js-bday-day').value       = '';
+  $('js-bday-month').value     = '';
+  $('js-bday-year').value      = '';
   $('js-bday-save').textContent = 'Přidat';
   $('js-bday-save').disabled = true;
-  setTimeout(() => $('js-bday-name').focus(), 320);
+  setTimeout(() => $('js-bday-firstname').focus(), 320);
 }
 
 function openBdayEdit(id) {
@@ -2421,13 +2486,14 @@ function openBdayEdit(id) {
   editingBdayId = id;
   $('js-bday-overlay-title').textContent = 'Upravit';
   $('js-bday-overlay').classList.add('open');
-  $('js-bday-name').value  = b.name;
-  $('js-bday-day').value   = b.day;
-  $('js-bday-month').value = b.month;
-  $('js-bday-year').value  = b.yearBorn || '';
+  $('js-bday-firstname').value = b.firstName || '';
+  $('js-bday-lastname').value  = b.lastName  || '';
+  $('js-bday-day').value       = b.day;
+  $('js-bday-month').value     = b.month;
+  $('js-bday-year').value      = b.yearBorn || '';
   $('js-bday-save').textContent = 'Uložit';
   $('js-bday-save').disabled = false;
-  setTimeout(() => $('js-bday-name').focus(), 320);
+  setTimeout(() => $('js-bday-firstname').focus(), 320);
 }
 
 function deleteBday(id) {
@@ -2442,16 +2508,17 @@ function closeBdayModal() {
 }
 
 function saveBday() {
-  const name  = $('js-bday-name').value.trim();
+  const firstName = $('js-bday-firstname').value.trim();
+  const lastName  = $('js-bday-lastname').value.trim();
   const day   = parseInt($('js-bday-day').value);
   const month = parseInt($('js-bday-month').value);
   const year  = parseInt($('js-bday-year').value) || null;
-  if (!name || !day || !month) return;
+  if (!firstName || !day || !month) return;
   if (editingBdayId !== null) {
     const b = birthdays.find(x => x.id === editingBdayId);
-    if (b) { b.name = name; b.day = day; b.month = month; b.yearBorn = year; }
+    if (b) { b.firstName = firstName; b.lastName = lastName; b.day = day; b.month = month; b.yearBorn = year; }
   } else {
-    birthdays.push({ id: Date.now(), name, month, day, yearBorn: year });
+    birthdays.push({ id: Date.now(), firstName, lastName, month, day, yearBorn: year, anniversaries: [] });
   }
   saveBdays();
   closeBdayModal();
@@ -2478,8 +2545,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cb = e.target.closest('.task-cb');
     if (cb) toggleDone(Number(cb.dataset.id));
     if (e.target.closest('.js-open-modal')) openModal();
-    const editBtn = e.target.closest('.bday-row-btn.edit');
-    if (editBtn) openBdayEdit(Number(editBtn.dataset.bid));
     const delBtn = e.target.closest('.bday-row-btn.del');
     if (delBtn) deleteBday(Number(delBtn.dataset.bid));
     if (e.target.closest('#js-bday-add-inline')) openBdayModal();
@@ -2510,16 +2575,63 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const bdayValidate = () => {
-    const ok = $('js-bday-name').value.trim() &&
+    const ok = $('js-bday-firstname').value.trim() &&
                $('js-bday-day').value &&
                $('js-bday-month').value;
     $('js-bday-save').disabled = !ok;
   };
-  ['js-bday-name','js-bday-day','js-bday-month','js-bday-year'].forEach(id => {
+  ['js-bday-firstname','js-bday-lastname','js-bday-day','js-bday-month','js-bday-year'].forEach(id => {
     $(id).addEventListener('input', bdayValidate);
   });
-  $('js-bday-name').addEventListener('keydown', e => { if (e.key === 'Enter') saveBday(); if (e.key === 'Escape') closeBdayModal(); });
+  $('js-bday-firstname').addEventListener('keydown', e => { if (e.key === 'Enter') $('js-bday-lastname').focus(); if (e.key === 'Escape') closeBdayModal(); });
   $('js-bday-save').addEventListener('click', saveBday);
+
+  /* inline table editing — save on change (fires after blur when value changed) */
+  let _bdayRenderTimer = null;
+  document.addEventListener('change', e => {
+    const inp = e.target.closest('.bday-cell-in');
+    if (!inp) return;
+    const row = inp.closest('.bday-trow');
+    if (!row) return;
+    const bid = Number(row.dataset.bid);
+    const b = birthdays.find(x => x.id === bid);
+    if (!b) return;
+    const field = inp.dataset.field;
+    if (field === 'firstName') {
+      b.firstName = inp.value.trim();
+      const ndCell = row.querySelector('.bday-cell-nd');
+      if (ndCell) {
+        // look up nameday inline without calling renderNarozeniny
+        const fn = b.firstName.toLowerCase();
+        let ndStr = '—';
+        for (const [key, val] of Object.entries(NAMEDAYS)) {
+          const names = val.split(/[\s,()a]+/).map(n => n.toLowerCase()).filter(n => n.length > 1);
+          if (names.includes(fn)) {
+            const [m, d] = key.split('-').map(Number);
+            const czM = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'][m-1];
+            ndStr = `${d}. ${czM}.`;
+            break;
+          }
+        }
+        ndCell.textContent = ndStr;
+      }
+    } else if (field === 'lastName') {
+      b.lastName = inp.value.trim();
+    } else if (field === 'bday') {
+      const m2 = inp.value.trim().match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+      if (m2) {
+        const day = parseInt(m2[1]), month = parseInt(m2[2]), year = m2[3] ? parseInt(m2[3]) : null;
+        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+          b.day = day; b.month = month; b.yearBorn = year;
+          const d2 = String(day).padStart(2,'0'), mo2 = String(month).padStart(2,'0');
+          inp.value = year ? `${d2}.${mo2}.${year}` : `${d2}.${mo2}.`;
+        }
+      }
+    }
+    saveBdays();
+    clearTimeout(_bdayRenderTimer);
+    _bdayRenderTimer = setTimeout(() => { if (S.view === 'narozeniny') renderNarozeniny(); }, 200);
+  });
 
   const inp = $('js-task-input');
   inp.addEventListener('input', e => {
