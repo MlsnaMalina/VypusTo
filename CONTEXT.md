@@ -9,77 +9,195 @@
 
 Česká rodinná PWA pro správu úkolů — **single-file HTML prototype** bez build stepu.
 Cílová skupina: česká rodina, primárně žena/máma jako hlavní uživatelka.
-Styl: doodle art, handwritten prvky, raspberry primary color.
+Styl: doodle art, handwritten prvky (Caveat font), raspberry primary color `#b93066`.
 
 **Soubor:** `C:\Users\merit\OneDrive\Desktop\AI\Ostatní\ToDov2\prototype\index.html`
-**Preview server:** `npx serve -p 3000 prototype` (konfig v `.claude/launch.json`)
-**Git:** inicializován v `C:\Users\merit\OneDrive\Desktop\AI\Ostatní\ToDov2\.git`
+**Preview server:** `.claude/launch.json` → `npx serve -p 3001 prototype` (worktree `beautiful-bardeen-e9e575`, port 3001)
+**Git branch:** `master`
+**Poslední commit:** `3050eef` — "Tabulka kontaktů: čitelný font + auto-svátky + editovatelné svátek pole"
+
+### Git worktree
+- Aktivní worktree: `claude/beautiful-bardeen-e9e575`
+- Pracovní soubor: `.claude/worktrees/beautiful-bardeen-e9e575/prototype/index.html`
+- Workflow: editovat hlavní soubor → `cp` do worktree → commit v worktree → commit v main
+
+```bash
+# sync main → worktree
+cp "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2/prototype/index.html" \
+   "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2/.claude/worktrees/beautiful-bardeen-e9e575/prototype/index.html"
+
+# commit v obou
+cd ".claude/worktrees/beautiful-bardeen-e9e575" && git add prototype/index.html && git commit -m "..."
+cd "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2" && git add prototype/index.html && git commit -m "..."
+```
 
 ---
 
 ## Design systém
 
-### Barvy (CSS custom properties)
+### Barvy
 ```css
---primary:     #b93066;   /* raspberry — hlavní akcent */
---primary-lt:  #fef0f6;   /* světlé pozadí pro primary */
+--primary:     #b93066;   /* raspberry */
+--primary-lt:  #fef0f6;
 --bg:          #ffffff;
 --bg-off:      #f7f7f7;
 --border:      #EBEBEB;
---border-faint:rgba(0,0,0,.055);
 --ink:         #111111;
 --ink-2:       #555555;
 --ink-3:       #999999;
-
-/* Kategorie */
---c-prace:     #1C3557;  --c-prace-bg:  #EDF1F6;   /* Práce — navy */
---c-rodina:    #C4614A;  --c-rodina-bg: #F9EDE9;   /* Rodina — terracotta */
---c-dom:       #4A7C59;  --c-dom-bg:    #EBF3EE;   /* Domácnost — green */
---c-ost:       #7A6E8A;  --c-ost-bg:    #F0EEF3;   /* Ostatní — purple-grey */
+--c-prace:     #1C3557;  --c-prace-bg:  #EDF1F6;
+--c-rodina:    #C4614A;  --c-rodina-bg: #F9EDE9;
+--c-dom:       #4A7C59;  --c-dom-bg:    #EBF3EE;
+--c-ost:       #7A6E8A;  --c-ost-bg:    #F0EEF3;
 ```
 
-### Fonty (4 typy, Google Fonts)
-- `--f-display`: **Syne 800** — hlavní nadpisy (datum, view tituly)
-- `--f-hand`:    **Caveat 700** — handwritten labels, sekce, kategorie
-- `--f-mono`:    **IBM Plex Mono** — časy, počty, kódy, timestamps
-- `--f-body`:    **Space Grotesk** — tělo textu, popisy
+### Fonty
+- `--f-display`: **Syne 800** — hlavní nadpisy
+- `--f-hand`:    **Caveat 700** — handwritten labels, sekce, kategorie, tile jména
+- `--f-mono`:    **IBM Plex Mono** — časy, počty, timestamps, datum v tabulce
+- `--f-body`:    **Space Grotesk** — tělo textu, jména v tabulce kontaktů
 
 ---
 
-## Architektura prototypu
+## Architektura
 
-### Breakpoint
-- `< 720px` → mobile layout (bottom nav)
-- `≥ 720px` → desktop layout (sidebar `232px`)
+- `< 720px` → mobile (bottom nav)
+- `≥ 720px` → desktop (sidebar 232px)
 
-### Views (5 tabů)
-1. **Dnes** (`v-dnes`) — dnešní události + dnešní úkoly, 2-column grid na desktopu
-2. **Měsíc** (`v-mesic`) — kalendář, doodle journaling styl
-3. **Úkoly** (`v-ukoly`) — mobile: time groups; desktop: 4 category columns
-4. **Poznámky** (`v-poznamky`) — placeholder
-5. **Narozeniny** (`v-narozeniny`) — placeholder
+### Views
+| View | ID | Stav |
+|------|-----|------|
+| Dnes | `v-dnes` | ✅ plně implementován |
+| Měsíc | `v-mesic` | ✅ focus strip + mini grid |
+| Úkoly | `v-ukoly` | ✅ mobile groups + desktop columns |
+| Poznámky | `v-poznamky` | ✅ implementován |
+| Narozeniny | `v-narozeniny` | ✅ tiles + inline tabulka + výročí |
 
-### Data model
+---
+
+## Data model
+
+### Úkoly
 ```js
-tasks = [
-  { id, title, tag: 'prace'|'rodina'|'domacnost'|'ostatni',
-    done: bool, date: 'today'|'tomorrow'|null, rec: 'none'|'daily'|'weekly'|'monthly'|'quarterly',
-    completedAt: Date|undefined }
-]
-events = [{ title, time, tag }]  // dnešní události (hardcoded)
-calExtra = { 'YYYY-MM-DD': [events] }  // extra události v kalendáři
-birthdays = [{ name, today: bool }]
+tasks = [{
+  id, title,
+  tag: 'prace' | 'rodina' | 'domacnost' | 'ostatni',
+  done: bool,
+  date: 'today' | 'tomorrow' | null,
+  rec: 'none' | 'daily' | 'weekly' | 'monthly' | 'quarterly',
+  completedAt: Date | undefined
+}]
 ```
 
-### CAT objekt
+### Narozeniny (NOVÝ formát)
 ```js
-const CAT = {
-  prace:     { label:'Práce',     color:'#1C3557' },
-  rodina:    { label:'Rodina',    color:'#C4614A' },
-  domacnost: { label:'Domácnost', color:'#4A7C59' },
-  ostatni:   { label:'Ostatní',   color:'#7A6E8A' },
-};
+birthdays = [{
+  id: number,                     // normalizován na číslo (loadBdays migruje staré string IDs)
+  firstName: string,
+  lastName: string,               // může být ''
+  day: number, month: number,     // datum narozenin
+  yearBorn: number | null,        // rok je nepovinný
+  anniversaries: [{               // výročí — může být []
+    title: string,                // popis (např. 'Potkali jsme se poprvé')
+    day: number, month: number,   // datum výročí
+    year: number | null,          // rok pro výpočet 'X let'
+  }],
+  namedayOverride: null | false | { day, month }
+  // null/undefined = auto z NAMEDAYS
+  // false = uživatel smazal
+  // {day,month} = manuálně nastaveno
+}]
 ```
+
+### Poznámky
+```js
+notes = [{
+  id, title, body,
+  tag: 'prace' | 'rodina' | 'domacnost' | 'ostatni',
+  pinned: bool,
+  createdAt: 'YYYY-MM-DD'
+}]
+```
+
+### localStorage
+| Klíč | Obsah |
+|------|-------|
+| `vypusto-tasks-v1` | tasks, `completedAt` jako ISO string |
+| `vypusto-bdays-v1` | birthdays v novém formátu |
+| `vypusto-notes-v1` | notes |
+
+---
+
+## Narozeniny view — architektura
+
+### Tile grid
+- Ilustrace jsou **type-based** (ne hash-based):
+  - 🎁 **gift** → narozeniny (`type:'birthday'`)
+  - 🌸 **flower** → svátek (`type:'nameday'`)
+  - 🎈 **balloon** → výročí (`type:'anniversary'`)
+- Každý kontakt generuje **více tiles** — birthday tile + nameday tile (pokud nalezen) + tile pro každé výročí
+- Sekce: "🎉 Dnes slaví" / "Nadcházející (30 dní)" / "Všechny"
+
+### Pomocné globální funkce
+```js
+lookupNamedayGlobal(firstName)   // reverse NAMEDAYS lookup; regex /[\s,()]+/ + filter 'a'
+getEffectiveNameday(b)           // respektuje namedayOverride
+formatNdStr(nd)                  // {day,month} → 'dd.mm.'
+parseNdStr(str)                  // 'dd.mm.' → {day,month} | null
+formatBdayInput(b)               // b → 'dd.mm.rrrr' nebo 'dd.mm.'
+parseBdayInput(str)              // 'dd.mm.rrrr' → {day,month,year} | null
+_czMonthShortGlobal(m)           // 1-12 → 'led','úno',...
+```
+
+### Inline tabulka kontaktů
+- Sloupce: **Jméno** / **Příjmení** / **Svátek** / **Narozeniny** / (edit ✎ + del ✕)
+- Fonty: Space Grotesk pro jméno/příjmení, IBM Plex Mono pro data
+- Svátek = editovatelný input; auto-hodnota jako placeholder; lze přepsat nebo smazat
+- Uložení: `change` event (po blur se změnou) → `saveBdays()` + debounced `renderNarozeniny()`
+- Edit (✎) → otevře modal s daty kontaktu + sekcí výročí
+
+### Modal (add/edit kontaktu)
+- **Nový kontakt**: Jméno + Příjmení + Datum narození (den/měsíc/rok)
+- **Editace**: + sekce Výročí (seznam + inline přidávání)
+  - Výročí: Popis + datum `dd.mm.rrrr` + tlačítko +
+  - Enter v Popisu → přeskočí na datum; Enter v datu → přidá
+  - ✕ u položky → smaže z `editingAnniversaries`
+- State: `editingBdayId` (null = nový), `editingAnniversaries` (kopie při otevření)
+
+---
+
+## Poznámky view — architektura
+
+- Filtry: Vše / Práce / Rodina / Domácnost / Ostatní
+- **Připnuté poznámky** (`.is-pinned`): zobrazují se vždy nahoře, mají 3-stranný doodle SVG rámeček (top/right/bottom — bez levé strany kvůli left-border)
+- Doodle SVG u pinnedů: 3 cesty, stroke barva = kategorie, width 0.55, opacity .4; `position:absolute; inset:0`
+- Note karta má `border-left: 3px solid [kategorie-barva]`
+- `.note-card-top`, `.note-body`, `.note-foot` mají `position:relative; z-index:1` (nad SVG)
+- Akce na note: klik → action overlay (pin/unpin, smazat)
+
+---
+
+## Měsíc view — focus strip
+
+- **3 karty** v gridu `1.65fr 1fr 1fr`, gap 12px
+- Zvýraznění: CSS border + background tint (bez doodle SVG):
+  ```css
+  .focus-card.fc-today { border-color: rgba(185,48,102,.35); background: rgba(185,48,102,.04); }
+  .focus-card { border: 1px solid rgba(0,0,0,.09); border-radius: 10px; }
+  ```
+- Padding: fc-today `16px 16px 52px`; fc-side `10px 12px 32px`
+- `doodleFrame()` funkce byla **smazána** (focus cards ji nepoužívají)
+
+---
+
+## Doodle SVG pravidla
+
+Doodle rámečky v aplikaci (note cards, bday tiles today):
+- viewBox `0 0 100 100`, `preserveAspectRatio="none"`, `position:absolute; inset:0`
+- 4 kubické křivky, kontrolní body ~1–2 jednotky od hrany
+- Today / primární: stroke `#b93066`, width `0.5–0.6`, opacity `.5–.55`
+- Ostatní: stroke `#bbb`, width `0.75`, opacity `.28`
+- Poznámkové karty: **pouze 3 strany** (top/right/bottom), začínají na x=8 (ne x=5) — levá strana je solid border kategorie
 
 ---
 
@@ -88,128 +206,57 @@ const CAT = {
 | Funkce | Popis |
 |--------|-------|
 | `setView(v)` | Přepíná view, spouští render |
-| `renderDnes(animate)` | Renders Dnes view |
-| `renderMesic()` | Renders měsíční kalendář |
-| `renderUkoly(animate)` | Dispatcher: mobile → `renderUkolyMobile`, desktop → `renderUkolyDesktop` |
-| `renderUkolyMobile(animate)` | Mobile: time groups (Dnes/Zítra/Bez data) |
-| `renderUkolyDesktop(animate)` | Desktop: 4 category columns s doodle prvky |
-| `toggleDone(id)` | Completion s scratch animací, ukládá `completedAt` |
-| `openDaySheet(dateStr)` | Otevře overlay s detailem dne (události + úkoly) |
-| `openModal(presetDate)` | Add task sheet |
-| `showUndo()` / `hideUndo()` | 4.2s undo toast po splnění |
-| `getDayItems(dateStr)` | Vrátí `{evs, taskList}` pro daný den |
-| `formatCompletedAt(date)` | "dnes 09:15" / "včera 14:30" / "5. 6. 10:00" |
-| `staggerIn(container)` | Entrance animace task items (jen při prvním zobrazení view) |
-| `applyScratch(el, instant)` | SVG strikethrough animace na dokončeném úkolu |
+| `renderDnes(animate)` | Dnes view |
+| `renderMesic()` | Focus strip + mini grid |
+| `renderUkoly(animate)` | Dispatcher mobile/desktop |
+| `renderNarozeniny()` | Tile grid + inline tabulka |
+| `renderPoznamky()` | Poznámky view |
+| `openBdayModal()` | Nový kontakt (prázdný modal) |
+| `openBdayEdit(id)` | Editace kontaktu (prefill + výročí) |
+| `saveBday()` | Uloží kontakt včetně `editingAnniversaries` |
+| `deleteBday(id)` | Smaže kontakt |
+| `addAnniversaryToModal()` | Přidá výročí do `editingAnniversaries` |
+| `renderAnniversaryList()` | Aktualizuje seznam výročí v modalu |
+| `loadBdays()` | Načte + migruje (string ID → number, name → firstName/lastName) |
+| `toggleDone(id)` | Completion + scratch animace + undo toast |
+| `openDaySheet(dateStr)` | Overlay detail dne |
+| `staggerIn(container)` | Entrance animace |
 
 ---
 
-## Kalendář — implementace (po posledních úpravách)
+## Implementováno (chronologicky)
 
-### Dot systém (mobile)
-- **Horní řada** (`.cal-ev-r`): plné barevné tečky = události (`.cal-ev`)
-- **Spodní řada** (`.cal-tk-r`): outlined kroužky = úkoly (`.cal-tdot[data-t="..."]`)
-- Max 3 event dots + 3 task ring dots + `+N` overflow
-- `.cal-evs` je flex-column kontejner pro obě řady
-
-### Chip systém (desktop ≥720px)
-- Events: solid chip s barevným pozadím (`.cal-chip[data-tag="..."]`)
-- Tasks: outlined chip bez výplně (`.cal-chip.task-chip`)
-- Balancing: když jsou ≥3 eventy A existují tasky → 2 event chipy + 1 task chip, jinak slice(0,3)
-
-### Doodle prvky
-- DOW header: Caveat font
-- Oddělovač: SVG hand-drawn wavy path
-- Dot-grid paper background (`.cal-body`)
-- Today: ring glow (`box-shadow: 0 0 0 3px rgba(185,48,102,.18)`)
-- Sparkle ✦ vedle měsíce (SVG star v `.cal-title-wrap`)
-- Weekend buňky: lehký tint `rgba(185,48,102,.028)`
-
----
-
-## Úkoly desktop — implementace (po posledních úpravách)
-
-Každý sloupec (Práce / Rodina / Domácnost / Ostatní) obsahuje:
-- **Icon** (SVG 14×14) v barvě kategorie
-- **Label** (Caveat font, barva kategorie)
-- **Wavy SVG underline** pod labelem (`col-wave`, unikátní path per category)
-- **Done/total ratio** (např. "1/4" v mono fontu)
-- **Date sub-groups**: Dnes / Zítra / Bez data (jen pokud >1 skupina)
-- **Today-task highlight**: task-item.today-task má lehký tint
-- **Empty state**: unikátní SVG ilustrace per kategorie + "Vše splněno ✓"
+1. staggerIn re-run bug fix
+2. Undo toast (4.2s) + scratch SVG animace
+3. Kalendář day-click sheet
+4. Empty states s CTA
+5. Completion timestamps
+6. Měsíc redesign: focus strip + smart mini grid
+7. Desktop Úkoly: 4 category columns (asymetrický layout 1.6fr/1fr)
+8. localStorage persistence (tasks + birthdays + notes)
+9. Narozeniny tile grid (sekce, ilustrace, věk, datum badge)
+10. Birthday add/edit modal
+11. Poznámky view (pinned first, filtry, doodle u pinnedů, action overlay)
+12. Note doodle: 3-stranný (bez levé cesty), z-index fix na content divech
+13. Focus cards: doodle SVG nahrazen CSS border+tint
+14. Narozeniny Phase 2:
+    - Nový data model: firstName/lastName/anniversaries/namedayOverride
+    - Type-based ilustrace: gift/flower/balloon
+    - Event-based tiles (birthday + nameday + anniversary per contact)
+    - Inline-editable tabulka kontaktů
+    - Modal s výročími (přidat/smazat)
+    - Edit (✎) tlačítko v tabulce
+    - Auto-svátky z NAMEDAYS (oprava regex bugu)
+    - Editovatelné svátek pole s namedayOverride
+    - Space Grotesk font pro jméno/příjmení v tabulce
 
 ---
 
-## Co bylo vyřešeno (chronologicky)
+## Co chybí / další kroky
 
-1. **staggerIn re-run bug** — animate=false parametr, true jen při setView()
-2. **Undo toast** — 4.2s, "Vrátit zpět" button, `lastCompletedId`
-3. **Kalendář day-click sheet** — openDaySheet(dateStr), re-attach event listeners
-4. **Standardizace** — "úloha" → "úkol" throughout
-5. **Empty states** s actionable CTA
-6. **Completion timestamps** — `completedAt: new Date()`, `formatCompletedAt()`, zobrazeno v archivu
-7. **Kalendář redesign** — equal-height cells, borders, paper bg, doodle elements
-8. **Desktop Úkoly columns by category** — user explicitně opravil 2x: chce sloupce dle druhu, NE dle času
-9. **Task dots v kalendáři** — dual-row dot systém, balanced desktop chips
-10. **Doodle personality v Úkolech** — wave underlines, icons, ratios, empty illustrations
-
----
-
-## Data model — narozeniny (po refaktoru)
-
-```js
-birthdays = [
-  { id, name, month: 1-12, day: 1-31, yearBorn: number|null }
-]
-```
-- Uloženo v `localStorage` pod klíčem `vypusto-bdays-v1`
-- `renderDnes` detekuje narozeniny přes `b.month === now.getMonth()+1 && b.day === now.getDate()`
-
-## localStorage schéma
-
-| Klíč | Obsah |
-|------|-------|
-| `vypusto-tasks-v1` | JSON array úkolů, `completedAt` jako ISO string |
-| `vypusto-bdays-v1` | JSON array narozenin |
-
----
-
-## Aktuální stav
-
-- **Critique score**: 17/40 (z `.impeccable/critique/2026-05-30T19-59-55Z__prototype-index-html.md`) — všechny P0-P3 opraveny, score stale
-- **Poslední commit**: `34f8822` — "Add localStorage persistence + Narozeniny view"
-- **Git**: branch `master`, 2 commity, žádný remote
-
----
-
-## Co bylo implementováno v session 2026-06-01
-
-11. **localStorage persistence** — úkoly + narozeniny přežívají reload (`vypusto-tasks-v1`, `vypusto-bdays-v1`)
-12. **Narozeniny view** — seznam seřazený dle blízkosti, sekce "Dnes slaví" / "Nadcházející" / "Všechny", barevné avatary s iniciálami, věková pill, datum badge
-13. **Birthday add modal** — jméno + den/měsíc/rok, validace, save do localStorage
-14. **Nový birthday data model** — `{ id, name, month, day, yearBorn }` místo `{ name, today }`
-
----
-
-## Potenciální další kroky (nebyly explicitně zadány)
-
-- Animace přechodu mezi měsíci v kalendáři
-- Swipe gesture pro přepínání měsíců (mobile)
-- Poznámky view implementace
+- Swipe gestures pro přepínání měsíců (mobile)
 - PWA manifest + service worker
 - Dark mode
-- Smazání úkolu (swipe-to-delete nebo long-press)
-- Editace úkolu
-- Repeated tasks logic (rec !== 'none' úkoly se neautomaticky replikují)
-
----
-
-## Jak spustit preview
-
-```bash
-# V terminálu v C:\Users\merit\OneDrive\Desktop\AI\Ostatní\ToDov2
-npx serve -p 3000 prototype
-# Otevři http://localhost:3000
-```
-
-Nebo použij `.claude/launch.json` konfiguraci přes Claude Code preview server.
+- Editace/smazání úkolu
+- Repeated tasks logic (rec field existuje, ale není plně implementován)
+- Přidání výročí ke kontaktu přímo z inline tabulky (teď jen přes modal ✎)
