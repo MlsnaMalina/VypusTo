@@ -1738,6 +1738,264 @@
       transition: background .15s, color .15s; flex-shrink: 0;
     }
     .sb-logout:hover { background: var(--border); color: var(--ink); }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       CYKLUS VIEW
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    :root {
+      --c-men:    #d9506a;  --c-men-lt:   #fdeef1;  --c-men-mid: rgba(217,80,106,.14);
+      --c-fol:    #c8883a;  --c-fol-lt:   #fdf3e6;  --c-fol-mid: rgba(200,136,58,.14);
+      --c-ov:     #4a9768;  --c-ov-lt:    #eaf5ee;  --c-ov-mid:  rgba(74,151,104,.14);
+      --c-lut:    #8063c2;  --c-lut-lt:   #f0edf9;  --c-lut-mid: rgba(128,99,194,.14);
+    }
+
+    /* Header */
+    .cyklus-top {
+      padding: calc(var(--safe-t) + 22px) 24px 0;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .cyklus-title {
+      font-family: var(--f-display); font-size: 28px; font-weight: 800;
+      color: var(--ink); letter-spacing: -.02em; line-height: 1;
+    }
+    .cyklus-log-btn {
+      flex-shrink: 0; padding: 8px 16px; border-radius: 20px;
+      background: var(--c-men); color: #fff;
+      font-family: var(--f-hand); font-size: 15px; font-weight: 700;
+      box-shadow: 0 2px 10px var(--c-men-mid); transition: transform .14s, box-shadow .14s;
+    }
+    .cyklus-log-btn:active { transform: scale(.94); box-shadow: none; }
+
+    /* Phase status card */
+    .cyklus-phase-card {
+      margin: 18px 20px 0;
+      border-radius: 14px; padding: 16px 18px 18px;
+      position: relative; overflow: hidden;
+      transition: background .3s;
+    }
+    .cyklus-phase-card.phase-men  { background: var(--c-men-lt); }
+    .cyklus-phase-card.phase-fol  { background: var(--c-fol-lt); }
+    .cyklus-phase-card.phase-ov   { background: var(--c-ov-lt);  }
+    .cyklus-phase-card.phase-lut  { background: var(--c-lut-lt); }
+    .cyklus-phase-card.phase-none { background: var(--bg-off); }
+    .cyklus-phase-icon {
+      font-size: 28px; line-height: 1; margin-bottom: 6px; display: block;
+    }
+    .cyklus-phase-name {
+      font-family: var(--f-display); font-size: 18px; font-weight: 800;
+      letter-spacing: -.02em; line-height: 1.1;
+    }
+    .cyklus-phase-card.phase-men  .cyklus-phase-name { color: var(--c-men); }
+    .cyklus-phase-card.phase-fol  .cyklus-phase-name { color: var(--c-fol); }
+    .cyklus-phase-card.phase-ov   .cyklus-phase-name { color: var(--c-ov);  }
+    .cyklus-phase-card.phase-lut  .cyklus-phase-name { color: var(--c-lut); }
+    .cyklus-phase-card.phase-none .cyklus-phase-name { color: var(--ink-2); }
+    .cyklus-phase-day {
+      font-family: var(--f-mono); font-size: 12px; color: var(--ink-2);
+      margin-top: 4px;
+    }
+    .cyklus-phase-next {
+      font-family: var(--f-body); font-size: 13px; color: var(--ink-2);
+      margin-top: 8px; line-height: 1.4;
+    }
+    .cyklus-phase-next strong { color: var(--ink); font-weight: 600; }
+    /* Subtle doodle SVG in card background */
+    .cyklus-phase-doodle {
+      position: absolute; right: -4px; bottom: -6px;
+      width: 80px; height: 80px; pointer-events: none; opacity: .12;
+    }
+
+    /* Cycle day pill for Dnes view */
+    .cycle-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px 4px 8px; border-radius: 20px;
+      font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+      margin-top: 10px; margin-bottom: 2px;
+      transition: background .3s, color .3s;
+    }
+    .cycle-pill-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      transition: background .3s;
+    }
+    .cycle-pill.phase-men { background: var(--c-men-lt); color: var(--c-men); }
+    .cycle-pill.phase-men .cycle-pill-dot { background: var(--c-men); }
+    .cycle-pill.phase-fol { background: var(--c-fol-lt); color: var(--c-fol); }
+    .cycle-pill.phase-fol .cycle-pill-dot { background: var(--c-fol); }
+    .cycle-pill.phase-ov  { background: var(--c-ov-lt);  color: var(--c-ov);  }
+    .cycle-pill.phase-ov  .cycle-pill-dot { background: var(--c-ov);  }
+    .cycle-pill.phase-lut { background: var(--c-lut-lt); color: var(--c-lut); }
+    .cycle-pill.phase-lut .cycle-pill-dot { background: var(--c-lut); }
+
+    /* Year strip */
+    .cyklus-strip-wrap {
+      margin: 20px 20px 0; padding: 16px 14px;
+      background: var(--bg-off); border-radius: 14px;
+    }
+    .cyklus-strip-hd {
+      font-family: var(--f-hand); font-size: 15px; font-weight: 700;
+      color: var(--ink-2); margin-bottom: 12px;
+    }
+    .cyklus-strip-row {
+      display: flex; align-items: center; gap: 5px; margin-bottom: 3px;
+    }
+    .cyklus-strip-mlbl {
+      font-family: var(--f-mono); font-size: 9px; color: var(--ink-3);
+      width: 24px; flex-shrink: 0; text-align: right;
+    }
+    .cyklus-strip-days { display: flex; gap: 1.5px; flex-wrap: nowrap; }
+    .cyklus-strip-cell {
+      width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0;
+      background: var(--border); transition: transform .1s;
+    }
+    .cyklus-strip-cell.phase-men  { background: var(--c-men); }
+    .cyklus-strip-cell.phase-fol  { background: rgba(200,136,58,.32); }
+    .cyklus-strip-cell.phase-ov   { background: rgba(74,151,104,.45); }
+    .cyklus-strip-cell.phase-lut  { background: rgba(128,99,194,.22); }
+    .cyklus-strip-cell.is-today {
+      box-shadow: 0 0 0 1.5px var(--primary);
+      transform: scale(1.2);
+      z-index: 1; position: relative;
+    }
+    .cyklus-strip-cell.is-future { opacity: .45; }
+
+    /* Legend */
+    .cyklus-legend {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .cyklus-leg-item {
+      display: flex; align-items: center; gap: 4px;
+      font-family: var(--f-mono); font-size: 9px; color: var(--ink-3);
+    }
+    .cyklus-leg-dot {
+      width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+    }
+
+    /* Settings row */
+    .cyklus-settings {
+      margin: 16px 20px 0;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .cyklus-set-item {
+      flex: 1; background: var(--bg-off); border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .cyklus-set-lbl {
+      font-family: var(--f-hand); font-size: 12px; color: var(--ink-3); margin-bottom: 4px;
+    }
+    .cyklus-set-row {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cyklus-set-btn {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-size: 15px; display: flex; align-items: center; justify-content: center;
+      color: var(--ink-2); transition: border-color .14s, background .14s;
+    }
+    .cyklus-set-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .cyklus-set-val {
+      font-family: var(--f-mono); font-size: 16px; font-weight: 500;
+      color: var(--ink); min-width: 28px; text-align: center;
+    }
+
+    /* History section */
+    .cyklus-hist-hd {
+      padding: 20px 20px 8px;
+      font-family: var(--f-hand); font-size: 17px; font-weight: 700; color: var(--ink-2);
+    }
+    .cyklus-hist-list { padding: 0 20px; }
+    .cyklus-hist-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .cyklus-hist-item:last-child { border-bottom: none; }
+    .cyklus-hist-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--c-men); flex-shrink: 0;
+    }
+    .cyklus-hist-date {
+      flex: 1; font-family: var(--f-body); font-size: 14px; color: var(--ink);
+    }
+    .cyklus-hist-len {
+      font-family: var(--f-mono); font-size: 12px; color: var(--ink-3);
+    }
+    .cyklus-hist-del {
+      width: 22px; height: 22px; border-radius: 50%; border: none;
+      background: transparent; color: var(--ink-3); font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .4; transition: opacity .12s, color .12s; cursor: pointer;
+    }
+    .cyklus-hist-del:hover { opacity: 1; color: var(--c-men); }
+
+    /* Log sheet */
+    .cyklus-log-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.42);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      z-index: 300; opacity: 0; pointer-events: none; transition: opacity .24s;
+    }
+    .cyklus-log-overlay.open { opacity: 1; pointer-events: auto; }
+    .cyklus-log-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--bg); border-radius: 20px 20px 0 0;
+      padding: 0 22px calc(28px + var(--safe-b));
+      transform: translateY(100%); transition: transform .3s var(--ease-out);
+      box-shadow: 0 -4px 40px rgba(0,0,0,.12);
+    }
+    .cyklus-log-overlay.open .cyklus-log-sheet { transform: translateY(0); }
+    @media (min-width: 720px) {
+      .cyklus-log-sheet {
+        left: auto; right: 28px; bottom: 28px;
+        border-radius: 16px; max-width: 400px;
+      }
+    }
+    .cyklus-log-pill { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 20px; }
+    .cyklus-log-title {
+      font-family: var(--f-display); font-size: 22px; font-weight: 800;
+      color: var(--ink); margin-bottom: 6px; letter-spacing: -.02em;
+    }
+    .cyklus-log-sub {
+      font-size: 13px; color: var(--ink-3); margin-bottom: 20px; line-height: 1.4;
+    }
+    .cyklus-log-field { margin-bottom: 20px; }
+    .cyklus-log-lbl {
+      font-family: var(--f-hand); font-size: 15px; font-weight: 700;
+      color: var(--ink-2); margin-bottom: 6px; display: block;
+    }
+    .cyklus-log-input {
+      width: 100%; font-family: var(--f-mono); font-size: 16px; color: var(--ink);
+      border: none; border-bottom: 2px solid var(--border); padding: 6px 0 10px;
+      background: transparent; outline: none; transition: border-color .15s;
+    }
+    .cyklus-log-input:focus { border-bottom-color: var(--c-men); }
+    .cyklus-save-btn {
+      width: 100%; padding: 14px; border-radius: 12px;
+      background: var(--c-men); color: #fff;
+      font-family: var(--f-display); font-size: 16px; font-weight: 800;
+      letter-spacing: -.01em; cursor: pointer; transition: opacity .15s;
+    }
+    .cyklus-save-btn:disabled { opacity: .4; cursor: default; }
+
+    /* Empty state for no data */
+    .cyklus-empty {
+      margin: 32px 20px; text-align: center;
+    }
+    .cyklus-empty-icon { font-size: 44px; margin-bottom: 12px; }
+    .cyklus-empty-txt {
+      font-family: var(--f-body); font-size: 16px; font-weight: 600;
+      color: var(--ink); margin-bottom: 6px;
+    }
+    .cyklus-empty-sub {
+      font-size: 13px; color: var(--ink-3); line-height: 1.5; max-width: 280px; margin: 0 auto 18px;
+    }
+    .cyklus-empty-cta {
+      display: inline-block; padding: 10px 22px; border-radius: 22px;
+      background: var(--c-men); color: #fff;
+      font-family: var(--f-hand); font-size: 16px; font-weight: 700;
+      box-shadow: 0 3px 12px var(--c-men-mid);
+    }
+    .cyklus-empty-cta:active { opacity: .8; }
   </style>
 </head>
 <body>
@@ -1819,6 +2077,10 @@
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
         Opakující se
       </button>
+      <button class="sb-item" data-v="cyklus">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="22 6"/><circle cx="12" cy="3" r="1.8" fill="currentColor" stroke="none"/></svg>
+        Cyklus
+      </button>
       <button class="sb-item" data-v="nastav">
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Nastavení
@@ -1856,6 +2118,10 @@
             <button class="dnes-day-btn on" id="js-dnes-today">Dnes</button>
             <button class="dnes-day-btn tomorrow-btn" id="js-dnes-tom">Zítra →</button>
           </div>
+        </div>
+        <div id="js-cycle-pill" class="cycle-pill" style="display:none" role="status" aria-live="polite">
+          <span class="cycle-pill-dot"></span>
+          <span id="js-cycle-pill-txt"></span>
         </div>
         <div id="js-tl" class="tl-wrap"></div>
       </div>
@@ -2018,6 +2284,15 @@
       <div id="js-opak-list" class="opak-list"></div>
     </div>
 
+    <!-- ─── CYKLUS ─── -->
+    <div id="v-cyklus" class="view">
+      <div class="cyklus-top">
+        <div class="cyklus-title">Cyklus</div>
+        <button class="cyklus-log-btn" id="js-cyklus-log-btn">+ Zaznamenat</button>
+      </div>
+      <div id="js-cyklus-body"></div>
+    </div>
+
   </div><!-- /.main-panel -->
 </div><!-- /#app -->
 
@@ -2050,6 +2325,10 @@
   <button class="nav-btn" data-v="opak">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
     <span class="nav-lbl">Opakující</span>
+  </button>
+  <button class="nav-btn" data-v="cyklus">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="22 6"/><circle cx="12" cy="3" r="1.8" fill="currentColor" stroke="none"/></svg>
+    <span class="nav-lbl">Cyklus</span>
   </button>
   <button class="nav-btn" data-v="nastav">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -2198,6 +2477,20 @@
         <span>Smazat poznámku</span>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- CYKLUS LOG SHEET -->
+<div class="cyklus-log-overlay" id="js-cyklus-overlay">
+  <div class="cyklus-log-sheet">
+    <div class="cyklus-log-pill"></div>
+    <div class="cyklus-log-title">Zaznamenat periodu</div>
+    <div class="cyklus-log-sub">Kdy začala? Čím přesněji zaznamenáš, tím lépe budu předpovídat příští cykly.</div>
+    <div class="cyklus-log-field">
+      <label class="cyklus-log-lbl" for="js-cyklus-date">Datum začátku</label>
+      <input type="text" class="cyklus-log-input" id="js-cyklus-date" placeholder="dd.mm.rrrr" autocomplete="off" inputmode="numeric"/>
+    </div>
+    <button class="cyklus-save-btn" id="js-cyklus-save" disabled>Uložit</button>
   </div>
 </div>
 
@@ -2763,6 +3056,9 @@ async function loadAllData() {
     console.warn('Firestore load failed, falling back to localStorage', e);
     _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal();
   }
+  /* Cycle data — always loaded separately (own Firestore doc structure) */
+  loadCycleLocal();
+  await loadCycleFirestore();
 }
 
 let tasks     = DEFAULT_TASKS.map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
@@ -3258,6 +3554,319 @@ function toggleRecPush(id) {
 function getCalEventsForDate(dateStr) {
   const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
   return calEvents.filter(e => e.date === dateStr).sort((a,b) => toMin(a.time) - toMin(b.time));
+}
+
+/* ═══════════════════════════════════════════════
+   CYKLUS — data, logic, render
+═══════════════════════════════════════════════ */
+let cycleData = { periodStarts: [], cycleLength: 28, periodLength: 5 };
+
+function saveCycle() {
+  localStorage.setItem('vypusto-cycle-v2', JSON.stringify(cycleData));
+  if (currentUser) {
+    db.collection('users').doc(currentUser.uid).collection('data').doc('cycle')
+      .set(cycleData).catch(console.warn);
+  }
+}
+
+function loadCycleLocal() {
+  try {
+    const raw = localStorage.getItem('vypusto-cycle-v2');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      cycleData = {
+        periodStarts: Array.isArray(parsed.periodStarts) ? parsed.periodStarts.sort() : [],
+        cycleLength:  Number(parsed.cycleLength)  || 28,
+        periodLength: Number(parsed.periodLength) || 5,
+      };
+    }
+  } catch(e) {}
+}
+
+async function loadCycleFirestore() {
+  if (!currentUser) return;
+  try {
+    const snap = await db.collection('users').doc(currentUser.uid)
+      .collection('data').doc('cycle').get();
+    if (snap.exists) {
+      const d = snap.data();
+      cycleData = {
+        periodStarts: Array.isArray(d.periodStarts) ? d.periodStarts.sort() : [],
+        cycleLength:  Number(d.cycleLength)  || 28,
+        periodLength: Number(d.periodLength) || 5,
+      };
+      localStorage.setItem('vypusto-cycle-v2', JSON.stringify(cycleData));
+    }
+  } catch(e) { loadCycleLocal(); }
+}
+
+/* Parse 'dd.mm.rrrr' or 'dd.mm.rr' → 'YYYY-MM-DD' or null */
+function parseCzDate(s) {
+  const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+  if (!m) return null;
+  let y = parseInt(m[3]);
+  if (y < 100) y += y < 50 ? 2000 : 1900;
+  const mo = parseInt(m[2]), dd = parseInt(m[1]);
+  if (mo < 1 || mo > 12 || dd < 1 || dd > 31) return null;
+  return `${y}-${String(mo).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+}
+
+/* Format 'YYYY-MM-DD' → 'd. m. rrrr' */
+function formatCzFull(s) {
+  const [y, mo, dd] = s.split('-').map(Number);
+  return `${dd}. ${mo}. ${y}`;
+}
+
+/* Days between two YYYY-MM-DD strings */
+function daysBetween(a, b) {
+  return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+}
+
+/* Get avg cycle length from logged starts (min 2 entries), else fall back to stored value */
+function calcAvgCycleLen() {
+  const s = [...cycleData.periodStarts].sort();
+  if (s.length < 2) return cycleData.cycleLength;
+  const diffs = [];
+  for (let i = 1; i < s.length; i++) diffs.push(daysBetween(s[i-1], s[i]));
+  return Math.round(diffs.reduce((a,b) => a+b, 0) / diffs.length);
+}
+
+/* Return phase info for a given YYYY-MM-DD date */
+function cyclePhaseForDate(dateStr) {
+  const sorted = [...cycleData.periodStarts].sort();
+  if (!sorted.length) return null;
+
+  let lastStart = null;
+  for (const s of sorted) {
+    if (s <= dateStr) lastStart = s;
+  }
+  if (!lastStart) return null;
+
+  const cycleLen   = calcAvgCycleLen();
+  const periodLen  = cycleData.periodLength;
+  const daysSince  = daysBetween(lastStart, dateStr);
+  const dayInCycle = ((daysSince % cycleLen) + cycleLen) % cycleLen;
+
+  if (dayInCycle < periodLen)                          return { phase: 'men', day: dayInCycle + 1 };
+  if (dayInCycle < Math.round(cycleLen * 0.43))        return { phase: 'fol', day: dayInCycle + 1 };
+  if (dayInCycle < Math.round(cycleLen * 0.57))        return { phase: 'ov',  day: dayInCycle + 1 };
+  return { phase: 'lut', day: dayInCycle + 1 };
+}
+
+const PHASE_META = {
+  men: { name: 'Menstruace',       icon: '🩸', cls: 'phase-men' },
+  fol: { name: 'Folikulární fáze', icon: '🌱', cls: 'phase-fol' },
+  ov:  { name: 'Ovulace',          icon: '🌸', cls: 'phase-ov'  },
+  lut: { name: 'Luteální fáze',    icon: '🌙', cls: 'phase-lut' },
+};
+
+/* Days until next predicted period */
+function daysUntilNextPeriod() {
+  const sorted = [...cycleData.periodStarts].sort();
+  if (!sorted.length) return null;
+  const cycleLen  = calcAvgCycleLen();
+  const lastStart = sorted[sorted.length - 1];
+  const today     = dStr(new Date());
+  const daysSince = daysBetween(lastStart, today);
+  const daysLeft  = cycleLen - (daysSince % cycleLen);
+  return daysLeft === cycleLen ? 0 : daysLeft;
+}
+
+/* Update cycle pill in Dnes view */
+function renderCyclePill() {
+  const pill = $('js-cycle-pill');
+  const txt  = $('js-cycle-pill-txt');
+  if (!pill || !txt) return;
+  const today = dStr(new Date());
+  const info  = cyclePhaseForDate(today);
+  if (!info) { pill.style.display = 'none'; return; }
+  const meta = PHASE_META[info.phase];
+  pill.style.display = 'inline-flex';
+  pill.className = `cycle-pill ${meta.cls}`;
+  txt.textContent = `${meta.icon} ${info.day}. den cyklu`;
+}
+
+/* ─── RENDER CYKLUS VIEW ─── */
+function renderCyklus() {
+  const body = $('js-cyklus-body');
+  if (!body) return;
+
+  const sorted = [...cycleData.periodStarts].sort();
+  const today  = dStr(new Date());
+
+  if (!sorted.length) {
+    body.innerHTML = `
+      <div class="cyklus-empty">
+        <div class="cyklus-empty-icon">🌙</div>
+        <div class="cyklus-empty-txt">Zatím žádné záznamy</div>
+        <div class="cyklus-empty-sub">Zaznamenej první periodu a budu sledovat tvůj cyklus v průběhu celého roku.</div>
+        <button class="cyklus-empty-cta" id="js-cyklus-empty-cta">+ Zaznamenat první periodu</button>
+      </div>`;
+    const cta = $('js-cyklus-empty-cta');
+    if (cta) cta.addEventListener('click', openCyklusLog);
+    return;
+  }
+
+  const cycleLen  = calcAvgCycleLen();
+  const periodLen = cycleData.periodLength;
+
+  /* Phase card */
+  const todayInfo = cyclePhaseForDate(today);
+  const meta      = todayInfo ? PHASE_META[todayInfo.phase] : null;
+  const daysLeft  = daysUntilNextPeriod();
+
+  let phaseCardHTML;
+  if (todayInfo && meta) {
+    const nextTxt = daysLeft === 0
+      ? 'Dnes začíná nový cyklus'
+      : daysLeft <= 3
+        ? `Příští perioda <strong>za ${daysLeft}&nbsp;${daysLeft === 1 ? 'den' : 'dny'}</strong> — připrav se`
+        : `Příští perioda přibližně <strong>za ${daysLeft}&nbsp;dní</strong>`;
+    phaseCardHTML = `
+      <div class="cyklus-phase-card ${meta.cls}">
+        <span class="cyklus-phase-icon" aria-hidden="true">${meta.icon}</span>
+        <div class="cyklus-phase-name">${meta.name}</div>
+        <div class="cyklus-phase-day">${todayInfo.day}. den cyklu (z&nbsp;~${cycleLen})</div>
+        <div class="cyklus-phase-next">${nextTxt}</div>
+        <svg class="cyklus-phase-doodle" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1.2" stroke-dasharray="8 4"/>
+          <circle cx="50" cy="10" r="6" fill="currentColor"/>
+        </svg>
+      </div>`;
+  } else {
+    phaseCardHTML = `
+      <div class="cyklus-phase-card phase-none">
+        <span class="cyklus-phase-icon" aria-hidden="true">📅</span>
+        <div class="cyklus-phase-name" style="color:var(--ink-2)">Přidej více záznamů</div>
+        <div class="cyklus-phase-day">S každou další periodu budu přesnější</div>
+      </div>`;
+  }
+
+  /* Settings row */
+  const settingsHTML = `
+    <div class="cyklus-settings">
+      <div class="cyklus-set-item">
+        <div class="cyklus-set-lbl">Délka cyklu (dní)</div>
+        <div class="cyklus-set-row">
+          <button class="cyklus-set-btn" data-cycle-adj="-1" aria-label="Zkrátit">−</button>
+          <span class="cyklus-set-val">${cycleLen}</span>
+          <button class="cyklus-set-btn" data-cycle-adj="+1" aria-label="Prodloužit">+</button>
+        </div>
+      </div>
+      <div class="cyklus-set-item">
+        <div class="cyklus-set-lbl">Délka periody (dní)</div>
+        <div class="cyklus-set-row">
+          <button class="cyklus-set-btn" data-period-adj="-1" aria-label="Zkrátit">−</button>
+          <span class="cyklus-set-val">${periodLen}</span>
+          <button class="cyklus-set-btn" data-period-adj="+1" aria-label="Prodloužit">+</button>
+        </div>
+      </div>
+    </div>`;
+
+  /* Year strip */
+  const stripHTML = buildYearStrip(today);
+
+  /* History */
+  let histHTML = `<div class="cyklus-hist-hd">Historie</div><div class="cyklus-hist-list">`;
+  const sortedDesc = [...sorted].reverse();
+  sortedDesc.forEach((s, i) => {
+    const prev   = sortedDesc[i + 1];
+    const lenTxt = prev ? `${daysBetween(prev, s)} dní` : '';
+    histHTML += `
+      <div class="cyklus-hist-item">
+        <div class="cyklus-hist-dot"></div>
+        <div class="cyklus-hist-date">${formatCzFull(s)}</div>
+        ${lenTxt ? `<div class="cyklus-hist-len">${lenTxt}</div>` : ''}
+        <button class="cyklus-hist-del" data-del-start="${s}" title="Smazat záznam" aria-label="Smazat ${s}">×</button>
+      </div>`;
+  });
+  histHTML += `</div>`;
+
+  body.innerHTML = phaseCardHTML + settingsHTML + stripHTML + histHTML;
+
+  /* Wire adjusters */
+  body.querySelectorAll('[data-cycle-adj]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cycleData.cycleLength = Math.max(20, Math.min(45, calcAvgCycleLen() + parseInt(btn.dataset.cycleAdj)));
+      saveCycle(); renderCyklus();
+    });
+  });
+  body.querySelectorAll('[data-period-adj]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cycleData.periodLength = Math.max(2, Math.min(10, cycleData.periodLength + parseInt(btn.dataset.periodAdj)));
+      saveCycle(); renderCyklus();
+    });
+  });
+
+  /* Wire delete */
+  body.querySelectorAll('[data-del-start]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cycleData.periodStarts = cycleData.periodStarts.filter(x => x !== btn.dataset.delStart);
+      saveCycle(); renderCyklus(); renderCyclePill();
+    });
+  });
+}
+
+function buildYearStrip(today) {
+  const now  = new Date();
+  const year = now.getFullYear();
+  const CZ_MON = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+  let rows = '';
+  for (let m = 0; m < 12; m++) {
+    const daysInMonth = new Date(year, m + 1, 0).getDate();
+    let cells = '';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday  = ds === today;
+      const isFuture = ds > today;
+      const info = cyclePhaseForDate(ds);
+      const phaseCls = info ? `phase-${info.phase}` : '';
+      cells += `<div class="cyklus-strip-cell ${phaseCls}${isToday?' is-today':''}${isFuture?' is-future':''}" title="${ds}"></div>`;
+    }
+    rows += `
+      <div class="cyklus-strip-row">
+        <span class="cyklus-strip-mlbl">${CZ_MON[m]}</span>
+        <div class="cyklus-strip-days">${cells}</div>
+      </div>`;
+  }
+  return `
+    <div class="cyklus-strip-wrap">
+      <div class="cyklus-strip-hd">${year} — cyklus v roce</div>
+      ${rows}
+      <div class="cyklus-legend">
+        <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:var(--c-men)"></div>Perioda</div>
+        <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(200,136,58,.5)"></div>Folikulární</div>
+        <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(74,151,104,.6)"></div>Ovulace</div>
+        <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(128,99,194,.35)"></div>Luteální</div>
+      </div>
+    </div>`;
+}
+
+/* ─── LOG OVERLAY ─── */
+function openCyklusLog() {
+  const inp = $('js-cyklus-date');
+  const now = new Date();
+  inp.value = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  $('js-cyklus-save').disabled = false;
+  $('js-cyklus-overlay').classList.add('open');
+  setTimeout(() => inp.select(), 320);
+}
+
+function closeCyklusLog() {
+  $('js-cyklus-overlay').classList.remove('open');
+}
+
+function saveCyklusLog() {
+  const ds = parseCzDate($('js-cyklus-date').value.trim());
+  if (!ds) return;
+  if (!cycleData.periodStarts.includes(ds)) {
+    cycleData.periodStarts.push(ds);
+    cycleData.periodStarts.sort();
+  }
+  saveCycle();
+  closeCyklusLog();
+  renderCyklus();
+  renderCyclePill();
 }
 
 function renderTimeline() {
@@ -3991,7 +4600,7 @@ function setView(v) {
   document.getElementById(`v-${v}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.sb-item').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('js-fab').style.display      = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav') ? 'none' : '';
+  $('js-fab').style.display      = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav' || v === 'cyklus') ? 'none' : '';
   $('js-note-add').style.display = (v === 'poznamky') ? 'flex' : 'none';
   if (v === 'mesic')      renderMesic();
   if (v === 'ukoly')      renderUkoly(true);
@@ -4000,6 +4609,7 @@ function setView(v) {
   if (v === 'narozeniny') renderNarozeniny();
   if (v === 'poznamky')   renderPoznamky();
   if (v === 'opak')       renderOpak();
+  if (v === 'cyklus')     renderCyklus();
 }
 
 /* ─── FILTER (mobile only) ─── */
@@ -4689,6 +5299,7 @@ function initAppUI() {
   initDate();
   applySettingsColors();
   renderDnes(true);
+  renderCyclePill();
   /* check for ended events after a short delay so the UI settles first */
   setTimeout(checkEndedEvents, 1800);
 }
@@ -5133,6 +5744,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setInterval(() => { if (S.view === 'dnes') renderTimeline(); }, 60000);
+  setInterval(() => { if (S.view === 'cyklus') renderCyklus(); }, 300000);
+
+  /* ── Cyklus ── */
+  $('js-cyklus-log-btn').addEventListener('click', openCyklusLog);
+  $('js-cyklus-overlay').addEventListener('click', e => {
+    if (e.target === $('js-cyklus-overlay')) closeCyklusLog();
+  });
+  const cyklusDateInp = $('js-cyklus-date');
+  cyklusDateInp.addEventListener('input', () => {
+    $('js-cyklus-save').disabled = !parseCzDate(cyklusDateInp.value.trim());
+  });
+  cyklusDateInp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !$('js-cyklus-save').disabled) saveCyklusLog();
+    if (e.key === 'Escape') closeCyklusLog();
+  });
+  $('js-cyklus-save').addEventListener('click', saveCyklusLog);
 });
 </script>
 </body>
