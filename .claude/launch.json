@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ToDov2",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "3000", "prototype"],
+      "port": 3000
+    }
+  ]
+}

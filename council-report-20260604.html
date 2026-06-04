@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Council — VypusTo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-2: #4a4a6a;
+    --ink-3: #8888aa;
+    --bg: #f8f8fc;
+    --surface: #ffffff;
+    --border: #e4e4f0;
+    --primary: #b93066;
+    --primary-light: #f5e6ed;
+    --green: #15803d;
+    --green-light: #dcfce7;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --blue: #1C3557;
+    --blue-light: #dbeafe;
+    --purple: #7C3AED;
+    --purple-light: #ede9fe;
+    --teal: #0F766E;
+    --teal-light: #ccfbf1;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,.07);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 0 0 80px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 40px 32px 32px;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .7;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+  .header-question {
+    font-size: .95rem;
+    opacity: .85;
+    max-width: 640px;
+    line-height: 1.55;
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── VERDICT (hero) ── */
+  .verdict {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin: 28px 0 0;
+  }
+  .verdict-title {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .verdict-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .verdict-section {
+    margin-bottom: 26px;
+  }
+  .verdict-section:last-child { margin-bottom: 0; }
+  .verdict-section h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .verdict-section h3 .icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .icon-agree { background: var(--green-light); color: var(--green); }
+  .icon-clash { background: var(--amber-light); color: var(--amber); }
+  .icon-blind { background: var(--blue-light); color: var(--blue); }
+  .icon-rec   { background: var(--primary-light); color: var(--primary); }
+  .icon-one   { background: var(--ink); color: white; }
+
+  .verdict-section p {
+    color: var(--ink-2);
+    font-size: .95rem;
+    line-height: 1.65;
+    margin-bottom: 8px;
+  }
+  .verdict-section ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .verdict-section ul li {
+    color: var(--ink-2);
+    font-size: .95rem;
+    line-height: 1.55;
+    padding-left: 18px;
+    position: relative;
+  }
+  .verdict-section ul li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .verdict-section strong { color: var(--ink); }
+
+  /* One thing highlight */
+  .one-thing {
+    background: var(--ink);
+    color: white;
+    border-radius: 8px;
+    padding: 18px 20px;
+    font-size: .95rem;
+    line-height: 1.6;
+  }
+  .one-thing strong { color: #fff; }
+
+  /* ── AGREEMENT VISUAL ── */
+  .visual-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+    margin-top: 20px;
+  }
+  .visual-title {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 20px;
+  }
+  .advisor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .advisor-chip {
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .advisor-chip .a-name {
+    font-size: .8rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .advisor-chip .a-stance {
+    font-size: .73rem;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+  .a-contrarian   { border-color: #fca5a5; background: #fff5f5; }
+  .a-contrarian .a-name { color: var(--red); }
+  .a-fp           { border-color: #a5b4fc; background: #f5f3ff; }
+  .a-fp .a-name   { color: var(--purple); }
+  .a-expand       { border-color: #6ee7b7; background: #f0fdf4; }
+  .a-expand .a-name { color: var(--teal); }
+  .a-outsider     { border-color: #93c5fd; background: #eff6ff; }
+  .a-outsider .a-name { color: var(--blue); }
+  .a-executor     { border-color: #fcd34d; background: #fffbeb; }
+  .a-executor .a-name { color: var(--amber); }
+
+  .peer-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .peer-legend-item {
+    font-size: .8rem;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .peer-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-strong { background: var(--green); }
+  .dot-blind  { background: var(--red); }
+
+  .peer-votes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .peer-vote {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* ── COLLAPSIBLE SECTIONS ── */
+  details {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  summary {
+    padding: 18px 22px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    user-select: none;
+    color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '›';
+    margin-left: auto;
+    font-size: 1.1rem;
+    color: var(--ink-3);
+    transition: transform .2s;
+    display: block;
+  }
+  details[open] summary::after {
+    transform: rotate(90deg);
+  }
+  summary .tag {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .tag-contrarian { background: #fee2e2; color: var(--red); }
+  .tag-fp         { background: var(--purple-light); color: var(--purple); }
+  .tag-expansionist { background: var(--teal-light); color: var(--teal); }
+  .tag-outsider   { background: var(--blue-light); color: var(--blue); }
+  .tag-executor   { background: var(--amber-light); color: var(--amber); }
+  .tag-peer       { background: var(--border); color: var(--ink-2); }
+
+  .details-body {
+    padding: 0 22px 22px;
+    font-size: .93rem;
+    color: var(--ink-2);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  .details-body p { margin-bottom: 12px; }
+  .details-body p:last-child { margin-bottom: 0; }
+  .details-body strong { color: var(--ink); }
+  .details-body ol, .details-body ul {
+    padding-left: 20px;
+    margin-bottom: 12px;
+  }
+  .details-body li { margin-bottom: 6px; }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 36px 0 12px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 56px;
+    text-align: center;
+    font-size: .8rem;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
+  .footer a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="container">
+    <div class="header-eyebrow">LLM Council — VypusTo · 4. června 2026</div>
+    <h1>Je VypusTo dostatečně dobrá, aby ji ženy skutečně používaly?</h1>
+    <div class="header-question">Hodnocení použitelnosti, designu a konkurenceschopnosti v saturovaném trhu aplikací na organizaci času. 5 poradců, 5 recenzentů, 1 verdikt.</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- CHAIRMAN VERDICT -->
+  <div class="verdict">
+    <div class="verdict-title">Verdikt předsedy rady</div>
+
+    <div class="verdict-section">
+      <h3>
+        <span class="icon icon-agree">✓</span>
+        Kde se rada shoduje
+      </h3>
+      <ul>
+        <li><strong>Mental load tracker je skutečný produkt — a je pohřben.</strong> Každý poradce nezávisle identifikoval, že nejsilnější diferenciátor aplikace je skryt v záložce číslo pět. Aplikace je strukturována jako každá jiná — kalendář první, mental load poslední. To je obráceně.</li>
+        <li><strong>Krása není problém.</strong> Rada jednomyslně přeformulovala otázku. Nikdo neodejde kvůli ošklivé mřížce měsíce. Problém retence je strukturální, ne estetický.</li>
+        <li><strong>Tvrzení o sociálním propojení nemá oporu v architektuře.</strong> Aplikace se prezentuje jako rodinný nástroj, ale nemá žádný mechanismus pro zapojení kohokoli jiného než ženy, která ji používá. Single-file localStorage znamená žádná synchronizace, žádné sdílení, žádná záloha.</li>
+        <li><strong>České svátky jsou skutečný a nevyužitý příkop.</strong> Žádný mainstream nástroj toto neřeší správně. Je to jediná funkce, kterou Google nebo Apple nemohou triviálně zkopírovat — a měla by být hlasitější.</li>
+      </ul>
+    </div>
+
+    <div class="verdict-section">
+      <h3>
+        <span class="icon icon-clash">⚡</span>
+        Kde se rada neshoduje
+      </h3>
+      <p><strong>Executor vs. First Principles: taktika vs. struktura.</strong> Executor říká: oprav onboarding, přidej push notifikace, přesuň opakující se úkoly na hlavní obrazovku — udělej to v pondělí. First Principles říká: nic z toho nezáleží, pokud aplikace strukturálně reprodukuje problém, který tvrdí, že řeší. Oba mají pravdu na různých časových horizontech. Executor vyhrává příštích 14 dní. First Principles vyhrává příštích 2 let.</p>
+      <p><strong>Expansionist vs. všichni ostatní: škála vize.</strong> Expansionist navrhuje rodinný operační systém a regionální platformu. Zbytek rady — a všichni recenzenti — správně identifikoval, že jde o tříletý roadmap převlečený za produktový insight. Předčasné pro localStorage prototyp bez uživatelů.</p>
+    </div>
+
+    <div class="verdict-section">
+      <h3>
+        <span class="icon icon-blind">◎</span>
+        Slepá místa odhalená radou
+      </h3>
+      <p>Tři věci vyplynuly až z peer review a jsou signály vysoké spolehlivosti:</p>
+      <ul>
+        <li><strong>VypusTo technicky zatím není PWA.</strong> Žádný manifest.json, žádný service worker, žádná offline podpora, žádná install výzva. Slovo "PWA" se v briefu vyskytuje, ale produkt nesplňuje podmínky. Moment přidání na domovskou obrazovku je nejsilnější páka pro retenci mobilní webové aplikace — a žádný poradce neřešil, jak ji záměrně spustit.</li>
+        <li><strong>Problém motivace manžela zabíjí vizi sdílené nástěnky.</strong> Více recenzentů to označilo. Každá sociální funkce závisí na dobrovolné participaci někoho, kdo aktuálně těží z toho, že neví. Nemá žádný důvod stahovat druhou aplikaci a kontrolovat manželčinu nástěnku s domácími úkoly. Asymetrie motivace je strukturální problém, ne UX problém.</li>
+        <li><strong>Jde o problém nahrazení, ne rozhodnutí na zelené louce.</strong> Cílová uživatelka již má funkční systém — fragmentovaný přes WhatsApp, papírový kalendář a vlastní hlavu. Rada nikdy nepoložila otázku: jaký je minimální klín, který učiní konkrétní část jejího stávajícího systému zjevně horší než VypusTo?</li>
+      </ul>
+    </div>
+
+    <div class="verdict-section">
+      <h3>
+        <span class="icon icon-rec">→</span>
+        Doporučení
+      </h3>
+      <p>Přestaň přemýšlet o aplikaci jako o kalendáři s záložkou pro mental load. Přebuduj hierarchii kolem jedné věci, kterou aplikace dělá, co nic jiného neumí: zná opakující se odpovědnosti domácnosti a zobrazuje je vedle lidí, na kterých ti záleží.</p>
+      <p><strong>Okamžitá strukturální oprava:</strong> Udělej "Dnes" unifikovaný povrch s (1) časově citlivými událostmi dne, (2) dvěma až třemi nejvíce opožděnými opakujícími se úkoly s jedním klepnutím "hotovo" a (3) nadcházející oslavou — svátkem, narozeninami nebo výročím do 7 dnů. To je denní důvod k otevření. To je smyčka návyku.</p>
+      <p><strong>Pro problém manžela:</strong> Nebuduj sdílenou nástěnku, která vyžaduje jeho buy-in. Vybuduj read-only sdílecí odkaz — jedno URL, bez registrace, poslatelné přes WhatsApp — který zobrazuje týdenní stav domácnosti. Nepotřebuje účet. Jen musí být schopný to zkontrolovat, když mu to ona pošle. Frictionless pull, ne push.</p>
+    </div>
+
+    <div class="verdict-section">
+      <h3>
+        <span class="icon icon-one">1</span>
+        Jedna věc, kterou udělat jako první
+      </h3>
+      <div class="one-thing">
+        Přidej skutečný PWA manifest, service worker a jednu naplánovanou ranní push notifikaci: "Dnes: [jedna událost] — [jedna nadcházející oslava]." Pošli to jedné skutečné uživatelce — matce, ne vývojáři — a sleduj, zda otevře aplikaci, když notifikace dorazí. Tento jeden behaviorální signál ti řekne, zda smyčka návyku funguje, dřív než cokoliv jiného postavíš.
+      </div>
+    </div>
+  </div>
+
+  <!-- AGREEMENT VISUAL -->
+  <div class="visual-card">
+    <div class="visual-title">Přehled poradců &amp; hodnocení recenzenty</div>
+    <div class="advisor-grid">
+      <div class="advisor-chip a-contrarian">
+        <div class="a-name">Contrarian</div>
+        <div class="a-stance">Krása je rozptýlení. Aplikace nic nesdílí, nic nesynchronizuje.</div>
+        <div class="peer-votes" title="Silný hlas podle recenzentů">
+          <div class="peer-dot dot-strong" style="width:10px;height:10px;border-radius:50%;background:var(--green)"></div>
+          <span style="font-size:.72rem;color:var(--ink-3)">0× nejsilnější · silný argument</span>
+        </div>
+      </div>
+      <div class="advisor-chip a-fp">
+        <div class="a-name">First Principles</div>
+        <div class="a-stance">Aplikace digitalizuje mental load místo aby ho přerozdělila.</div>
+        <div class="peer-votes">
+          <div class="peer-dot dot-strong"></div>
+          <div class="peer-dot dot-strong"></div>
+          <div class="peer-dot dot-strong"></div>
+          <span style="font-size:.72rem;color:var(--ink-3)">3× nejsilnější</span>
+        </div>
+      </div>
+      <div class="advisor-chip a-expand">
+        <div class="a-name">Expansionist</div>
+        <div class="a-stance">Rodinný OS, český regionální trh, gamifikace domácnosti.</div>
+        <div class="peer-votes">
+          <div class="peer-dot dot-blind"></div>
+          <div class="peer-dot dot-blind"></div>
+          <div class="peer-dot dot-blind"></div>
+          <div class="peer-dot dot-blind"></div>
+          <span style="font-size:.72rem;color:var(--ink-3)">4× největší slepé místo</span>
+        </div>
+      </div>
+      <div class="advisor-chip a-outsider">
+        <div class="a-name">Outsider</div>
+        <div class="a-stance">Žádný hook pro nového uživatele. Mental load pohřben. Doodle = nedůvěra.</div>
+        <div class="peer-votes">
+          <span style="font-size:.72rem;color:var(--ink-3)">Silné body, žádný hlas na nejsilnější</span>
+        </div>
+      </div>
+      <div class="advisor-chip a-executor">
+        <div class="a-name">Executor</div>
+        <div class="a-stance">Onboarding 60s, jedna push notifikace, opakující se na Dnes.</div>
+        <div class="peer-votes">
+          <div class="peer-dot dot-strong"></div>
+          <div class="peer-dot dot-strong"></div>
+          <span style="font-size:.72rem;color:var(--ink-3)">2× nejsilnější</span>
+        </div>
+      </div>
+    </div>
+    <div class="peer-legend">
+      <div class="peer-legend-item"><div class="peer-dot dot-strong"></div> Nejsilnější (peer review)</div>
+      <div class="peer-legend-item"><div class="peer-dot dot-blind"></div> Největší slepé místo (peer review)</div>
+    </div>
+  </div>
+
+  <!-- ADVISOR RESPONSES -->
+  <div class="section-label">Odpovědi poradců (klikni pro rozbalení)</div>
+
+  <details>
+    <summary>
+      <span class="tag tag-contrarian">Contrarian</span>
+      Krása je rozptýlení — co VypusTo dělá lépe než Google Calendar?
+    </summary>
+    <div class="details-body">
+      <p>The core problem: VypusTo is a to-do list wearing a costume. The "doodle aesthetic" and Czech namedays don't change the fact that the underlying product is a glorified checklist. Women in the target demographic already have Google Calendar, Apple Reminders, and Todoist. What VypusTo is describing as differentiation — social connection and mental load tracking — are features, not a product identity. Features get copied in a sprint.</p>
+      <p>The mental load angle is the most promising, and it's buried. If the app's real job is to make invisible labor visible, then the entire architecture should express that. Instead, it's organized like every other productivity app — tasks, notes, calendar, birthdays. The mental load tracker is one tab among six. That's backwards.</p>
+      <p><strong>Specific failure points:</strong> The target user already uses WhatsApp to coordinate family logistics. Why would she open a separate app to track that her husband's annual dermatology appointment is overdue? The friction of switching is underestimated.</p>
+      <p>The "push to main calendar" toggle on recurring tasks suggests integration is an afterthought. Women who manage family schedules live in their phone's native calendar. If VypusTo doesn't sync natively with Google Calendar or iCloud, it's asking users to maintain two calendars. They won't.</p>
+      <p>Single-file HTML with localStorage means zero backup, zero multi-device sync, zero sharing with the husband or children. The social connection claim collapses entirely because there is no social layer — it's a solo app pretending to be a family tool.</p>
+      <p>The beauty question is a distraction. An ugly app people need beats a beautiful app they don't. The question should be: what does VypusTo do that she cannot do anywhere else? The current answer is nothing.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-fp">First Principles</span>
+      Aplikace digitalizuje mental load místo aby ho přerozdělila
+    </summary>
+    <div class="details-body">
+      <p>The real question isn't "is it beautiful enough?" Beauty is table stakes. The actual question is: <strong>does this app reduce mental load, or just digitize it?</strong></p>
+      <p>Here's the failure mode to examine: most productivity apps for women recreate the problem they claim to solve. They ask the woman to do more work — entering data, maintaining lists, tagging tasks — in order to eventually do less work. The friction of setup exceeds the relief of use. The app becomes another thing to manage.</p>
+      <p>First principles: why does mental load exist? Because one person holds all the context about a household in their head. The calendar, the recurrences, the relationships, the deadlines. VypusTo addresses the <em>symptoms</em> (forgetting, overwhelm) but doesn't attack the <em>source</em> (unequal context ownership).</p>
+      <p>So the real gap isn't UI polish. It's <strong>delegation infrastructure</strong>. The app has no mechanism for distributing context to other family members. A husband cannot be assigned tasks with accountability. A child cannot check off their own recurrence. The mental load stays with the woman — now she just has a prettier dashboard for it.</p>
+      <p>The "social connection" differentiator (birthdays, namedays) is real but dangerously passive. It reminds you to celebrate others. That's still labor.</p>
+      <p><strong>The current design solves:</strong> "help one woman hold everything." The unsolved problem is: "stop one woman from having to hold everything."</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-expansionist">Expansionist</span>
+      Rodinný OS, česká jmenin jako příkop, zdravotní skóre domácnosti
+    </summary>
+    <div class="details-body">
+      <p>The mental load angle is undersold. This isn't a productivity app — it's the first app that could make invisible labor visible to the entire household. The real opportunity: <strong>shared family view</strong>. Right now VypusTo is a solo tool for one woman carrying everything alone. Flip that. Let her husband and kids see the board. Suddenly "Mom, what's for dinner?" becomes a question the app answers for the whole family. That's a fundamentally different product category — family operating system, not personal planner.</p>
+      <p><strong>Czech namedays are a massive underutilized asset.</strong> Czech culture treats namedays nearly as seriously as birthdays. No mainstream productivity app handles this properly. VypusTo already has it. That's a genuine moat — build on it. Extend to Slovak namedays, expand to Polish, Hungarian markets. Central European family culture is underserved by English-language productivity tools.</p>
+      <p>The recurring mental load tracker is the sleeper feature. "Last done: chimney inspection 14 months ago" is anxiety-inducing in exactly the right way. Gamify it subtly — not badges and points, but a quiet green/amber/red health score for your household. "Your home is 73% on top of things." Women will share that. It becomes social currency among friends.</p>
+      <p>Monetization hiding in plain sight: partnerships with Czech service providers. Chimney sweeps, pediatricians, appliance repair — the app knows when users are overdue. That's a referral business.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-outsider">Outsider</span>
+      Žádný emocionální hook pro nového uživatele, design signal „hobby projekt"
+    </summary>
+    <div class="details-body">
+      <p>The name "VypusTo" means nothing to me. I don't know if it's a verb, a noun, or a made-up word. If I landed on this app as a fresh user, that name gives me zero signal about what the app does. The creator knows it means something clever in Czech — I don't, and neither will a new user in the first three seconds.</p>
+      <p>The feature list reads like a settings menu, not a value proposition. "Dnes, Měsíc, Úkoly, Poznámky, Narozeniny, Opakující se" — these are generic productivity tabs that exist in every calendar app. There is no emotional hook visible from the outside.</p>
+      <p>The "mental load" framing is the strongest differentiator, but it's buried in the Recurring tab. A completely fresh user would never find it first. They'd open the app, see a calendar, think "I have Google Calendar," and close it.</p>
+      <p>The doodle aesthetic risks reading as "hobby project" rather than "trustworthy daily tool." Women managing real household logistics — chimney inspections, medical appointments — need to feel the app is reliable. Handwritten fonts and doodles can signal warmth, but they can also signal fragility. The tension between cute and competent is unresolved.</p>
+      <p><strong>One concrete gap:</strong> there is no indication of what happens to data. A woman putting her family's medical appointments and birthdays into an app with no backend explanation and no privacy signal — that is a silent trust barrier that will kill daily retention before it starts.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-executor">Executor</span>
+      Onboarding 60s, jedna push notifikace, opakující se na Dnes — v tomto pořadí
+    </summary>
+    <div class="details-body">
+      <p>Real daily usage lives or dies on the first 30 seconds. That's the only metric that matters right now.</p>
+      <p><strong>What ships first — in this order:</strong></p>
+      <ol>
+        <li><strong>Onboarding in under 60 seconds.</strong> Ask for 3 names (herself + family members) and 2 birthdates. Done. No tutorial, no feature tour. She sees personalized data immediately or she leaves.</li>
+        <li><strong>One killer notification.</strong> Push a single daily morning summary: "Today: pick up Tomáš from school 15:30 — Mama's nameday in 3 days." That single notification is the habit hook. Without it, the app is opened once and forgotten. This requires moving off localStorage to at least a service worker with scheduled notifications — do it now, not later.</li>
+        <li><strong>Recurring tasks need a "done" button on the home screen.</strong> The 2-3 most overdue recurring tasks should surface on the Dnes screen with a single tap to mark done. That's the daily engagement loop.</li>
+        <li><strong>The calendar is not the product.</strong> The differentiator is the social layer — namedays, birthdays, anniversaries. That tab should be called "Oslavy" (Celebrations) and be second in the nav, not buried.</li>
+      </ol>
+      <p><strong>What does NOT ship yet:</strong> custom colors, notes categories, month grid polish. Nobody is leaving because the month grid is ugly. They're leaving because there's nothing pulling them back tomorrow.</p>
+    </div>
+  </details>
+
+  <!-- PEER REVIEWS -->
+  <div class="section-label">Peer review (klikni pro rozbalení)</div>
+
+  <details>
+    <summary>
+      <span class="tag tag-peer">Recenzent 1</span>
+      Nejsilnější: Executor · Slepé místo: Expansionist · Chybí: PWA install moment
+    </summary>
+    <div class="details-body">
+      <p><strong>Nejsilnější: A (Executor).</strong> Dává nejpragmatičtější radu. Ostatní poradci dobře diagnostikují, ale neřeknou ti, co dělat v pondělí ráno. A ano.</p>
+      <p><strong>Největší slepé místo: E (Expansionist).</strong> Navrhuje platformovou strategii pro localStorage prototyp. Škála ambice je zcela odpojena od aktuálního stádia produktu.</p>
+      <p><strong>Co všichni přehlédli:</strong> Moment instalace PWA. Nejdůležitější retentní událost pro jakoukoli PWA je chvíle, kdy uživatel přidá aplikaci na domovskou obrazovku. Žádná odpověď neadresovala, jak VypusTo záměrně spustit a zpracovat tuto install výzvu. Bez přítomnosti na domovské obrazovce je aplikace záložka v prohlížeči, na kterou se zapomene.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-peer">Recenzent 2</span>
+      Nejsilnější: Executor · Slepé místo: Expansionist · Chybí: manifest.json a service worker
+    </summary>
+    <div class="details-body">
+      <p><strong>Nejsilnější: A (Executor).</strong> Jasné, prioritizované, bez uhýbání. Říká, co stavět a v jakém pořadí.</p>
+      <p><strong>Největší slepé místo: E (Expansionist).</strong> Platformová vize pro produkt bez uživatelů a bez backendu. Roadmap převlečený za produktový insight.</p>
+      <p><strong>Co všichni přehlédli:</strong> PWA install prompt a manifest. Bez manifest.json, offline podpory a záměrné install výzvy VypusTo není PWA — je to webová stránka. Slovo "PWA" se v briefu vyskytuje, ale žádný poradce neadresoval, co to technicky ani zážitkově vyžaduje.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-peer">Recenzent 3</span>
+      Nejsilnější: First Principles · Slepé místo: Expansionist · Chybí: manžel nemá motivaci
+    </summary>
+    <div class="details-body">
+      <p><strong>Nejsilnější: C (First Principles).</strong> Identifikuje strukturální rozpor — aplikace optimalizuje pro jednu osobu držící veškerý kontext, což je přesně to, co mental load je. Jde o úroveň hlouběji k skutečnému problému.</p>
+      <p><strong>Největší slepé místo: E (Expansionist).</strong> Vize "rodinného OS" předpokládá manžela, který participuje. Žádná odpověď se nezeptala: jaká je motivace manžela? Má nulový důvod stahovat druhou aplikaci a kontrolovat manželčinu nástěnku s domácími úkoly. Každá sociální funkce závisí na dobrovolném buy-inu od někoho, kdo aktuálně těží z toho, že neví.</p>
+      <p><strong>Co všichni přehlédli:</strong> Manžela nemůže žena rekrutovat. Každá sociální produktivní aplikace, která tento model zkusila, s tím bojovala. Asymetrie motivace není UX problém — je to strukturální problém. VypusTo ho nemůže vyřešit tím, že bude aplikace krásnější.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-peer">Recenzent 4</span>
+      Nejsilnější: First Principles · Slepé místo: Expansionist · Chybí: náklady přechodu
+    </summary>
+    <div class="details-body">
+      <p><strong>Nejsilnější: C (First Principles).</strong> Identifikuje strukturální rozpor v jádru produktu. B je blízko, ale zůstává na vrstvě funkcí/infrastruktury. C jde o úroveň hlouběji k skutečnému problému, na kterém závisí přežití produktu.</p>
+      <p><strong>Největší slepé místo: E (Expansionist).</strong> Romanticizuje příležitost ("rodinný OS") bez konfrontace s chladnou realitou. Partnerství a zdravotní skóre vyžadují backend, uživatelskou základnu a distribuci, které neexistují. E je tříletý roadmap převlečený za produktový insight.</p>
+      <p><strong>Co všichni přehlédli:</strong> Cílová uživatelka (česká matka, ~30-45) již má funkční systém — fragmentovaný přes WhatsApp, papírový kalendář a vlastní hlavu, ale funguje. Žádná odpověď se nezeptala: jaké jsou náklady přechodu a jaký je minimální klín, který učiní jednu část jejího stávajícího systému zjevně horší než VypusTo? Rada přistupovala k rozhodnutí jako by šlo o prázdnou tabuli, přitom jde o problém nahrazení.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="tag tag-peer">Recenzent 5</span>
+      Nejsilnější: First Principles · Slepé místo: Executor · Chybí: read-only odkaz pro manžela
+    </summary>
+    <div class="details-body">
+      <p><strong>Nejsilnější: C (First Principles).</strong> Identifikuje strukturální problém, který ostatní považují za mezeru ve funkci. Mental load není UI problém — je to problém distribuce kontextu. C je jediná odpověď, která se ptá, zda aplikace vůbec řeší správnou věc.</p>
+      <p><strong>Největší slepé místo: A (Executor).</strong> Navrhuje taktický roadmap (notifikace, onboarding, pořadí v navigaci) bez zpochybnění premisy. Optimalizuje retenci uživatele, který se možná nikdy nevrátí, protože hodnotová propozice je neověřená.</p>
+      <p><strong>Co všichni přehlédli:</strong> Manžel/partner není nepřítomný — je zároveň překážkou i příležitostí. Každá odpověď zachází s rodinou jako s pozadím. Žádná neadresuje, že hlavní bolest uživatelky není, že ona sama zapomíná — je to, že nemůže přimět ostatní, aby si pamatovali. Produkt potřebuje read-only nebo lehký companion mode, který nevyžaduje žádný buy-in od neochotného partnera (žádná registrace, jeden sdílený odkaz, jednoduchost jako WhatsApp). Skutečný odemykač je frictionless family pull, ne push.</p>
+    </div>
+  </details>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    LLM Council · VypusTo · 4. června 2026<br>
+    5 poradců · 5 recenzentů · 1 předseda · 21 688 tokenů<br>
+    Generováno pomocí <strong>Claude LLM Council</strong> skill
+  </div>
+
+</div>
+</body>
+</html>

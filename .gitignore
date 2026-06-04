@@ -1,0 +1,5 @@
+# Claude Code worktrees (temporary, not part of project)
+.claude/worktrees/
+
+# Impeccable design skill internal data
+.impeccable/
