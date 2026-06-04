@@ -12,23 +12,19 @@ Cílová skupina: česká rodina, primárně žena/máma jako hlavní uživatelk
 Styl: doodle art, handwritten prvky (Caveat font), raspberry primary color `#b93066`.
 
 **Soubor:** `C:\Users\merit\OneDrive\Desktop\AI\Ostatní\ToDov2\prototype\index.html`
-**Preview server:** `.claude/launch.json` → `npx serve -p 3001 prototype` (worktree `beautiful-bardeen-e9e575`, port 3001)
+**Live URL:** https://vypus-to.vercel.app
+**GitHub:** https://github.com/MlsnaMalina/VypusTo
 **Git branch:** `master`
-**Poslední commit:** `3050eef` — "Tabulka kontaktů: čitelný font + auto-svátky + editovatelné svátek pole"
+**Poslední commit:** `59e0bd6` — "Fix crash in noteHTML: normalize unknown tags from old Firestore data"
 
-### Git worktree
-- Aktivní worktree: `claude/beautiful-bardeen-e9e575`
-- Pracovní soubor: `.claude/worktrees/beautiful-bardeen-e9e575/prototype/index.html`
-- Workflow: editovat hlavní soubor → `cp` do worktree → commit v worktree → commit v main
+### Preview server
+`.claude/launch.json` → `npx serve -p 3000 prototype` (worktree `cranky-elbakyan-f0d134`, port 3002)
 
+⚠️ **DŮLEŽITÉ:** Preview server běží z worktree `.claude/worktrees/cranky-elbakyan-f0d134/prototype/`.
+Po každé editaci hlavního souboru je nutné ho synchronizovat:
 ```bash
-# sync main → worktree
 cp "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2/prototype/index.html" \
-   "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2/.claude/worktrees/beautiful-bardeen-e9e575/prototype/index.html"
-
-# commit v obou
-cd ".claude/worktrees/beautiful-bardeen-e9e575" && git add prototype/index.html && git commit -m "..."
-cd "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2" && git add prototype/index.html && git commit -m "..."
+   "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2/.claude/worktrees/cranky-elbakyan-f0d134/prototype/index.html"
 ```
 
 ---
@@ -50,62 +46,59 @@ cd "C:/Users/merit/OneDrive/Desktop/AI/Ostatní/ToDov2" && git add prototype/ind
 --c-dom:       #4A7C59;  --c-dom-bg:    #EBF3EE;
 --c-ost:       #7A6E8A;  --c-ost-bg:    #F0EEF3;
 ```
+Barvy kategorií jsou uživatelsky konfigurovatelné přes Nastavení → localStorage `vypusto-settings-v2`.
 
 ### Fonty
 - `--f-display`: **Syne 800** — hlavní nadpisy
-- `--f-hand`:    **Caveat 700** — handwritten labels, sekce, kategorie, tile jména
-- `--f-mono`:    **IBM Plex Mono** — časy, počty, timestamps, datum v tabulce
-- `--f-body`:    **Space Grotesk** — tělo textu, jména v tabulce kontaktů
+- `--f-hand`:    **Caveat 700** — handwritten labels
+- `--f-mono`:    **IBM Plex Mono** — časy, počty, timestamps
+- `--f-body`:    **Space Grotesk** — tělo textu
 
 ---
 
 ## Architektura
 
 - `< 720px` → mobile (bottom nav)
-- `≥ 720px` → desktop (sidebar 232px)
+- `≥ 720px` → desktop (sidebar 232px, bottom nav skryt)
+
+⚠️ **CSS cascade trap:** Pravidla, která mají přepsat base styly na desktopu, musí být ve **DESKTOP OVERRIDES bloku na konci stylesheetu** (kolem řádku 1628). Pravidla na začátku souboru (řádky 91–124) jsou přepísána base styly s vyšší source-order prioritou.
 
 ### Views
-| View | ID | Stav |
-|------|-----|------|
-| Dnes | `v-dnes` | ✅ plně implementován |
-| Měsíc | `v-mesic` | ✅ focus strip + mini grid |
-| Úkoly | `v-ukoly` | ✅ mobile groups + desktop columns |
-| Poznámky | `v-poznamky` | ✅ implementován |
-| Narozeniny | `v-narozeniny` | ✅ tiles + inline tabulka + výročí |
+| View ID | Název | Stav |
+|---------|-------|------|
+| `v-dnes` | Dnes | ✅ plně implementován |
+| `v-mesic` | Měsíc | ✅ focus strip + full grid |
+| `v-ukoly` | Úkoly | ✅ mobile groups + desktop columns |
+| `v-poznamky` | Poznámky | ✅ implementován |
+| `v-narozeniny` | Narozeniny | ✅ tiles + inline tabulka + výročí |
+| `v-opak` | Opakující se | ✅ implementován |
+| `v-nastav` | Nastavení | ✅ barvy kategorií |
 
 ---
 
 ## Data model
 
-### Úkoly
-```js
-tasks = [{
-  id, title,
-  tag: 'prace' | 'rodina' | 'domacnost' | 'ostatni',
-  done: bool,
-  date: 'today' | 'tomorrow' | null,
-  rec: 'none' | 'daily' | 'weekly' | 'monthly' | 'quarterly',
-  completedAt: Date | undefined
-}]
-```
+### localStorage klíče (aktuální)
+| Klíč | Obsah |
+|------|-------|
+| `vypusto-tasks-v2` | tasks |
+| `vypusto-bdays-v2` | birthdays |
+| `vypusto-notes-v2` | notes |
+| `vypusto-rec-v2` | recurringEvents |
+| `vypusto-events-v2` | calEvents |
+| `vypusto-settings-v2` | settings (category colors) |
+| `vypusto-remember-v2` | dismissed remember-popup IDs |
 
-### Narozeniny (NOVÝ formát)
+### Narozeniny (aktuální formát)
 ```js
 birthdays = [{
-  id: number,                     // normalizován na číslo (loadBdays migruje staré string IDs)
+  id: number,
   firstName: string,
-  lastName: string,               // může být ''
-  day: number, month: number,     // datum narozenin
-  yearBorn: number | null,        // rok je nepovinný
-  anniversaries: [{               // výročí — může být []
-    title: string,                // popis (např. 'Potkali jsme se poprvé')
-    day: number, month: number,   // datum výročí
-    year: number | null,          // rok pro výpočet 'X let'
-  }],
+  lastName: string,
+  day: number, month: number,
+  yearBorn: number | null,
+  anniversaries: [{ title, day, month, year }],
   namedayOverride: null | false | { day, month }
-  // null/undefined = auto z NAMEDAYS
-  // false = uživatel smazal
-  // {day,month} = manuálně nastaveno
 }]
 ```
 
@@ -118,86 +111,24 @@ notes = [{
   createdAt: 'YYYY-MM-DD'
 }]
 ```
+⚠️ Staré poznámky z Firestore mohou mít jiný tag — `noteHTML()` normalizuje neznámé tagy na 'ostatni'.
 
-### localStorage
-| Klíč | Obsah |
-|------|-------|
-| `vypusto-tasks-v1` | tasks, `completedAt` jako ISO string |
-| `vypusto-bdays-v1` | birthdays v novém formátu |
-| `vypusto-notes-v1` | notes |
-
----
-
-## Narozeniny view — architektura
-
-### Tile grid
-- Ilustrace jsou **type-based** (ne hash-based):
-  - 🎁 **gift** → narozeniny (`type:'birthday'`)
-  - 🌸 **flower** → svátek (`type:'nameday'`)
-  - 🎈 **balloon** → výročí (`type:'anniversary'`)
-- Každý kontakt generuje **více tiles** — birthday tile + nameday tile (pokud nalezen) + tile pro každé výročí
-- Sekce: "🎉 Dnes slaví" / "Nadcházející (30 dní)" / "Všechny"
-
-### Pomocné globální funkce
+### Nastavení
 ```js
-lookupNamedayGlobal(firstName)   // reverse NAMEDAYS lookup; regex /[\s,()]+/ + filter 'a'
-getEffectiveNameday(b)           // respektuje namedayOverride
-formatNdStr(nd)                  // {day,month} → 'dd.mm.'
-parseNdStr(str)                  // 'dd.mm.' → {day,month} | null
-formatBdayInput(b)               // b → 'dd.mm.rrrr' nebo 'dd.mm.'
-parseBdayInput(str)              // 'dd.mm.rrrr' → {day,month,year} | null
-_czMonthShortGlobal(m)           // 1-12 → 'led','úno',...
+settings = {
+  colors: { prace: '#hex', rodina: '#hex', domacnost: '#hex', ostatni: '#hex' }
+}
 ```
 
-### Inline tabulka kontaktů
-- Sloupce: **Jméno** / **Příjmení** / **Svátek** / **Narozeniny** / (edit ✎ + del ✕)
-- Fonty: Space Grotesk pro jméno/příjmení, IBM Plex Mono pro data
-- Svátek = editovatelný input; auto-hodnota jako placeholder; lze přepsat nebo smazat
-- Uložení: `change` event (po blur se změnou) → `saveBdays()` + debounced `renderNarozeniny()`
-- Edit (✎) → otevře modal s daty kontaktu + sekcí výročí
-
-### Modal (add/edit kontaktu)
-- **Nový kontakt**: Jméno + Příjmení + Datum narození (den/měsíc/rok)
-- **Editace**: + sekce Výročí (seznam + inline přidávání)
-  - Výročí: Popis + datum `dd.mm.rrrr` + tlačítko +
-  - Enter v Popisu → přeskočí na datum; Enter v datu → přidá
-  - ✕ u položky → smaže z `editingAnniversaries`
-- State: `editingBdayId` (null = nový), `editingAnniversaries` (kopie při otevření)
-
 ---
 
-## Poznámky view — architektura
+## Firebase / Firestore
 
-- Filtry: Vše / Práce / Rodina / Domácnost / Ostatní
-- **Připnuté poznámky** (`.is-pinned`): zobrazují se vždy nahoře, mají 3-stranný doodle SVG rámeček (top/right/bottom — bez levé strany kvůli left-border)
-- Doodle SVG u pinnedů: 3 cesty, stroke barva = kategorie, width 0.55, opacity .4; `position:absolute; inset:0`
-- Note karta má `border-left: 3px solid [kategorie-barva]`
-- `.note-card-top`, `.note-body`, `.note-foot` mají `position:relative; z-index:1` (nad SVG)
-- Akce na note: klik → action overlay (pin/unpin, smazat)
-
----
-
-## Měsíc view — focus strip
-
-- **3 karty** v gridu `1.65fr 1fr 1fr`, gap 12px
-- Zvýraznění: CSS border + background tint (bez doodle SVG):
-  ```css
-  .focus-card.fc-today { border-color: rgba(185,48,102,.35); background: rgba(185,48,102,.04); }
-  .focus-card { border: 1px solid rgba(0,0,0,.09); border-radius: 10px; }
-  ```
-- Padding: fc-today `16px 16px 52px`; fc-side `10px 12px 32px`
-- `doodleFrame()` funkce byla **smazána** (focus cards ji nepoužívají)
-
----
-
-## Doodle SVG pravidla
-
-Doodle rámečky v aplikaci (note cards, bday tiles today):
-- viewBox `0 0 100 100`, `preserveAspectRatio="none"`, `position:absolute; inset:0`
-- 4 kubické křivky, kontrolní body ~1–2 jednotky od hrany
-- Today / primární: stroke `#b93066`, width `0.5–0.6`, opacity `.5–.55`
-- Ostatní: stroke `#bbb`, width `0.75`, opacity `.28`
-- Poznámkové karty: **pouze 3 strany** (top/right/bottom), začínají na x=8 (ne x=5) — levá strana je solid border kategorie
+- Firebase project ID: `vypusto`
+- Auth: email/password (compat SDK v10.12.0)
+- Struktura: `users/{uid}/data/{docName}` — dokumenty: `tasks`, `birthdays`, `notes`, `recurring`, `calEvents`
+- Uložení: `.set({ items: [...] })` (fire-and-forget, `.catch(console.warn)`)
+- Načítání: one-time `.get()` (ne onSnapshot), `merge()` funkce — Firestore > localStorage fallback
 
 ---
 
@@ -205,79 +136,59 @@ Doodle rámečky v aplikaci (note cards, bday tiles today):
 
 | Funkce | Popis |
 |--------|-------|
-| `setView(v)` | Přepíná view, spouští render |
+| `setView(v)` | Přepíná view, spouští render + skrývá/zobrazuje FAB |
 | `renderDnes(animate)` | Dnes view |
-| `renderMesic()` | Focus strip + mini grid |
+| `renderMesic()` | Focus strip + full grid |
 | `renderUkoly(animate)` | Dispatcher mobile/desktop |
 | `renderNarozeniny()` | Tile grid + inline tabulka |
 | `renderPoznamky()` | Poznámky view |
-| `openBdayModal()` | Nový kontakt (prázdný modal) |
+| `renderSettings()` | Nastavení view |
+| `saveNote()` | Uloží novou poznámku, volá `setView('poznamky')` |
+| `noteHTML(n)` | Generuje HTML pro poznámkovou kartu (normalizuje tag) |
 | `openBdayEdit(id)` | Editace kontaktu (prefill + výročí) |
-| `saveBday()` | Uloží kontakt včetně `editingAnniversaries` |
-| `deleteBday(id)` | Smaže kontakt |
-| `addAnniversaryToModal()` | Přidá výročí do `editingAnniversaries` |
-| `renderAnniversaryList()` | Aktualizuje seznam výročí v modalu |
-| `loadBdays()` | Načte + migruje (string ID → number, name → firstName/lastName) |
-| `toggleDone(id)` | Completion + scratch animace + undo toast |
-| `openDaySheet(dateStr)` | Overlay detail dne |
-| `staggerIn(container)` | Entrance animace |
+| `checkEndedEvents()` | Zkontroluje skončené dnešní události → remember popup |
+| `openRememberPopup(eventId)` | Popup "Mám si zapamatovat?" |
+| `saveRememberAnniversary()` | Uloží skončenou událost jako výročí ke kontaktu |
+| `applySettingsColors()` | Aplikuje barvy z settings na CSS vars + CAT objekt |
+| `heartStr(year)` | Vrátí ❤️×min(roky,5) pro výročí |
+| `loadAllData()` | Načte data z Firestore / localStorage |
+| `initAppUI()` | Inicializuje UI po přihlášení |
 
 ---
 
-## Implementováno (chronologicky)
+## Implementováno (aktuální stav)
 
-1. staggerIn re-run bug fix
-2. Undo toast (4.2s) + scratch SVG animace
-3. Kalendář day-click sheet
-4. Empty states s CTA
-5. Completion timestamps
-6. Měsíc redesign: focus strip + smart mini grid
-7. Desktop Úkoly: 4 category columns (asymetrický layout 1.6fr/1fr)
-8. localStorage persistence (tasks + birthdays + notes)
-9. Narozeniny tile grid (sekce, ilustrace, věk, datum badge)
-10. Birthday add/edit modal
-11. Poznámky view (pinned first, filtry, doodle u pinnedů, action overlay)
-12. Note doodle: 3-stranný (bez levé cesty), z-index fix na content divech
-13. Focus cards: doodle SVG nahrazen CSS border+tint
-14. Narozeniny Phase 2:
-    - Nový data model: firstName/lastName/anniversaries/namedayOverride
-    - Type-based ilustrace: gift/flower/balloon
-    - Event-based tiles (birthday + nameday + anniversary per contact)
-    - Inline-editable tabulka kontaktů
-    - Modal s výročími (přidat/smazat)
-    - Edit (✎) tlačítko v tabulce
-    - Auto-svátky z NAMEDAYS (oprava regex bugu)
-    - Editovatelné svátek pole s namedayOverride
-    - Space Grotesk font pro jméno/příjmení v tabulce
+1. Základní task management (CRUD, done/undo, filtery)
+2. Kalendář (Měsíc view — focus strip + full grid s eventos, úkoly, narozky, svátky)
+3. Day sheet (klik na den → overlay s detailem)
+4. Narozeniny — tiles, inline tabulka, výročí, srdíčka (❤️×roky)
+5. Poznámky — karty, filtry, pin, doodle u pinned, action overlay
+6. Opakující se události
+7. Nastavení — barvy kategorií (color pickers, CSS vars, localStorage)
+8. "Mám si zapamatovat?" popup — po skončení dnešní události → uložit jako výročí
+9. Service Worker (v4) — network-first pro HTML, cache-first pro assets
+10. Firebase Auth + Firestore sync
+11. PWA manifest
 
 ---
 
-## Měsíc view — architektura (upd.)
+## Opravené bugy (tato session)
 
-### Redesign gridu (session 2026-06-03)
-- Mini grid (`d-mini-cell`) nahrazen full-size gridem (`.cal-fc` buňky)
-- Buňky: min-height 80px mobile / 116px desktop; `var(--border)` ohraničení
-- Event řádek: barevná pomlčka (`cal-fc-ev-dash`) + zkrácený název
-- Task řádek: barevný puntík (`cal-fc-task-dot`) + název (proškrtnutý když done)
-- Narozeniny: gift SVG ikona z Narozeniny view + jméno kontaktu (rodina barva)
-- Svátky: flower SVG ikona + jméno, **pouze pro kontakty v seznamu** (ne všechny české svátky)
-- Přetékající položky: `+N` indikátor (MAX=3 na buňku)
-- Aktuální týden: 2.5px raspberry proužek na spodní hraně buněk
-- DOW hlavička: Caveat font, víkendy v raspberry barvě
-- Oprava bugu: focus karta používala `meta.bday.name` → opraveno na `firstName+lastName`
+1. **Bottom nav viditelný na desktopu** — CSS cascade bug: base `.bottom-nav { display: flex }` (řádek ~792) přepisoval media query `.bottom-nav { display: none }` (řádek ~111) protože přišel NÍŽE v souboru. Fix: přidat pravidlo do DESKTOP OVERRIDES bloku na konci (řádek ~1633).
 
-### Pomocné SVG konstanty v renderMesic()
-- `giftSVG` — dárek (stroke #C4614A, viewBox 0 0 44 44)
-- `flowerSVG` — květ (stroke #b93066, viewBox 0 0 44 44)
+2. **FAB tlačítko (note-add-fab) překryté bottom navem** — důsledek bugu výše. Po fixu nav zmizí na desktopu a FAB je na `bottom: 32px` volně viditelný.
+
+3. **Poznámky se nezobrazovaly po uložení** — `noteHTML()` crashoval s `TypeError: Cannot read properties of undefined (reading 'label')` když `n.tag` nebyl v CAT objektu (staré Firestore data). Fix: normalizovat neznámý tag na 'ostatni'.
+
+4. **`saveNote()` volá `setView('poznamky')`** místo bare `renderPoznamky()` — robustnější, garantuje aktivaci view.
 
 ---
 
 ## Co chybí / další kroky
 
 - Swipe gestures pro přepínání měsíců (mobile)
-- PWA manifest + service worker
 - Dark mode
-- Editace/smazání úkolu
-- Repeated tasks logic (rec field existuje, ale není plně implementován)
-- Přidání výročí ke kontaktu přímo z inline tabulky (teď jen přes modal ✎)
-- Kliknutí na den ve focus stripu → day sheet (zatím funguje, ale focus strip nereflektuje nový grid styl)
+- PWA manifest ikony (favicon.ico 404)
+- Napravit `<meta name="apple-mobile-web-app-capable">` deprecation warning → změnit na `mobile-web-app-capable`
+- Editace/smazání kalendářních událostí přes day sheet
+- Sdílení úkolů s rodinou (multi-user)
