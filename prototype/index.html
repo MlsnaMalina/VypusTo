@@ -1439,6 +1439,42 @@
     .poz-h1  { font-family: var(--f-display); font-size: 32px; font-weight: 800; color: var(--ink); letter-spacing: -.025em; line-height: 1; margin-top: 4px; }
     @media (min-width: 720px) { .poz-wm { display: none; } .poz-top { padding-left: 24px; padding-right: 24px; } }
 
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       NASTAVENÍ
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .nastav-top  { padding: calc(var(--safe-t) + 22px) 24px 0; }
+    .nastav-wm   { font-family: var(--f-hand); font-size: 15px; font-weight: 600; color: var(--primary); }
+    .nastav-h1   { font-family: var(--f-display); font-size: 32px; font-weight: 800; color: var(--ink); letter-spacing: -.025em; line-height: 1; margin-top: 4px; }
+    @media (min-width: 720px) { .nastav-wm { display: none; } .nastav-top { padding-left: 24px; padding-right: 24px; } }
+    .nastav-body { padding: 16px 24px 60px; max-width: 480px; }
+    .nastav-section-lbl { font-family: var(--f-hand); font-size: 18px; font-weight: 700; color: var(--ink-2); margin: 8px 0 12px; }
+    .nastav-cat-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 28px; }
+    .nastav-cat-row {
+      display: flex; align-items: center; gap: 14px; padding: 13px 0;
+      border-bottom: 1px solid var(--border-faint);
+    }
+    .nastav-cat-swatch {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid rgba(0,0,0,.08);
+    }
+    .nastav-cat-name { flex: 1; font-family: var(--f-body); font-size: 15px; color: var(--ink); font-weight: 500; }
+    .nastav-color-in {
+      width: 40px; height: 32px; border-radius: 8px;
+      border: 1.5px solid var(--border); cursor: pointer; padding: 2px; background: var(--bg);
+    }
+    .nastav-save-btn {
+      display: block; width: 100%; padding: 12px; border-radius: 12px;
+      background: var(--primary); color: #fff; font-family: var(--f-body); font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer; transition: opacity .15s; margin-bottom: 10px;
+    }
+    .nastav-save-btn:hover { opacity: .88; }
+    .nastav-reset-btn {
+      display: block; width: 100%; padding: 10px; border-radius: 12px;
+      background: none; color: var(--ink-3); font-family: var(--f-body); font-size: 13px;
+      border: 1.5px solid var(--border); cursor: pointer; transition: all .15s;
+    }
+    .nastav-reset-btn:hover { color: var(--ink); border-color: var(--ink-2); }
+
     .poz-body { padding: 4px 24px 0; }
     .note-sec-lbl {
       font-family: var(--f-hand); font-size: 16px; font-weight: 700;
@@ -1707,6 +1743,10 @@
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
         Opakující se
       </button>
+      <button class="sb-item" data-v="nastav">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Nastavení
+      </button>
     </nav>
     <div class="sb-user">
       <div class="sb-user-avatar" id="js-sb-avatar">K</div>
@@ -1836,6 +1876,41 @@
       <button class="note-add-fab" id="js-note-add" aria-label="Přidat poznámku">+</button>
     </div>
 
+    <!-- ─── NASTAVENÍ ─── -->
+    <div id="v-nastav" class="view">
+      <div class="nastav-top">
+        <div class="nastav-wm">VypusTo</div>
+        <div class="nastav-h1">Nastavení</div>
+      </div>
+      <div class="nastav-body">
+        <div class="nastav-section-lbl">Barvy kategorií</div>
+        <div class="nastav-cat-list">
+          <div class="nastav-cat-row">
+            <div class="nastav-cat-swatch" id="js-ns-swatch-prace"></div>
+            <div class="nastav-cat-name">Práce</div>
+            <input type="color" class="nastav-color-in" id="js-ns-prace" value="#1C3557"/>
+          </div>
+          <div class="nastav-cat-row">
+            <div class="nastav-cat-swatch" id="js-ns-swatch-rodina"></div>
+            <div class="nastav-cat-name">Rodina</div>
+            <input type="color" class="nastav-color-in" id="js-ns-rodina" value="#C4614A"/>
+          </div>
+          <div class="nastav-cat-row">
+            <div class="nastav-cat-swatch" id="js-ns-swatch-domacnost"></div>
+            <div class="nastav-cat-name">Domácnost</div>
+            <input type="color" class="nastav-color-in" id="js-ns-domacnost" value="#4A7C59"/>
+          </div>
+          <div class="nastav-cat-row">
+            <div class="nastav-cat-swatch" id="js-ns-swatch-ostatni"></div>
+            <div class="nastav-cat-name">Ostatní</div>
+            <input type="color" class="nastav-color-in" id="js-ns-ostatni" value="#7A6E8A"/>
+          </div>
+        </div>
+        <button class="nastav-save-btn" id="js-ns-save">Uložit barvy</button>
+        <button class="nastav-reset-btn" id="js-ns-reset">Obnovit výchozí barvy</button>
+      </div>
+    </div>
+
     <!-- ─── NAROZENINY ─── -->
     <div id="v-narozeniny" class="view">
       <div class="bday-top">
@@ -1900,6 +1975,10 @@
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
     <span class="nav-lbl">Opakující</span>
   </button>
+  <button class="nav-btn" data-v="nastav">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span class="nav-lbl">Nastavení</span>
+  </button>
 </nav>
 
 <!-- ADD TASK / EVENT MODAL -->
@@ -1924,12 +2003,16 @@
       <button class="s-date" data-d="tomorrow">Zítra</button>
       <button class="s-date js-task-only" data-d="none">Bez data</button>
     </div>
-    <div class="type-ev-row js-event-only" id="js-ev-date-row" style="display:none">
+    <div id="js-ev-date-row">
       <input type="text" class="s-date-specific" id="js-ev-date" placeholder="nebo konkrétní datum: dd.mm.rrrr" autocomplete="off"/>
     </div>
-    <div class="type-ev-row js-event-only" id="js-ev-time-row" style="display:none">
-      <div class="sheet-sec" style="margin:0 0 0;white-space:nowrap">Čas</div>
-      <input type="text" class="type-ev-time-in" id="js-ev-time" placeholder="HH:MM (nepovinné)" autocomplete="off"/>
+    <div id="js-ev-time-row" style="display:none">
+      <div class="sheet-sec" style="margin:12px 0 4px">Čas</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" class="type-ev-time-in" id="js-ev-time" placeholder="Začátek HH:MM" autocomplete="off"/>
+        <span style="color:var(--ink-3);font-size:13px">—</span>
+        <input type="text" class="type-ev-time-in" id="js-ev-time-to" placeholder="Konec HH:MM" autocomplete="off"/>
+      </div>
     </div>
     <div id="js-rec-section">
       <div class="sheet-sec">Opakování</div>
@@ -1941,8 +2024,6 @@
         <button class="s-rec" data-r="quarterly">Každé 3 měs.</button>
       </div>
     </div>
-    <div class="sheet-sec">Barva</div>
-    <div class="cp-row" id="js-task-colors"></div>
     <button class="sheet-save" id="js-save" disabled>Přidat úkol</button>
   </div>
 </div>
@@ -2234,6 +2315,81 @@ const CAT = {
   ostatni:   { label:'Ostatní',   color:'#7A6E8A' },
 };
 
+/* ─── SETTINGS ─── */
+const DEFAULT_COLORS = { prace:'#1C3557', rodina:'#C4614A', domacnost:'#4A7C59', ostatni:'#7A6E8A' };
+const STORE_SETTINGS = 'vypusto-settings-v2';
+let settings = { colors: { ...DEFAULT_COLORS } };
+
+/* Convert #RRGGBB to rgba() with alpha */
+function hexAlpha(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* Lighten a hex color for background tint (mix with white) */
+function hexToBg(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  const mix = (c) => Math.round(c + (255-c)*0.82);
+  return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+}
+
+function applySettingsColors() {
+  const c = settings.colors;
+  /* Update CSS variables */
+  const s = document.documentElement.style;
+  s.setProperty('--c-prace',    c.prace);
+  s.setProperty('--c-prace-bg', hexToBg(c.prace));
+  s.setProperty('--c-rodina',    c.rodina);
+  s.setProperty('--c-rodina-bg', hexToBg(c.rodina));
+  s.setProperty('--c-dom',       c.domacnost);
+  s.setProperty('--c-dom-bg',    hexToBg(c.domacnost));
+  s.setProperty('--c-ost',       c.ostatni);
+  s.setProperty('--c-ost-bg',    hexToBg(c.ostatni));
+  /* Update CAT lookup */
+  CAT.prace.color     = c.prace;
+  CAT.rodina.color    = c.rodina;
+  CAT.domacnost.color = c.domacnost;
+  CAT.ostatni.color   = c.ostatni;
+}
+
+function _saveSettingsLocal() {
+  try { localStorage.setItem(STORE_SETTINGS, JSON.stringify(settings)); } catch(e) {}
+}
+
+function _loadSettingsLocal() {
+  try {
+    const raw = localStorage.getItem(STORE_SETTINGS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.colors) {
+        settings = { colors: { ...DEFAULT_COLORS, ...parsed.colors } };
+        applySettingsColors();
+      }
+    }
+  } catch(e) {}
+}
+
+function saveSettings() {
+  _saveSettingsLocal();
+  applySettingsColors();
+  rerender();
+}
+
+function renderSettings() {
+  const c = settings.colors;
+  const keys = ['prace','rodina','domacnost','ostatni'];
+  keys.forEach(k => {
+    const inp = document.getElementById(`js-ns-${k}`);
+    const sw  = document.getElementById(`js-ns-swatch-${k}`);
+    if (inp) inp.value = c[k] || DEFAULT_COLORS[k];
+    if (sw)  sw.style.background = c[k] || DEFAULT_COLORS[k];
+  });
+}
+
 const DEFAULT_TASKS     = [];
 const DEFAULT_NOTES     = [];
 const DEFAULT_BIRTHDAYS = [];
@@ -2347,6 +2503,7 @@ function saveCalEvents() {
 
 /* load all data from Firestore; fall back to localStorage */
 async function loadAllData() {
+  _loadSettingsLocal();
   if (!currentUser) {
     _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal(); return;
   }
@@ -2971,12 +3128,15 @@ function renderDnes(animate = false) {
   const dayEvs = getCalEventsForDate(targetStr);
   $('js-ev-cnt').textContent = `${dayEvs.length}`;
   $('js-events').innerHTML = dayEvs.length
-    ? dayEvs.map(e => `
+    ? dayEvs.map(e => {
+        const tDisp = e.time ? (e.timeTo ? `${e.time}–${e.timeTo}` : e.time) : '—';
+        return `
         <div class="ev-card" style="border-left-color:${e.color || CAT[e.tag]?.color||'#999'}">
-          <span class="ev-time">${e.time || '—'}</span>
+          <span class="ev-time">${tDisp}</span>
           <span class="ev-title">${e.title}</span>
           <button class="ev-card-del" data-evid="${e.id}" title="Smazat událost">×</button>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : `<div class="empty" style="padding:16px 0">
          <div class="empty-txt">${isTom?'Zítra':'Dnes'} žádné pevné časy.</div>
          <button class="empty-cta" onclick="openModal('${targetStr}','event')">+ Přidat událost</button>
@@ -3330,16 +3490,19 @@ function openDaySheet(dateStr) {
 
   if (evs.length > 0) {
     bodyHtml += `<span class="day-section-lbl">Kde musím být</span>`;
-    bodyHtml += evs.map(e => `
+    bodyHtml += evs.map(e => {
+      const timeDisplay = e.time ? (e.timeTo ? `${e.time}–${e.timeTo}` : e.time) : '—';
+      return `
       <div class="day-ev-row">
-        <span class="day-ev-time">${e.time||'—'}</span>
+        <span class="day-ev-time">${timeDisplay}</span>
         <span class="day-ev-title">${e.title}</span>
         <span class="day-ev-dot" style="background:${CAT[e.tag]?.color||'#999'}"></span>
         ${!e._isRec ? `<div class="day-row-acts">
           <button class="day-row-act" data-edit-id="${e.id}" data-edit-type="event" title="Upravit">✎</button>
           <button class="day-row-act del" data-del-id="${e.id}" data-del-type="event" title="Smazat">✕</button>
         </div>` : ''}
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   if (taskList.length > 0) {
@@ -3360,7 +3523,7 @@ function openDaySheet(dateStr) {
     bodyHtml = `<p class="day-empty">Nic naplánováno.<br>Volný den!</p>`;
   }
 
-  const dateArg = dateStr === todStr ? 'today' : dateStr === tomStr ? 'tomorrow' : 'none';
+  const dateArg = dateStr === todStr ? 'today' : dateStr === tomStr ? 'tomorrow' : dateStr;
   bodyHtml += `<button class="day-add-btn" data-date-arg="${dateArg}">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Přidat záznam
@@ -3606,9 +3769,10 @@ function setView(v) {
   document.getElementById(`v-${v}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.sb-item').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('js-fab').style.display = (v === 'narozeniny' || v === 'poznamky' || v === 'opak') ? 'none' : '';
+  $('js-fab').style.display = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav') ? 'none' : '';
   if (v === 'mesic')      renderMesic();
   if (v === 'ukoly')      renderUkoly(true);
+  if (v === 'nastav')     renderSettings();
   if (v === 'dnes')       renderDnes(true);
   if (v === 'narozeniny') renderNarozeniny();
   if (v === 'poznamky')   renderPoznamky();
@@ -3628,7 +3792,7 @@ function _setModalType(type) {
   $('js-type-task').classList.toggle('on',  type === 'task');
   $('js-type-event').classList.toggle('on', type === 'event');
   const isEv = type === 'event';
-  $('js-ev-date-row').style.display  = isEv ? '' : 'none';
+  // time row only for events; date row always visible
   $('js-ev-time-row').style.display  = isEv ? '' : 'none';
   $('js-rec-section').style.display  = isEv ? 'none' : '';
   // "Bez data" button only for tasks
@@ -3675,18 +3839,26 @@ function openModal(presetDate, presetType, editId, editType) {
     prefillTitle = ev.title;
     const [ey, em, ed_] = ev.date.split('-').map(Number);
     prefillEvDate = `${ed_}.${em}.${ey}`;
-    prefillEvTime = ev.time || '';
+    prefillEvTime = ev.time   || '';
+    S.form._prefillTimeTo = ev.timeTo || '';
+  }
+
+  // Handle YYYY-MM-DD presetDate (specific calendar day)
+  if (!editId && presetDate && /^\d{4}-\d{2}-\d{2}$/.test(presetDate)) {
+    S.form.date = presetDate;
+    const [py, pm, pd] = presetDate.split('-').map(Number);
+    prefillEvDate = `${pd}.${pm}.${py}`;
   }
 
   $('js-overlay').classList.add('open');
   $('js-task-input').value = prefillTitle;
   $('js-ev-date').value    = prefillEvDate;
   $('js-ev-time').value    = prefillEvTime;
+  $('js-ev-time-to').value = S.form._prefillTimeTo || '';
   $('js-save').disabled = !prefillTitle;
   document.querySelectorAll('.s-tag').forEach(b => b.classList.toggle('on', !!S.form.tag && b.dataset.tag === S.form.tag));
   document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === S.form.date));
   document.querySelectorAll('.s-rec').forEach(b  => b.classList.toggle('on', b.dataset.r === S.form.rec));
-  $('js-task-colors').innerHTML = colorSwatchesHTML(S.form.color, 'task');
   _setModalType(S.form.type);
   setTimeout(() => $('js-task-input').focus(), 320);
 }
@@ -3702,6 +3874,7 @@ function _parseEvDate(dateStr, evDateInput) {
   const tom = new Date(now); tom.setDate(now.getDate() + 1);
   if (dateStr === 'today')    return dStr(now);
   if (dateStr === 'tomorrow') return dStr(tom);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr; // already YYYY-MM-DD
   // manual input
   const val = evDateInput.trim();
   if (val) {
@@ -3716,37 +3889,48 @@ function _parseEvDate(dateStr, evDateInput) {
   return dStr(now); // fallback
 }
 
+function _parseTime(v) {
+  const t = v ? v.trim() : '';
+  return t.match(/^\d{1,2}:\d{2}$/) ? t.padStart(5,'0') : null;
+}
+
+function _resolveTaskDate() {
+  if (S.form.date === 'none') return null;
+  if (S.form.date === '__custom__') return _parseEvDate('__custom__', $('js-ev-date').value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(S.form.date)) return S.form.date;
+  return S.form.date; // 'today' | 'tomorrow'
+}
+
 function saveTask() {
   if (!S.form.title.trim()) return;
   if (S.form.type === 'event') {
     const dateStr = _parseEvDate(S.form.date, $('js-ev-date').value);
-    const timeRaw = $('js-ev-time').value.trim();
-    const timeVal = timeRaw.match(/^\d{1,2}:\d{2}$/) ? timeRaw.padStart(5,'0') : null;
+    const timeVal   = _parseTime($('js-ev-time').value);
+    const timeToVal = _parseTime($('js-ev-time-to').value);
     if (S.form.editEvId) {
       const idx = calEvents.findIndex(x => x.id === S.form.editEvId);
       if (idx >= 0) calEvents[idx] = { ...calEvents[idx],
         title: S.form.title.trim(), tag: S.form.tag || calEvents[idx].tag,
-        color: S.form.color || null, date: dateStr, time: timeVal };
+        date: dateStr, time: timeVal, timeTo: timeToVal };
     } else {
       calEvents.unshift({ id: Date.now(), title: S.form.title.trim(),
-        tag: S.form.tag || 'ostatni', color: S.form.color || null, date: dateStr, time: timeVal });
+        tag: S.form.tag || 'ostatni', date: dateStr, time: timeVal, timeTo: timeToVal });
     }
     saveCalEvents();
   } else {
+    const taskDate = _resolveTaskDate();
     if (S.form.editTaskId) {
       const t = tasks.find(x => x.id === S.form.editTaskId);
       if (t) {
         t.title = S.form.title.trim();
         t.tag   = S.form.tag || t.tag;
-        t.date  = S.form.date === 'none' ? null : S.form.date;
+        t.date  = taskDate;
         t.rec   = S.form.rec;
-        t.color = S.form.color || null;
       }
     } else {
       tasks.unshift({ id: Date.now(), title: S.form.title.trim(),
         tag: S.form.tag || 'ostatni', done: false,
-        date: S.form.date === 'none' ? null : S.form.date,
-        rec: S.form.rec, color: S.form.color || null });
+        date: taskDate, rec: S.form.rec });
     }
     saveTasks();
   }
@@ -4272,6 +4456,7 @@ function saveBday() {
 /* ─── INIT ─── */
 function initAppUI() {
   initDate();
+  applySettingsColors();
   renderDnes(true);
 }
 
@@ -4390,6 +4575,34 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('js-fab').addEventListener('click', () => openModal());
+
+  /* ── Settings ── */
+  $('js-ns-save').addEventListener('click', () => {
+    settings.colors.prace     = $('js-ns-prace').value;
+    settings.colors.rodina    = $('js-ns-rodina').value;
+    settings.colors.domacnost = $('js-ns-domacnost').value;
+    settings.colors.ostatni   = $('js-ns-ostatni').value;
+    saveSettings();
+    /* visual feedback */
+    const btn = $('js-ns-save');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Uloženo';
+    btn.style.opacity = '.7';
+    setTimeout(() => { btn.textContent = orig; btn.style.opacity = ''; }, 1400);
+  });
+
+  $('js-ns-reset').addEventListener('click', () => {
+    settings.colors = { ...DEFAULT_COLORS };
+    saveSettings();
+    renderSettings();
+  });
+
+  /* Live swatch preview on color input change */
+  ['prace','rodina','domacnost','ostatni'].forEach(k => {
+    const inp = document.getElementById(`js-ns-${k}`);
+    const sw  = document.getElementById(`js-ns-swatch-${k}`);
+    if (inp && sw) inp.addEventListener('input', () => { sw.style.background = inp.value; });
+  });
 
   $('js-overlay').addEventListener('click', e => {
     if (e.target === $('js-overlay')) closeModal();
