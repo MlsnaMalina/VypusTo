@@ -4715,6 +4715,13 @@ document.addEventListener('DOMContentLoaded', () => {
       /* register service worker for PWA */
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/prototype/sw.js').catch(() => {});
+        /* When a new SW activates it sends SW_UPDATED — reload once to get fresh HTML */
+        navigator.serviceWorker.addEventListener('message', e => {
+          if (e.data?.type === 'SW_UPDATED' && !sessionStorage.getItem('sw-reloaded')) {
+            sessionStorage.setItem('sw-reloaded', '1');
+            window.location.reload();
+          }
+        });
       }
     } else {
       currentUser = null;
