@@ -3,13 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#b93066">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>VypusTo</title>
+  <link rel="manifest" href="manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Caveat:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <style>
     /* ── RESET ── */
@@ -1452,9 +1459,132 @@
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
       .scratch-svg path { transition: none !important; stroke-dashoffset: 0 !important; }
     }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       LOADING OVERLAY
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #auth-loading {
+      position: fixed; inset: 0; z-index: 1000;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    #auth-loading.hidden { display: none; }
+    .auth-spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--primary);
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .auth-loading-text { font-family: var(--f-hand); font-size: 17px; color: var(--ink-2); }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       AUTH SCREEN
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #auth-screen {
+      position: fixed; inset: 0; z-index: 999;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      padding: 28px 24px;
+    }
+    #auth-screen.hidden { display: none; }
+    .auth-card { width: 100%; max-width: 380px; }
+    .auth-logo {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--f-hand); font-size: 26px; font-weight: 700; color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .auth-tagline { font-family: var(--f-hand); font-size: 14px; color: var(--ink-3); margin-bottom: 30px; }
+    .auth-title { font-family: var(--f-display); font-size: 21px; font-weight: 800; color: var(--ink); margin-bottom: 20px; }
+    .auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .auth-field label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+    .auth-field input {
+      padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 15px; color: var(--ink); background: var(--bg); transition: border-color .15s;
+    }
+    .auth-field input:focus { outline: none; border-color: var(--primary); }
+    .auth-btn {
+      width: 100%; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      cursor: pointer; border: none; margin-top: 6px; transition: opacity .15s, transform .12s;
+      font-family: var(--f-body);
+    }
+    .auth-btn:active { transform: scale(.97); }
+    .auth-btn-primary { background: var(--primary); color: #fff; }
+    .auth-btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .auth-error {
+      background: #fff0f0; border: 1px solid #fca5a5; color: #b91c1c;
+      border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 10px; display: none;
+    }
+    .auth-error.show { display: block; }
+    .auth-toggle { margin-top: 18px; text-align: center; font-size: 14px; color: var(--ink-3); }
+    .auth-toggle button {
+      background: none; border: none; color: var(--primary); font-weight: 600;
+      cursor: pointer; font-size: 14px; font-family: var(--f-body); padding: 2px 4px;
+    }
+    .auth-privacy { margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-3); line-height: 1.55; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       SIDEBAR USER FOOTER
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .sb-user {
+      padding: 12px 18px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px; margin-top: auto;
+    }
+    .sb-user-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--primary-lt);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--f-hand); font-size: 14px; font-weight: 700; color: var(--primary);
+      flex-shrink: 0;
+    }
+    .sb-user-email {
+      flex: 1; min-width: 0; font-size: 12px; color: var(--ink-3);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sb-logout {
+      width: 28px; height: 28px; border-radius: 7px; border: none; background: none;
+      color: var(--ink-3); cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s, color .15s; flex-shrink: 0;
+    }
+    .sb-logout:hover { background: var(--border); color: var(--ink); }
   </style>
 </head>
 <body>
+
+<!-- ═══════════ LOADING ═══════════ -->
+<div id="auth-loading">
+  <div class="auth-spinner"></div>
+  <div class="auth-loading-text">Načítání…</div>
+</div>
+
+<!-- ═══════════ AUTH SCREEN ═══════════ -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2C7 4 5 7.5 5 11c0 2.8 2 5 5 5.5 5-.5 5-3.5 5-5.5C15 7.5 13 4 10 2z" stroke="#b93066" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7.5 11.5l2 2 3-3.5" stroke="#b93066" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      VypusTo
+    </div>
+    <div class="auth-tagline">Pohlídá vše. Je krásná.</div>
+    <div class="auth-title" id="js-auth-title">Přihlaste se</div>
+    <div class="auth-field">
+      <label for="auth-email">E-mail</label>
+      <input type="email" id="auth-email" placeholder="vas@email.cz" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label for="auth-password">Heslo</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="auth-btn auth-btn-primary" id="js-auth-submit">Přihlásit se</button>
+    <div class="auth-error" id="js-auth-error"></div>
+    <div class="auth-toggle">
+      <span id="js-auth-toggle-text">Nemáte účet?</span>
+      <button id="js-auth-toggle-btn">Registrovat se</button>
+    </div>
+    <div class="auth-privacy">
+      Vaše data jsou šifrována a synchronizována<br>napříč všemi vašimi zařízeními.
+    </div>
+  </div>
+</div>
 
 <div id="app">
 
@@ -1496,6 +1626,13 @@
         Opakující se
       </button>
     </nav>
+    <div class="sb-user">
+      <div class="sb-user-avatar" id="js-sb-avatar">K</div>
+      <div class="sb-user-email" id="js-sb-email"></div>
+      <button class="sb-logout" id="js-logout" title="Odhlásit se">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
   </aside>
 
   <!-- ═══════════ MAIN PANEL ═══════════ -->
@@ -1895,6 +2032,69 @@
 <script>
 'use strict';
 
+/* ─── FIREBASE ─── */
+firebase.initializeApp({
+  apiKey:            'AIzaSyB6KsXhkbLEYW8c8ON3CdhPxnhrHLOQVs0',
+  authDomain:        'vypusto.firebaseapp.com',
+  projectId:         'vypusto',
+  storageBucket:     'vypusto.firebasestorage.app',
+  messagingSenderId: '417059191204',
+  appId:             '1:417059191204:web:52cff6c9ef1371b3a16931',
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+let currentUser = null;
+
+function userDataRef(docName) {
+  return db.collection('users').doc(currentUser.uid).collection('data').doc(docName);
+}
+
+/* ─── AUTH UI ─── */
+let authMode = 'login';
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  const isLogin = authMode === 'login';
+  document.getElementById('js-auth-title').textContent       = isLogin ? 'Přihlaste se' : 'Vytvořte účet';
+  document.getElementById('js-auth-submit').textContent      = isLogin ? 'Přihlásit se' : 'Registrovat se';
+  document.getElementById('js-auth-toggle-text').textContent = isLogin ? 'Nemáte účet?' : 'Máte účet?';
+  document.getElementById('js-auth-toggle-btn').textContent  = isLogin ? 'Registrovat se' : 'Přihlásit se';
+  document.getElementById('auth-password').setAttribute('autocomplete', isLogin ? 'current-password' : 'new-password');
+  document.getElementById('js-auth-error').classList.remove('show');
+}
+
+function handleAuthSubmit() {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl    = document.getElementById('js-auth-error');
+  errEl.classList.remove('show');
+  if (!email || !password) { errEl.textContent = 'Vyplňte e-mail a heslo.'; errEl.classList.add('show'); return; }
+
+  const btn = document.getElementById('js-auth-submit');
+  btn.disabled    = true;
+  btn.textContent = '…';
+
+  const promise = authMode === 'login'
+    ? auth.signInWithEmailAndPassword(email, password)
+    : auth.createUserWithEmailAndPassword(email, password);
+
+  promise.catch(e => {
+    btn.disabled    = false;
+    btn.textContent = authMode === 'login' ? 'Přihlásit se' : 'Registrovat se';
+    const msgs = {
+      'auth/invalid-email':        'Neplatný formát e-mailu.',
+      'auth/user-not-found':       'Účet s tímto e-mailem neexistuje.',
+      'auth/wrong-password':       'Nesprávné heslo.',
+      'auth/invalid-credential':   'Nesprávný e-mail nebo heslo.',
+      'auth/email-already-in-use': 'Tento e-mail je již zaregistrován.',
+      'auth/weak-password':        'Heslo musí mít alespoň 6 znaků.',
+      'auth/too-many-requests':    'Příliš mnoho pokusů. Zkuste to za chvíli.',
+    };
+    errEl.textContent = msgs[e.code] || 'Nastala chyba. Zkuste to znovu.';
+    errEl.classList.add('show');
+  });
+}
+
 /* ─── DATA ─── */
 const CAT = {
   prace:     { label:'Práce',     color:'#1C3557' },
@@ -2001,70 +2201,111 @@ const STORE_BDAYS  = 'vypusto-bdays-v1';
 const STORE_NOTES  = 'vypusto-notes-v1';
 const STORE_REC    = 'vypusto-rec-v1';
 
-function saveTasks() {
+/* local helpers (used as offline cache) */
+function _saveTasksLocal() {
   localStorage.setItem(STORE_TASKS, JSON.stringify(tasks.map(t => ({
-    ...t,
-    completedAt: t.completedAt instanceof Date ? t.completedAt.toISOString() : t.completedAt,
+    ...t, completedAt: t.completedAt instanceof Date ? t.completedAt.toISOString() : t.completedAt,
   }))));
 }
-
-function loadTasks() {
+function _loadTasksLocal() {
   try {
-    const raw = localStorage.getItem(STORE_TASKS);
-    if (!raw) return;
-    tasks = JSON.parse(raw).map(t => ({
-      ...t,
-      completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
-    }));
-  } catch(e) { /* use defaults */ }
+    const raw = localStorage.getItem(STORE_TASKS); if (!raw) return false;
+    tasks = JSON.parse(raw).map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
+    return true;
+  } catch(e) { return false; }
 }
-
-function saveBdays() {
-  localStorage.setItem(STORE_BDAYS, JSON.stringify(birthdays));
-}
-
-function loadBdays() {
+function _saveBdaysLocal() { localStorage.setItem(STORE_BDAYS, JSON.stringify(birthdays)); }
+function _loadBdaysLocal() {
   try {
-    const raw = localStorage.getItem(STORE_BDAYS);
-    if (!raw) return;
+    const raw = localStorage.getItem(STORE_BDAYS); if (!raw) return false;
     birthdays = JSON.parse(raw).map(b => {
-      // normalize id to number
       if (typeof b.id === 'string') b.id = parseInt(b.id) || b.id;
-      // migrate old {name} → {firstName, lastName}
       if (b.name && !b.firstName) {
         const parts = b.name.trim().split(/\s+/);
-        b.firstName = parts[0] || '';
-        b.lastName  = parts.slice(1).join(' ') || '';
+        b.firstName = parts[0] || ''; b.lastName = parts.slice(1).join(' ') || '';
         delete b.name;
       }
       if (!b.anniversaries) b.anniversaries = [];
       return b;
     });
-  } catch(e) { /* use defaults */ }
+    return true;
+  } catch(e) { return false; }
+}
+function _saveNotesLocal() { localStorage.setItem(STORE_NOTES, JSON.stringify(notes)); }
+function _loadNotesLocal() {
+  try { const raw = localStorage.getItem(STORE_NOTES); if (!raw) return false; notes = JSON.parse(raw); return true; } catch(e) { return false; }
+}
+function _saveRecLocal() { localStorage.setItem(STORE_REC, JSON.stringify(recurringEvents)); }
+function _loadRecLocal() {
+  try { const raw = localStorage.getItem(STORE_REC); if (!raw) return false; recurringEvents = JSON.parse(raw); return true; } catch(e) { return false; }
 }
 
+/* public save functions — write local cache + Firestore */
+function saveTasks() {
+  _saveTasksLocal();
+  if (currentUser) {
+    const items = tasks.map(t => ({ ...t, completedAt: t.completedAt instanceof Date ? t.completedAt.toISOString() : (t.completedAt || null) }));
+    userDataRef('tasks').set({ items }).catch(console.warn);
+  }
+}
+function saveBdays() {
+  _saveBdaysLocal();
+  if (currentUser) userDataRef('birthdays').set({ items: birthdays }).catch(console.warn);
+}
 function saveNotes() {
-  localStorage.setItem(STORE_NOTES, JSON.stringify(notes));
+  _saveNotesLocal();
+  if (currentUser) userDataRef('notes').set({ items: notes }).catch(console.warn);
 }
-
-function loadNotes() {
-  try {
-    const raw = localStorage.getItem(STORE_NOTES);
-    if (!raw) return;
-    notes = JSON.parse(raw);
-  } catch(e) { /* use defaults */ }
-}
-
 function saveRec() {
-  localStorage.setItem(STORE_REC, JSON.stringify(recurringEvents));
+  _saveRecLocal();
+  if (currentUser) userDataRef('recurring').set({ items: recurringEvents }).catch(console.warn);
 }
 
-function loadRec() {
+/* load all data from Firestore; fall back to localStorage */
+async function loadAllData() {
+  if (!currentUser) {
+    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); return;
+  }
   try {
-    const raw = localStorage.getItem(STORE_REC);
-    if (!raw) return;
-    recurringEvents = JSON.parse(raw);
-  } catch(e) { /* use defaults */ }
+    const [td, bd, nd, rd] = await Promise.all([
+      userDataRef('tasks').get(),
+      userDataRef('birthdays').get(),
+      userDataRef('notes').get(),
+      userDataRef('recurring').get(),
+    ]);
+
+    /* helper: Firestore → local if data exists, else try localStorage migration */
+    function merge(snap, setter, localLoader, localSaver) {
+      if (snap.exists && snap.data().items && snap.data().items.length > 0) {
+        setter(snap.data().items);
+      } else if (localLoader()) {
+        localSaver(); /* migrate existing localStorage → Firestore */
+      }
+      /* else: keep current defaults (empty arrays for new users) */
+    }
+
+    merge(td, items => {
+      tasks = items.map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
+      _saveTasksLocal();
+    }, _loadTasksLocal, saveTasks);
+
+    merge(bd, items => {
+      birthdays = items.map(b => { if (!b.anniversaries) b.anniversaries = []; return b; });
+      _saveBdaysLocal();
+    }, _loadBdaysLocal, saveBdays);
+
+    merge(nd, items => {
+      notes = items; _saveNotesLocal();
+    }, _loadNotesLocal, saveNotes);
+
+    merge(rd, items => {
+      recurringEvents = items; _saveRecLocal();
+    }, _loadRecLocal, saveRec);
+
+  } catch(e) {
+    console.warn('Firestore load failed, falling back to localStorage', e);
+    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal();
+  }
 }
 
 let tasks     = DEFAULT_TASKS.map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
@@ -3694,13 +3935,54 @@ function saveBday() {
 }
 
 /* ─── INIT ─── */
-document.addEventListener('DOMContentLoaded', () => {
-  loadTasks();
-  loadBdays();
-  loadNotes();
-  loadRec();
+function initAppUI() {
   initDate();
   renderDnes(true);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* ── Auth UI wiring ── */
+  document.getElementById('js-auth-submit').addEventListener('click', handleAuthSubmit);
+  document.getElementById('js-auth-toggle-btn').addEventListener('click', toggleAuthMode);
+  document.getElementById('auth-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAuthSubmit();
+  });
+  document.getElementById('auth-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('auth-password').focus();
+  });
+  document.getElementById('js-logout').addEventListener('click', () => auth.signOut());
+
+  /* ── Firebase auth state ── */
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('auth-loading').classList.remove('hidden');
+      document.getElementById('auth-screen').classList.add('hidden');
+
+      /* reset data to empty defaults for fresh users */
+      tasks = []; birthdays = DEFAULT_BIRTHDAYS.map(b => ({ ...b }));
+      notes = []; recurringEvents = [];
+
+      await loadAllData();
+
+      /* update sidebar user info */
+      const email = user.email || '';
+      document.getElementById('js-sb-email').textContent  = email;
+      document.getElementById('js-sb-avatar').textContent = email.charAt(0).toUpperCase();
+
+      document.getElementById('auth-loading').classList.add('hidden');
+      initAppUI();
+
+      /* register service worker for PWA */
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/prototype/sw.js').catch(() => {});
+      }
+    } else {
+      currentUser = null;
+      document.getElementById('auth-loading').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+  });
 
   document.querySelectorAll('.nav-btn:not(.ghost), .sb-item:not(.ghost)')
     .forEach(b => b.addEventListener('click', () => setView(b.dataset.v)));
