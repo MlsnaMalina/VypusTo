@@ -276,6 +276,18 @@
       border-radius: 2px;
       line-height: 1.4;
     }
+    /* Edge cases: now marker at start/end of range */
+    .tl-now--edge-l .tl-now-time,
+    .tl-now--edge-r .tl-now-time {
+      color: var(--ink-3);
+    }
+    .tl-now--edge-l .tl-now-dot,
+    .tl-now--edge-r .tl-now-dot {
+      background: var(--ink-3);
+      box-shadow: none;
+    }
+    .tl-now--edge-l,
+    .tl-now--edge-r { background: var(--ink-3); }
     @media (min-width: 720px) {
       .tl-wrap { margin-left: 0; margin-right: 0; padding: 0 8px; }
     }
@@ -3254,20 +3266,20 @@ function renderTimeline() {
 
   const now   = new Date();
   const hNow  = now.getHours() + now.getMinutes() / 60;
-  const START = 7, END = 22;
+  const START = 6, END = 23;
 
-  // hide outside working hours
-  if (hNow < START || hNow > END) { el.style.display = 'none'; return; }
   el.style.display = '';
 
-  const pct = (h) => ((h - START) / (END - START)) * 100;
-  const nowPct = pct(hNow);
+  const pct     = (h) => ((h - START) / (END - START)) * 100;
+  const nowPct  = Math.min(100, Math.max(0, pct(hNow)));
+  const isBeforeStart = hNow < START;
+  const isAfterEnd    = hNow > END;
 
-  // tick marks every 2h
+  // tick marks every 2h (skip first/last to avoid overflow)
   let ticks = '';
-  for (let h = START; h <= END; h += 2) {
+  for (let h = START + 2; h < END; h += 2) {
     const p = pct(h);
-    const lbl = h < 10 ? `0${h}:00` : `${h}:00`;
+    const lbl = `${String(h).padStart(2,'0')}:00`;
     ticks += `<div class="tl-tick" style="left:${p}%"></div>
               <div class="tl-hlbl" style="left:${p}%">${lbl}</div>`;
   }
@@ -3290,9 +3302,10 @@ function renderTimeline() {
     </div>`;
   });
 
-  // now marker
+  // now marker — always visible, clamped to track edges
   const hStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-  const nowMarker = `<div class="tl-now" style="left:${nowPct}%">
+  const edgeClass = isBeforeStart ? ' tl-now--edge-l' : isAfterEnd ? ' tl-now--edge-r' : '';
+  const nowMarker = `<div class="tl-now${edgeClass}" style="left:${nowPct}%">
     <div class="tl-now-dot"></div>
     <div class="tl-now-time">${hStr}</div>
   </div>`;
