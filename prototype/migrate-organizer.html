@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VypusTo — Import z Organizéru</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Caveat:wght@600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #b93066; --primary-lt: #fef0f6;
+  --ink: #111; --ink-2: #555; --ink-3: #999;
+  --bg: #f7f7f7; --surface: #fff; --border: #e8e8e8;
+  --green: #15803d; --green-bg: #dcfce7;
+  --f-hand: 'Caveat', cursive; --f-display: 'Syne', sans-serif; --f-body: 'Space Grotesk', sans-serif;
+}
+body { font-family: var(--f-body); background: var(--bg); color: var(--ink); min-height: 100vh; padding: 0 0 60px; }
+a { color: var(--primary); }
+
+/* ── HEADER ── */
+.header { background: var(--primary); color: #fff; padding: 28px 24px 24px; }
+.header-logo { font-family: var(--f-hand); font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 8px; opacity: .85; margin-bottom: 6px; }
+.header h1 { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+.header p { margin-top: 8px; opacity: .8; font-size: .9rem; line-height: 1.5; }
+
+/* ── LAYOUT ── */
+.container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+
+/* ── STEPS ── */
+.step { background: var(--surface); border-radius: 12px; padding: 22px; margin-top: 20px; box-shadow: 0 1px 8px rgba(0,0,0,.06); }
+.step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-title { font-family: var(--f-display); font-size: 1rem; font-weight: 800; }
+.step-num.done { background: var(--green); }
+
+/* ── SUMMARY CARDS ── */
+.summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+@media (min-width: 500px) { .summary-grid { grid-template-columns: repeat(4, 1fr); } }
+.sum-card { border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; }
+.sum-count { font-family: var(--f-display); font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+.sum-label { font-size: .78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── COLLAPSIBLE LISTS ── */
+details { border: 1px solid var(--border); border-radius: 9px; margin-bottom: 8px; overflow: hidden; }
+summary { padding: 11px 14px; cursor: pointer; font-size: .9rem; font-weight: 600; list-style: none; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '›'; color: var(--ink-3); transition: transform .2s; }
+details[open] summary::after { transform: rotate(90deg); }
+.item-list { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 5px; }
+.item-row { font-size: .83rem; color: var(--ink-2); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: flex-start; }
+.item-row:last-child { border-bottom: none; }
+.item-tag { font-size: .7rem; font-weight: 600; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; margin-top: 1px; }
+.tag-prace    { background: #EDF1F6; color: #1C3557; }
+.tag-rodina   { background: #F9EDE9; color: #C4614A; }
+.tag-domacnost{ background: #EBF3EE; color: #4A7C59; }
+.tag-ostatni  { background: #F0EEF3; color: #7A6E8A; }
+.item-done    { opacity: .5; text-decoration: line-through; }
+.item-date { font-size: .72rem; color: var(--ink-3); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+/* ── AUTH FORM ── */
+.auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.auth-field label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.auth-field input {
+  padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 15px; color: var(--ink); font-family: var(--f-body); transition: border-color .15s;
+}
+.auth-field input:focus { outline: none; border-color: var(--primary); }
+.btn-primary {
+  width: 100%; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 600;
+  background: var(--primary); color: #fff; border: none; cursor: pointer; font-family: var(--f-body);
+  transition: opacity .15s; margin-top: 4px;
+}
+.btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+.auth-error { background: #fff0f0; border: 1px solid #fca5a5; color: #b91c1c; border-radius: 8px; padding: 9px 14px; font-size: 13px; margin-top: 10px; display: none; }
+.auth-error.show { display: block; }
+.user-badge { background: var(--primary-lt); border: 1px solid #f5c2d7; border-radius: 9px; padding: 10px 14px; font-size: .88rem; color: var(--primary); font-weight: 600; display: none; }
+.user-badge.show { display: block; }
+
+/* ── OPTIONS ── */
+.option-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.option-row:last-child { border-bottom: none; }
+.option-row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer; }
+.option-label { font-size: .92rem; flex: 1; }
+.option-count { font-size: .8rem; color: var(--ink-3); }
+
+/* ── PROGRESS ── */
+.progress-wrap { margin-top: 14px; display: none; }
+.progress-wrap.show { display: block; }
+.progress-bar-bg { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.progress-bar { height: 100%; background: var(--primary); border-radius: 3px; width: 0; transition: width .3s; }
+.progress-log { font-size: .82rem; color: var(--ink-2); line-height: 1.6; max-height: 120px; overflow-y: auto; }
+
+/* ── SUCCESS ── */
+.success-box { text-align: center; padding: 10px 0; display: none; }
+.success-box.show { display: block; }
+.success-icon { font-size: 40px; margin-bottom: 12px; }
+.success-box h3 { font-family: var(--f-display); font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+.success-box p { font-size: .9rem; color: var(--ink-2); margin-bottom: 18px; }
+.btn-open { display: inline-block; padding: 12px 24px; background: var(--primary); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: .95rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="container">
+    <div class="header-logo">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2C7 4 5 7.5 5 11c0 2.8 2 5 5 5.5 5-.5 5-3.5 5-5.5C15 7.5 13 4 10 2z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7.5 11.5l2 2 3-3.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      VypusTo
+    </div>
+    <h1>Import z Organizéru</h1>
+    <p>Jednorázový přesun dat — úkoly, události, poznámky a kontakty.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── STEP 1: PREVIEW ── -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" id="step1-num">1</div>
+      <div class="step-title">Co se importuje</div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="sum-card"><div class="sum-count">15</div><div class="sum-label">aktivních úkolů</div></div>
+      <div class="sum-card"><div class="sum-count">25</div><div class="sum-label">událostí / schůzek</div></div>
+      <div class="sum-card"><div class="sum-count">18</div><div class="sum-label">kontaktů</div></div>
+      <div class="sum-card"><div class="sum-count">9</div><div class="sum-label">poznámek</div></div>
+    </div>
+
+    <details>
+      <summary>Aktivní úkoly (15) <span class="item-date">→ záložka Úkoly</span></summary>
+      <div class="item-list" id="list-active-tasks"></div>
+    </details>
+
+    <details>
+      <summary>Události a schůzky (25) <span class="item-date">→ záložka Úkoly + Měsíc</span></summary>
+      <div class="item-list" id="list-events"></div>
+    </details>
+
+    <details>
+      <summary>Kontakty a narozeniny (18) <span class="item-date">→ záložka Narozeniny</span></summary>
+      <div class="item-list" id="list-birthdays"></div>
+    </details>
+
+    <details>
+      <summary>Poznámky (9) <span class="item-date">→ záložka Poznámky</span></summary>
+      <div class="item-list" id="list-notes"></div>
+    </details>
+  </div>
+
+  <!-- ── STEP 2: OPTIONS ── -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">Nastavení importu</div>
+    </div>
+    <div class="option-row">
+      <input type="checkbox" id="opt-active" checked>
+      <label class="option-label" for="opt-active">Aktivní úkoly</label>
+      <span class="option-count">15 položek</span>
+    </div>
+    <div class="option-row">
+      <input type="checkbox" id="opt-events" checked>
+      <label class="option-label" for="opt-events">Události a schůzky</label>
+      <span class="option-count">25 položek</span>
+    </div>
+    <div class="option-row">
+      <input type="checkbox" id="opt-done">
+      <label class="option-label" for="opt-done">Splněné úkoly <small style="color:var(--ink-3)">(11 položek, starší záznamy)</small></label>
+      <span class="option-count">11 položek</span>
+    </div>
+    <div class="option-row">
+      <input type="checkbox" id="opt-birthdays" checked>
+      <label class="option-label" for="opt-birthdays">Kontakty a narozeniny</label>
+      <span class="option-count">18 položek</span>
+    </div>
+    <div class="option-row">
+      <input type="checkbox" id="opt-notes" checked>
+      <label class="option-label" for="opt-notes">Poznámky</label>
+      <span class="option-count">9 položek</span>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: LOGIN ── -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num" id="step3-num">3</div>
+      <div class="step-title">Přihlaste se do VypusTo</div>
+    </div>
+    <div id="login-form">
+      <div class="auth-field">
+        <label for="m-email">E-mail</label>
+        <input type="email" id="m-email" placeholder="vas@email.cz" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label for="m-password">Heslo</label>
+        <input type="password" id="m-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="btn-login">Přihlásit se</button>
+      <div class="auth-error" id="login-error"></div>
+    </div>
+    <div class="user-badge" id="user-badge"></div>
+  </div>
+
+  <!-- ── STEP 4: IMPORT ── -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">Spustit import</div>
+    </div>
+    <p style="font-size:.9rem;color:var(--ink-2);margin-bottom:16px;line-height:1.55">
+      Data se přidají k vašemu VypusTo účtu. Existující data <strong>nebudou smazána</strong> — import je bezpečný.
+    </p>
+    <button class="btn-primary" id="btn-import" disabled>Importovat data</button>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="progress-log" id="progress-log"></div>
+    </div>
+
+    <div class="success-box" id="success-box">
+      <div class="success-icon">🎉</div>
+      <h3>Import dokončen!</h3>
+      <p>Všechna data jsou nyní ve vašem VypusTo účtu<br>a synchronizují se napříč zařízeními.</p>
+      <a href="/prototype/" class="btn-open">Otevřít VypusTo</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ── FIREBASE ── */
+firebase.initializeApp({
+  apiKey:            'AIzaSyB6KsXhkbLEYW8c8ON3CdhPxnhrHLOQVs0',
+  authDomain:        'vypusto.firebaseapp.com',
+  projectId:         'vypusto',
+  storageBucket:     'vypusto.firebasestorage.app',
+  messagingSenderId: '417059191204',
+  appId:             '1:417059191204:web:52cff6c9ef1371b3a16931',
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+/* ══════════════════════════════════════════
+   IMPORT DATA  (z Organizéru, transformováno)
+══════════════════════════════════════════ */
+
+const ACTIVE_TASKS = [
+  {title:'Koupit dálniční známku',                          tag:'rodina',  date:null,          done:false},
+  {title:'Kontrola navigátorů — Zavoralová',                tag:'prace',   date:null,          done:false},
+  {title:'Smlouva — byt Babi s dědou',                      tag:'rodina',  date:'2026-05-28',  done:false},
+  {title:'Vyfotit najeté kilometry pro pojišťovnu',         tag:'rodina',  date:null,          done:false},
+  {title:'Koupit make-up',                                  tag:'ostatni', date:null,          done:false},
+  {title:'Odeslat fakturu 1/2 červen',                      tag:'prace',   date:'2026-06-08',  done:false},
+  {title:'Odeslat fakturu 2/2 červen',                      tag:'prace',   date:'2026-06-12',  done:false},
+  {title:'Odeslat fakturu 1/2 červenec',                    tag:'prace',   date:'2026-06-24',  done:false},
+  {title:'Odeslat fakturu 2/2 červenec',                    tag:'prace',   date:'2026-06-26',  done:false},
+  {title:'Wolfová — připravit sazbu pro sazeče',            tag:'prace',   date:null,          done:false},
+  {title:'Nahlásit kamínek ve skle — auto',                 tag:'ostatni', date:null,          done:false},
+  {title:'Zrušit předplatné Oneplay + herohero + Forendors',tag:'rodina',  date:'2026-05-29',  done:false},
+  {title:'Testové nouzové volání',                          tag:'prace',   date:'2026-06-09',  done:false},
+  {title:'Uzavřít všechny věci v Navisionu',                tag:'prace',   date:'2026-06-24',  done:false},
+  {title:'Reklamace Vodafone',                              tag:'rodina',  date:'2026-06-03',  done:false},
+];
+
+const DONE_TASKS = [
+  {title:'Vyplnit přihlášku do školky — prázdninový provoz',tag:'rodina',  date:'2026-05-28',  done:true, completedAt:'2026-06-03T09:00:39.842Z'},
+  {title:'Koupit ústní vodu',                               tag:'ostatni', date:null,          done:true, completedAt:'2026-06-03T11:42:59.874Z'},
+  {title:'Umýt si vlasy',                                   tag:'ostatni', date:'2026-05-29',  done:true, completedAt:'2026-06-01T18:23:29.191Z'},
+  {title:'Reklamace Vodafone modem',                        tag:'rodina',  date:'2026-05-30',  done:true, completedAt:'2026-05-31T08:00:25.700Z'},
+  {title:'Reklamovat rýžovar',                              tag:'rodina',  date:'2026-06-01',  done:true, completedAt:'2026-06-03T13:56:48.235Z'},
+  {title:'Reklamace rýžovar',                               tag:'rodina',  date:'2026-06-03',  done:true, completedAt:'2026-06-03T09:26:06.513Z'},
+  {title:'Telefon USA',                                     tag:'ostatni', date:'2026-06-03',  done:true, completedAt:'2026-06-03T11:43:01.249Z'},
+  {title:'Pojištění USA',                                   tag:'ostatni', date:'2026-06-03',  done:true, completedAt:'2026-06-03T11:43:02.080Z'},
+  {title:'Nákup Rohlík',                                    tag:'rodina',  date:'2026-06-03',  done:true, completedAt:'2026-06-03T08:47:18.412Z'},
+  {title:'Zaplatit stravné — Matýsek',                      tag:'rodina',  date:'2026-06-10',  done:true, completedAt:'2026-06-03T09:00:36.991Z'},
+  {title:'Spartak — odpověď',                               tag:'rodina',  date:'2026-06-04',  done:true, completedAt:'2026-06-04T06:28:36.190Z'},
+];
+
+const EVENTS = [
+  {title:'Matýsek — doktorka (10:15)',                            tag:'rodina',  date:'2026-05-25', done:false},
+  {title:'Michal — doktor (07:30)',                               tag:'rodina',  date:'2026-05-25', done:false},
+  {title:'Babí s dědou na návštěvu @ Doma (16:00)',               tag:'rodina',  date:'2026-05-30', done:false},
+  {title:'Speciální pedagožka @ Klánovice (14:00)',               tag:'rodina',  date:'2026-06-01', done:false},
+  {title:'Já — zubař @ The Clinic (08:00)',                       tag:'ostatni', date:'2026-06-02', done:false},
+  {title:'Michal — pivo s klukama @ Vyšehrad (18:00)',            tag:'rodina',  date:'2026-06-04', done:false},
+  {title:'Fyzio Matýsek (16:00)',                                  tag:'rodina',  date:'2026-06-04', done:false},
+  {title:'Matýsek — školka hasiči',                               tag:'rodina',  date:'2026-06-04', done:false},
+  {title:'Iva call @ Doma (10:00)',                                tag:'prace',   date:'2026-06-05', done:false},
+  {title:'Matýsek — Dětský den',                                  tag:'rodina',  date:'2026-06-06', done:false},
+  {title:'Tesla — autonomní jízda @ Tesla (13:00)',               tag:'ostatni', date:'2026-06-08', done:false},
+  {title:'Webinář Eliška Vyhnánková @ Zoom (18:00)',              tag:'prace',   date:'2026-06-08', done:false},
+  {title:'Matýsek — fyzio @ Šestajovice (16:00)',                 tag:'rodina',  date:'2026-06-09', done:false},
+  {title:'WK porada @ doma (10:00)',                              tag:'prace',   date:'2026-06-10', done:false},
+  {title:'Kukátko (oční) Matýsek @ Pankrác (09:25)',             tag:'rodina',  date:'2026-06-12', done:false},
+  {title:'Logopedie Matýsek @ Počernice (14:00)',                 tag:'rodina',  date:'2026-06-12', done:false},
+  {title:'Matýsek — Čestlická pouť',                             tag:'rodina',  date:'2026-06-14', done:false},
+  {title:'Zubařka Michal @ The Clinic (13:30)',                   tag:'rodina',  date:'2026-06-15', done:false},
+  {title:'Káťa — Dovolená (16.6–23.6)',                          tag:'ostatni', date:'2026-06-16', done:false},
+  {title:'Matýsek — klaun ve školce @ Školka (15:30)',           tag:'rodina',  date:'2026-06-23', done:false},
+  {title:'Zkoušky judo (15:30)',                                  tag:'rodina',  date:'2026-06-24', done:false},
+  {title:'Elektroměr @ Chalupa (10:00)',                          tag:'ostatni', date:'2026-06-29', done:false},
+  {title:'Matýsek — Tábor (13.7–17.7)',                          tag:'rodina',  date:'2026-07-13', done:false},
+  {title:'Matýsek — očkování žloutenka A @ Pediatrie (12:00)',   tag:'rodina',  date:'2026-07-21', done:false},
+  {title:'Speciální pedagožka (13:30)',                           tag:'rodina',  date:'2026-09-07', done:false},
+];
+
+const BIRTHDAYS = [
+  // Se skutečnými narozeninami
+  {firstName:'Dana',    lastName:'Schmiedtová',     day:3,  month:2,  yearBorn:1949, namedayOverride:{month:12,day:11}, anniversaries:[]},
+  {firstName:'Jaroslav',lastName:'Juroška',          day:17, month:7,  yearBorn:1987, namedayOverride:{month:4, day:27}, anniversaries:[]},
+  {firstName:'Kamila',  lastName:'Mlsnová',          day:12, month:5,  yearBorn:1988, namedayOverride:{month:5, day:31}, anniversaries:[]},
+  {firstName:'Kateřina',lastName:'Mlsnová',          day:27, month:5,  yearBorn:1986, namedayOverride:{month:11,day:25}, anniversaries:[]},
+  {firstName:'Martin',  lastName:'Mlsna st.',        day:2,  month:1,  yearBorn:1985, namedayOverride:{month:11,day:11}, anniversaries:[]},
+  {firstName:'Michal',  lastName:'Mlsna',            day:12, month:5,  yearBorn:1988, namedayOverride:{month:9, day:29}, anniversaries:[]},
+  {firstName:'Michal',  lastName:'Bašta',            day:9,  month:1,  yearBorn:1986, namedayOverride:{month:9, day:29}, anniversaries:[]},
+  {firstName:'Natálie', lastName:'Kolomičenková',    day:9,  month:1,  yearBorn:1988, namedayOverride:{month:12,day:21}, anniversaries:[]},
+  {firstName:'Nela',    lastName:'Krejčiříková',     day:21, month:6,  yearBorn:2019, namedayOverride:{month:2, day:2},  anniversaries:[]},
+  {firstName:'Olga',    lastName:'Krejčiříková',     day:29, month:12, yearBorn:1985, namedayOverride:{month:7, day:11}, anniversaries:[]},
+  // Pouze svátek (datum svátku použito jako datum narozenin)
+  {firstName:'Bruno',   lastName:'Watson',           day:11, month:6,  yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'David',   lastName:'',                 day:30, month:12, yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'Eliška',  lastName:'Kabátová',         day:5,  month:10, yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'Jan',     lastName:'Juroška',          day:24, month:6,  yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'Marta',   lastName:'Dočkalová',        day:29, month:7,  yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'Milan',   lastName:'Mondek',           day:18, month:6,  yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'Radka',   lastName:'Mondeková',        day:14, month:9,  yearBorn:null, namedayOverride:null, anniversaries:[]},
+  {firstName:'Tereza',  lastName:'',                 day:15, month:10, yearBorn:null, namedayOverride:null, anniversaries:[]},
+];
+
+const NOTES = [
+  {title:'Faktura',           body:'Nežádáno o 41 Kč',                                                        pinned:true,  tag:null, createdAt:'2026-05-28'},
+  {title:'Kroužky',           body:'Opakující se události jako fotbal a judo',                                 pinned:false, tag:null, createdAt:'2026-06-01'},
+  {title:'Organizér',         body:'Přidat trucker menstruace',                                                pinned:false, tag:null, createdAt:'2026-05-31'},
+  {title:'Férová domácnost',  body:'Interaktivní test',                                                        pinned:false, tag:null, createdAt:'2026-05-29'},
+  {title:'Finance',           body:'V kalendáři možnost rozkliknout konkrétní den a podívat se na výdaje v daném dni.', pinned:false, tag:null, createdAt:'2026-05-28'},
+  {title:'Štítky',            body:'Přidat štítky: auto, lékaři, Matýsek, školka apod.',                      pinned:false, tag:null, createdAt:'2026-05-28'},
+  {title:'Matýsek',           body:'Uplatnit poukázku do Farmaparku Soběhrady',                               pinned:false, tag:null, createdAt:'2026-05-28'},
+  {title:'Dluh — máma',       body:'1933 odečíst z dluhu, co máme u maminky',                                 pinned:false, tag:null, createdAt:'2026-05-28'},
+  {title:'Zmrzlina',          body:'300ml smetany min. 30 % bez laktózy\n1l plnotučného mléka bez laktózy',   pinned:false, tag:null, createdAt:'2026-05-27'},
+];
+
+/* ── RENDER LISTS ── */
+function tagBadge(tag) {
+  const labels = {prace:'Práce', rodina:'Rodina', domacnost:'Domácnost', ostatni:'Ostatní'};
+  return `<span class="item-tag tag-${tag}">${labels[tag]||tag}</span>`;
+}
+function fmtDate(d) {
+  if (!d) return '';
+  const [y,m,dd] = d.split('-');
+  return `${parseInt(dd)}.${parseInt(m)}.`;
+}
+
+function renderList(id, items, showDate = true) {
+  const el = document.getElementById(id);
+  el.innerHTML = items.map(it => `
+    <div class="item-row ${it.done ? 'item-done' : ''}">
+      ${tagBadge(it.tag)}
+      <span style="flex:1">${it.title}</span>
+      ${showDate && it.date ? `<span class="item-date">${fmtDate(it.date)}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderBdays() {
+  const el = document.getElementById('list-birthdays');
+  el.innerHTML = BIRTHDAYS.map(b => `
+    <div class="item-row">
+      <span style="flex:1">${b.firstName} ${b.lastName}</span>
+      <span class="item-date">${b.yearBorn ? `${b.day}.${b.month}.${b.yearBorn}` : `svátek ${b.day}.${b.month}.`}</span>
+    </div>
+  `).join('');
+}
+function renderNotesList() {
+  const el = document.getElementById('list-notes');
+  el.innerHTML = NOTES.map(n => `
+    <div class="item-row">
+      <span style="flex:1;font-weight:600">${n.title}</span>
+      <span class="item-date" style="max-width:160px;white-space:normal;text-align:right;color:var(--ink-3)">${n.body.substring(0,40)}${n.body.length>40?'…':''}</span>
+    </div>
+  `).join('');
+}
+
+renderList('list-active-tasks', ACTIVE_TASKS);
+renderList('list-events', EVENTS);
+renderBdays();
+renderNotesList();
+
+/* ── AUTH ── */
+let currentUser = null;
+
+document.getElementById('btn-login').addEventListener('click', doLogin);
+document.getElementById('m-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogin() {
+  const email = document.getElementById('m-email').value.trim();
+  const pass  = document.getElementById('m-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('show');
+  if (!email || !pass) { errEl.textContent = 'Vyplňte e-mail a heslo.'; errEl.classList.add('show'); return; }
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = '…';
+  auth.signInWithEmailAndPassword(email, pass).catch(e => {
+    btn.disabled = false; btn.textContent = 'Přihlásit se';
+    const msgs = {
+      'auth/invalid-credential':'Nesprávný e-mail nebo heslo.',
+      'auth/user-not-found':'Účet neexistuje.',
+      'auth/wrong-password':'Nesprávné heslo.',
+      'auth/invalid-email':'Neplatný e-mail.',
+    };
+    errEl.textContent = msgs[e.code]||'Nastala chyba.';
+    errEl.classList.add('show');
+  });
+}
+
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('login-form').style.display = 'none';
+    const badge = document.getElementById('user-badge');
+    badge.textContent = '✓ Přihlášen/a jako ' + user.email;
+    badge.classList.add('show');
+    document.getElementById('step3-num').classList.add('done');
+    document.getElementById('btn-import').disabled = false;
+  } else {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('user-badge').classList.remove('show');
+    document.getElementById('btn-import').disabled = true;
+  }
+});
+
+/* ── IMPORT ── */
+document.getElementById('btn-import').addEventListener('click', runImport);
+
+function log(msg) {
+  const el = document.getElementById('progress-log');
+  el.innerHTML += msg + '<br>';
+  el.scrollTop = el.scrollHeight;
+}
+function setProgress(pct) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+async function runImport() {
+  if (!currentUser) return;
+  const btn = document.getElementById('btn-import');
+  btn.disabled = true;
+  document.getElementById('progress-wrap').classList.add('show');
+
+  const uid    = currentUser.uid;
+  const base   = db.collection('users').doc(uid).collection('data');
+  const today  = new Date(); today.setHours(0,0,0,0);
+  const todStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const tomStr = (() => { const d=new Date(today); d.setDate(d.getDate()+1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+
+  /* ── load existing ── */
+  log('Načítám stávající data…');
+  setProgress(5);
+  let existingTasks = [], existingBdays = [], existingNotes = [];
+  try {
+    const [td, bd, nd] = await Promise.all([base.doc('tasks').get(), base.doc('birthdays').get(), base.doc('notes').get()]);
+    if (td.exists && td.data().items) existingTasks = td.data().items;
+    if (bd.exists && bd.data().items) existingBdays = bd.data().items;
+    if (nd.exists && nd.data().items) existingNotes = nd.data().items;
+  } catch(e) { log('⚠️ Varování: nepodařilo se načíst stávající data, import pokračuje.'); }
+
+  setProgress(15);
+
+  /* ── build new tasks ── */
+  let nextTaskId = (existingTasks.reduce((m,t)=>Math.max(m,typeof t.id==='number'?t.id:0),0)) + 1;
+
+  const includeActive = document.getElementById('opt-active').checked;
+  const includeEvents = document.getElementById('opt-events').checked;
+  const includeDone   = document.getElementById('opt-done').checked;
+  const includeBdays  = document.getElementById('opt-birthdays').checked;
+  const includeNotes  = document.getElementById('opt-notes').checked;
+
+  let newTasks = [...existingTasks];
+  const existingTitles = new Set(existingTasks.map(t => t.title?.trim().toLowerCase()));
+
+  function addTask(item) {
+    if (existingTitles.has(item.title.trim().toLowerCase())) return; // skip duplicate
+    const dateVal = item.date === todStr ? 'today' : item.date === tomStr ? 'tomorrow' : (item.date || null);
+    newTasks.push({
+      id: nextTaskId++,
+      title: item.title,
+      tag: item.tag,
+      date: dateVal,
+      rec: 'none',
+      color: null,
+      done: item.done,
+      completedAt: item.completedAt ? item.completedAt : (item.done ? new Date().toISOString() : undefined),
+    });
+    existingTitles.add(item.title.trim().toLowerCase());
+  }
+
+  if (includeActive) { ACTIVE_TASKS.forEach(addTask); log(`✓ Aktivní úkoly přidány`); }
+  if (includeEvents) { EVENTS.forEach(addTask);        log(`✓ Události přidány`); }
+  if (includeDone)   { DONE_TASKS.forEach(addTask);    log(`✓ Splněné úkoly přidány`); }
+  setProgress(40);
+
+  /* ── birthdays ── */
+  let nextBdayId = (existingBdays.reduce((m,b)=>Math.max(m,typeof b.id==='number'?b.id:0),0)) + 1;
+  let newBdays = [...existingBdays];
+  if (includeBdays) {
+    const existingBdayNames = new Set(existingBdays.map(b => `${b.firstName} ${b.lastName}`.trim().toLowerCase()));
+    BIRTHDAYS.forEach(b => {
+      const key = `${b.firstName} ${b.lastName}`.trim().toLowerCase();
+      if (!existingBdayNames.has(key)) {
+        newBdays.push({ ...b, id: nextBdayId++ });
+        existingBdayNames.add(key);
+      }
+    });
+    log(`✓ Kontakty a narozeniny přidány`);
+  }
+  setProgress(60);
+
+  /* ── notes ── */
+  let nextNoteId = (existingNotes.reduce((m,n)=>Math.max(m,typeof n.id==='number'?n.id:0),0)) + 1;
+  let newNotes = [...existingNotes];
+  if (includeNotes) {
+    const existingNoteTitles = new Set(existingNotes.map(n => n.title?.trim().toLowerCase()));
+    NOTES.forEach(n => {
+      if (!existingNoteTitles.has(n.title.trim().toLowerCase())) {
+        newNotes.push({ ...n, id: nextNoteId++ });
+        existingNoteTitles.add(n.title.trim().toLowerCase());
+      }
+    });
+    log(`✓ Poznámky přidány`);
+  }
+  setProgress(75);
+
+  /* ── write to Firestore ── */
+  log('Ukládám do Firestore…');
+  try {
+    const writes = [];
+    if (includeActive || includeEvents || includeDone) {
+      // clean up completedAt undefined before saving
+      const cleanTasks = newTasks.map(t => {
+        const ct = t.completedAt instanceof Date ? t.completedAt.toISOString() : (t.completedAt||null);
+        return { ...t, completedAt: ct };
+      });
+      writes.push(base.doc('tasks').set({ items: cleanTasks }));
+    }
+    if (includeBdays) writes.push(base.doc('birthdays').set({ items: newBdays }));
+    if (includeNotes) writes.push(base.doc('notes').set({ items: newNotes }));
+    await Promise.all(writes);
+    setProgress(100);
+    log('✅ Hotovo!');
+    document.getElementById('success-box').classList.add('show');
+    document.getElementById('progress-wrap').style.marginBottom = '16px';
+  } catch(e) {
+    log('❌ Chyba při ukládání: ' + e.message);
+    log('Tip: zkontrolujte Firestore Security Rules v Firebase konzoli.');
+    btn.disabled = false;
+    setProgress(0);
+  }
+}
+</script>
+</body>
+</html>
