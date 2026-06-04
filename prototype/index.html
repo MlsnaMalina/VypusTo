@@ -4478,17 +4478,11 @@ function saveNote() {
   const body  = ($('js-note-body').value  || S.noteForm.body  || '').trim();
   const tag   = S.noteForm.tag || 'ostatni';
   if (!title) return;
-  notes.unshift({
-    id:        Date.now(),
-    title,
-    body,
-    tag,
-    pinned:    false,
-    createdAt: dStr(new Date()),
-  });
+  const newNote = { id: Date.now(), title, body, tag, pinned: false, createdAt: dStr(new Date()) };
+  notes.unshift(newNote);
   saveNotes();
   closeNoteModal();
-  renderPoznamky();
+  setView('poznamky');   /* force view + re-render in one shot */
 }
 
 function openNoteAction(id) {
