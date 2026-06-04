@@ -2103,37 +2103,9 @@ const CAT = {
   ostatni:   { label:'Ostatní',   color:'#7A6E8A' },
 };
 
-const DEFAULT_TASKS = [
-  { id:1,  title:'Zavolat zubařovi — objednání pro Tomáše',  tag:'rodina',    done:false, date:'today',    rec:'none' },
-  { id:2,  title:'Koupit dárek pro Markétu',                 tag:'ostatni',   done:false, date:'today',    rec:'none' },
-  { id:3,  title:'Odeslat fakturu klientovi',                tag:'prace',     done:false, date:'today',    rec:'none' },
-  { id:4,  title:'Čištění myčky',                            tag:'domacnost', done:false, date:'today',    rec:'monthly' },
-  { id:5,  title:'Příprava podkladů na meeting',             tag:'prace',     done:true,  date:'today',    rec:'none',
-    completedAt: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 9, 15).toISOString() },
-  { id:6,  title:'Nákup na víkend',                          tag:'domacnost', done:false, date:'tomorrow', rec:'weekly' },
-  { id:7,  title:'Zaplatit pojistné — auto',                 tag:'ostatni',   done:false, date:'tomorrow', rec:'none' },
-  { id:8,  title:'Revize komínu',                            tag:'domacnost', done:false, date:null,       rec:'quarterly' },
-  { id:9,  title:'Přihlásit Honzíka na výlet školky',        tag:'rodina',    done:false, date:null,       rec:'none' },
-  { id:10, title:'Zamluvit stůl — narozeninová oslava',      tag:'rodina',    done:false, date:null,       rec:'none' },
-  { id:11, title:'Newsletter — červen',                      tag:'prace',     done:false, date:null,       rec:'monthly' },
-  { id:12, title:'Mazání kloubů sedačky',                    tag:'domacnost', done:false, date:null,       rec:'quarterly' },
-];
-
-const DEFAULT_NOTES = [
-  { id:1, title:'Agenda týmového meetingu', body:'1. Review Q2 cílů · 2. Nové projekty · 3. Team building · 4. AOB', tag:'prace', pinned:true, createdAt:'2026-06-03' },
-  { id:2, title:'Nákupní seznam — Velikonoce', body:'Vejce (20 ks), máslo, mouka, vanilka, čokoláda, dekorace, svíčky', tag:'rodina', pinned:false, createdAt:'2026-06-02' },
-  { id:3, title:'Recept — švestkový koláč', body:'300g mouky, 150g másla, 100g cukru, 2 vejce, 500g švestek. Péct 175°C / 45 min.', tag:'domacnost', pinned:false, createdAt:'2026-05-28' },
-  { id:4, title:'Knížky ke čtení', body:'Klára a slunce, Sapiens, Atomic Habits, Piranesi', tag:'ostatni', pinned:false, createdAt:'2026-05-15' },
-];
-
-const DEFAULT_BIRTHDAYS = [
-  { id:1, firstName:'Markéta', lastName:'',       day:1,  month:6,  yearBorn:1985, anniversaries:[] },
-  { id:2, firstName:'Honzík',  lastName:'',       day:15, month:8,  yearBorn:2020, anniversaries:[] },
-  { id:3, firstName:'Maminka', lastName:'',       day:15, month:5,  yearBorn:1958, anniversaries:[] },
-  { id:4, firstName:'Táta',    lastName:'',       day:22, month:10, yearBorn:1955, anniversaries:[] },
-  { id:5, firstName:'Terka',   lastName:'',       day:7,  month:3,  yearBorn:1990, anniversaries:[] },
-  { id:6, firstName:'Lukáš',   lastName:'Novák',  day:30, month:7,  yearBorn:1987, anniversaries:[] },
-];
+const DEFAULT_TASKS     = [];
+const DEFAULT_NOTES     = [];
+const DEFAULT_BIRTHDAYS = [];
 
 const events = [
   { title:'Školka — odvoz Honzíka',          time:'8:30',  tag:'rodina' },
@@ -2168,38 +2140,13 @@ const REC_CAT = {
   ostatni:   { label: 'Ostatní',   color: '#7A6E8A', bg: '#F0EEF3' },
 };
 
-let recurringEvents = [
-  { id: 1, title: 'Vysávání a mopování bytu', category: 'domacnost',
-    interval: { type: 'biweekly' }, startDate: '2026-05-23', lastDone: '2026-05-23',
-    description: 'Začít od ložnice, nezapomenout vysát pod postelí. Mop jen v kuchyni a koupelně.',
-    pushToMain: false, estimatedMinutes: 60 },
-  { id: 2, title: 'Platba nájmu', category: 'ostatni',
-    interval: { type: 'monthly' }, startDate: '2026-06-01', lastDone: '2026-06-01',
-    description: 'Převod do 5. dne v měsíci.\nČíslo účtu: 1234567890/0300. Částka: 18 500 Kč.',
-    pushToMain: true, estimatedMinutes: 5 },
-  { id: 3, title: 'Zubař — pravidelná kontrola', category: 'osobni',
-    interval: { type: 'custom', every: 180 }, startDate: '2026-01-15', lastDone: null,
-    description: 'MUDr. Novák, tel. 777 234 567. Ordinace Po–Pá 8–17 h.\nObjednat minimálně 2 týdny předem.',
-    pushToMain: false, estimatedMinutes: 45 },
-  { id: 4, title: 'Výměna filtru v digestoři', category: 'domacnost',
-    interval: { type: 'quarterly' }, startDate: '2026-03-01', lastDone: '2026-03-01',
-    description: 'Filtr je v zásuvce pod dřezem. Náhradní díl: IKEA NYTTIG FIL 700.',
-    pushToMain: false, estimatedMinutes: 15 },
-  { id: 5, title: 'Kontrola pojištění auta', category: 'ostatni',
-    interval: { type: 'yearly' }, startDate: '2026-09-15', lastDone: null,
-    description: 'Platí do 15. 9. Srovnat ceny na srovnavac.cz.\nSoučasná pojišťovna: Allianz, smlouva č. 123456.',
-    pushToMain: true, estimatedMinutes: 30 },
-  { id: 6, title: 'Praní ložního prádla', category: 'domacnost',
-    interval: { type: 'weekly' }, startDate: '2026-06-02', lastDone: '2026-06-02',
-    description: 'Prát na 60 °C. Přikrývky a polštáře 1× měsíčně na 60 °C.',
-    pushToMain: false, estimatedMinutes: 20 },
-];
+let recurringEvents = [];
 
 /* ─── PERSISTENCE ─── */
-const STORE_TASKS  = 'vypusto-tasks-v1';
-const STORE_BDAYS  = 'vypusto-bdays-v1';
-const STORE_NOTES  = 'vypusto-notes-v1';
-const STORE_REC    = 'vypusto-rec-v1';
+const STORE_TASKS  = 'vypusto-tasks-v2';
+const STORE_BDAYS  = 'vypusto-bdays-v2';
+const STORE_NOTES  = 'vypusto-notes-v2';
+const STORE_REC    = 'vypusto-rec-v2';
 
 /* local helpers (used as offline cache) */
 function _saveTasksLocal() {

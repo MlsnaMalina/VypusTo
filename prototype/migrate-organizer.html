@@ -86,6 +86,13 @@ details[open] summary::after { transform: rotate(90deg); }
 .option-label { font-size: .92rem; flex: 1; }
 .option-count { font-size: .8rem; color: var(--ink-3); }
 
+/* ── MODE TOGGLE ── */
+.mode-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+.mode-btn { flex: 1; padding: 10px 14px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--bg); font-family: var(--f-body); font-size: .88rem; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s, color .15s; text-align: center; }
+.mode-btn.active { border-color: var(--primary); background: var(--primary-lt); color: var(--primary); }
+.mode-desc { font-size: .83rem; color: var(--ink-2); line-height: 1.55; padding: 10px 12px; border-radius: 8px; background: var(--bg); margin-bottom: 4px; }
+.mode-desc.warn { background: #fff8ec; color: #92400e; border: 1px solid #fcd34d; }
+
 /* ── PROGRESS ── */
 .progress-wrap { margin-top: 14px; display: none; }
 .progress-wrap.show { display: block; }
@@ -215,10 +222,16 @@ details[open] summary::after { transform: rotate(90deg); }
       <div class="step-num">4</div>
       <div class="step-title">Spustit import</div>
     </div>
-    <p style="font-size:.9rem;color:var(--ink-2);margin-bottom:16px;line-height:1.55">
-      Data se přidají k vašemu VypusTo účtu. Existující data <strong>nebudou smazána</strong> — import je bezpečný.
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-overwrite" onclick="setMode('overwrite')">Přepsat vše</button>
+      <button class="mode-btn" id="mode-merge" onclick="setMode('merge')">Sloučit s existujícími</button>
+    </div>
+    <p class="mode-desc warn" id="mode-desc">
+      Stávající data ve VypusTo (včetně ukázkových) budou <strong>nahrazena</strong> daty z Organizéru. Doporučeno pro první import.
     </p>
-    <button class="btn-primary" id="btn-import" disabled>Importovat data</button>
+
+    <button class="btn-primary" id="btn-import" disabled>Přepsat data</button>
 
     <div class="progress-wrap" id="progress-wrap">
       <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
@@ -438,6 +451,26 @@ auth.onAuthStateChanged(user => {
   }
 });
 
+/* ── MODE ── */
+let importMode = 'overwrite'; // 'overwrite' | 'merge'
+
+function setMode(mode) {
+  importMode = mode;
+  document.getElementById('mode-overwrite').classList.toggle('active', mode === 'overwrite');
+  document.getElementById('mode-merge').classList.toggle('active', mode === 'merge');
+  const desc = document.getElementById('mode-desc');
+  const btn  = document.getElementById('btn-import');
+  if (mode === 'overwrite') {
+    desc.className = 'mode-desc warn';
+    desc.innerHTML = 'Stávající data ve VypusTo (včetně ukázkových) budou <strong>nahrazena</strong> daty z Organizéru. Doporučeno pro první import.';
+    btn.textContent = 'Přepsat data';
+  } else {
+    desc.className = 'mode-desc';
+    desc.innerHTML = 'Data z Organizéru se <strong>přidají</strong> k existujícím datům ve VypusTo. Duplicity (stejný název) se přeskočí.';
+    btn.textContent = 'Importovat data';
+  }
+}
+
 /* ── IMPORT ── */
 document.getElementById('btn-import').addEventListener('click', runImport);
 
@@ -462,33 +495,39 @@ async function runImport() {
   const todStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
   const tomStr = (() => { const d=new Date(today); d.setDate(d.getDate()+1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
 
-  /* ── load existing ── */
-  log('Načítám stávající data…');
-  setProgress(5);
+  const overwrite = importMode === 'overwrite';
+
+  /* ── load existing (only needed in merge mode) ── */
   let existingTasks = [], existingBdays = [], existingNotes = [];
-  try {
-    const [td, bd, nd] = await Promise.all([base.doc('tasks').get(), base.doc('birthdays').get(), base.doc('notes').get()]);
-    if (td.exists && td.data().items) existingTasks = td.data().items;
-    if (bd.exists && bd.data().items) existingBdays = bd.data().items;
-    if (nd.exists && nd.data().items) existingNotes = nd.data().items;
-  } catch(e) { log('⚠️ Varování: nepodařilo se načíst stávající data, import pokračuje.'); }
+  if (!overwrite) {
+    log('Načítám stávající data…');
+    setProgress(5);
+    try {
+      const [td, bd, nd] = await Promise.all([base.doc('tasks').get(), base.doc('birthdays').get(), base.doc('notes').get()]);
+      if (td.exists && td.data().items) existingTasks = td.data().items;
+      if (bd.exists && bd.data().items) existingBdays = bd.data().items;
+      if (nd.exists && nd.data().items) existingNotes = nd.data().items;
+    } catch(e) { log('⚠️ Varování: nepodařilo se načíst stávající data, import pokračuje.'); }
+  } else {
+    log('Režim přepsání — stávající data budou nahrazena…');
+    setProgress(5);
+  }
 
   setProgress(15);
 
-  /* ── build new tasks ── */
-  let nextTaskId = (existingTasks.reduce((m,t)=>Math.max(m,typeof t.id==='number'?t.id:0),0)) + 1;
-
+  /* ── build tasks ── */
   const includeActive = document.getElementById('opt-active').checked;
   const includeEvents = document.getElementById('opt-events').checked;
   const includeDone   = document.getElementById('opt-done').checked;
   const includeBdays  = document.getElementById('opt-birthdays').checked;
   const includeNotes  = document.getElementById('opt-notes').checked;
 
-  let newTasks = [...existingTasks];
-  const existingTitles = new Set(existingTasks.map(t => t.title?.trim().toLowerCase()));
+  let nextTaskId = overwrite ? 1 : (existingTasks.reduce((m,t)=>Math.max(m,typeof t.id==='number'?t.id:0),0) + 1);
+  let newTasks = overwrite ? [] : [...existingTasks];
+  const existingTitles = new Set(newTasks.map(t => t.title?.trim().toLowerCase()));
 
   function addTask(item) {
-    if (existingTitles.has(item.title.trim().toLowerCase())) return; // skip duplicate
+    if (!overwrite && existingTitles.has(item.title.trim().toLowerCase())) return;
     const dateVal = item.date === todStr ? 'today' : item.date === tomStr ? 'tomorrow' : (item.date || null);
     newTasks.push({
       id: nextTaskId++,
@@ -498,44 +537,44 @@ async function runImport() {
       rec: 'none',
       color: null,
       done: item.done,
-      completedAt: item.completedAt ? item.completedAt : (item.done ? new Date().toISOString() : undefined),
+      completedAt: item.completedAt ? item.completedAt : (item.done ? new Date().toISOString() : null),
     });
     existingTitles.add(item.title.trim().toLowerCase());
   }
 
-  if (includeActive) { ACTIVE_TASKS.forEach(addTask); log(`✓ Aktivní úkoly přidány`); }
-  if (includeEvents) { EVENTS.forEach(addTask);        log(`✓ Události přidány`); }
-  if (includeDone)   { DONE_TASKS.forEach(addTask);    log(`✓ Splněné úkoly přidány`); }
+  if (includeActive) { ACTIVE_TASKS.forEach(addTask); log(`✓ Aktivní úkoly`); }
+  if (includeEvents) { EVENTS.forEach(addTask);        log(`✓ Události a schůzky`); }
+  if (includeDone)   { DONE_TASKS.forEach(addTask);    log(`✓ Splněné úkoly`); }
   setProgress(40);
 
   /* ── birthdays ── */
-  let nextBdayId = (existingBdays.reduce((m,b)=>Math.max(m,typeof b.id==='number'?b.id:0),0)) + 1;
-  let newBdays = [...existingBdays];
+  let nextBdayId = overwrite ? 1 : (existingBdays.reduce((m,b)=>Math.max(m,typeof b.id==='number'?b.id:0),0) + 1);
+  let newBdays = overwrite ? [] : [...existingBdays];
   if (includeBdays) {
-    const existingBdayNames = new Set(existingBdays.map(b => `${b.firstName} ${b.lastName}`.trim().toLowerCase()));
+    const existingBdayNames = new Set(newBdays.map(b => `${b.firstName} ${b.lastName}`.trim().toLowerCase()));
     BIRTHDAYS.forEach(b => {
       const key = `${b.firstName} ${b.lastName}`.trim().toLowerCase();
-      if (!existingBdayNames.has(key)) {
+      if (overwrite || !existingBdayNames.has(key)) {
         newBdays.push({ ...b, id: nextBdayId++ });
         existingBdayNames.add(key);
       }
     });
-    log(`✓ Kontakty a narozeniny přidány`);
+    log(`✓ Kontakty a narozeniny`);
   }
   setProgress(60);
 
   /* ── notes ── */
-  let nextNoteId = (existingNotes.reduce((m,n)=>Math.max(m,typeof n.id==='number'?n.id:0),0)) + 1;
-  let newNotes = [...existingNotes];
+  let nextNoteId = overwrite ? 1 : (existingNotes.reduce((m,n)=>Math.max(m,typeof n.id==='number'?n.id:0),0) + 1);
+  let newNotes = overwrite ? [] : [...existingNotes];
   if (includeNotes) {
-    const existingNoteTitles = new Set(existingNotes.map(n => n.title?.trim().toLowerCase()));
+    const existingNoteTitles = new Set(newNotes.map(n => n.title?.trim().toLowerCase()));
     NOTES.forEach(n => {
-      if (!existingNoteTitles.has(n.title.trim().toLowerCase())) {
+      if (overwrite || !existingNoteTitles.has(n.title.trim().toLowerCase())) {
         newNotes.push({ ...n, id: nextNoteId++ });
         existingNoteTitles.add(n.title.trim().toLowerCase());
       }
     });
-    log(`✓ Poznámky přidány`);
+    log(`✓ Poznámky`);
   }
   setProgress(75);
 
@@ -543,16 +582,14 @@ async function runImport() {
   log('Ukládám do Firestore…');
   try {
     const writes = [];
-    if (includeActive || includeEvents || includeDone) {
-      // clean up completedAt undefined before saving
-      const cleanTasks = newTasks.map(t => {
-        const ct = t.completedAt instanceof Date ? t.completedAt.toISOString() : (t.completedAt||null);
-        return { ...t, completedAt: ct };
-      });
+    if (includeActive || includeEvents || includeDone || overwrite) {
+      const cleanTasks = newTasks.map(t => ({ ...t, completedAt: t.completedAt instanceof Date ? t.completedAt.toISOString() : (t.completedAt||null) }));
       writes.push(base.doc('tasks').set({ items: cleanTasks }));
     }
-    if (includeBdays) writes.push(base.doc('birthdays').set({ items: newBdays }));
-    if (includeNotes) writes.push(base.doc('notes').set({ items: newNotes }));
+    if (includeBdays || overwrite) writes.push(base.doc('birthdays').set({ items: newBdays }));
+    if (includeNotes || overwrite) writes.push(base.doc('notes').set({ items: newNotes }));
+    // also clear recurring sample data in overwrite mode
+    if (overwrite) writes.push(base.doc('recurring').set({ items: [] }));
     await Promise.all(writes);
     setProgress(100);
     log('✅ Hotovo!');
