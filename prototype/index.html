@@ -2722,6 +2722,25 @@ function toggleRecPush(id) {
 }
 
 /* ─── TIMELINE STRIP ─── */
+/* ── Extract time (HH:MM) from task title, e.g. "Fyzio (16:00)" → "16:00" ── */
+function extractTimeFromTitle(title) {
+  const m = (title || '').match(/\((\d{1,2}:\d{2})\)/);
+  return m ? m[1] : null;
+}
+
+/* ── Build event objects from tasks for a given date filter ── */
+function getTasksAsEvents(dateFilter) {
+  const toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  return tasks
+    .filter(t => !t.done && t.date === dateFilter)
+    .map(t => {
+      const time = extractTimeFromTitle(t.title);
+      return time ? { title: t.title, time, tag: t.tag, _taskId: t.id } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => toMin(a.time) - toMin(b.time));
+}
+
 function renderTimeline() {
   const el = $('js-tl');
   if (!el) return;
@@ -2746,8 +2765,8 @@ function renderTimeline() {
               <div class="tl-hlbl" style="left:${p}%">${lbl}</div>`;
   }
 
-  // event pins from today's events (only those with a time)
-  const todayEvs = events.filter(e => e.time);
+  // event pins: static events array + tasks with time in title
+  const todayEvs = [...events, ...getTasksAsEvents('today')].filter(e => e.time);
   let pins = '';
   todayEvs.forEach(e => {
     const [hh, mm] = e.time.split(':').map(Number);
@@ -2788,12 +2807,21 @@ function renderDnes(animate = false) {
   if (bday) { $('js-bday-txt').textContent = `Dnes slaví ${bday.name}`; bd.classList.add('visible'); }
   else       { bd.classList.remove('visible'); }
 
-  $('js-ev-cnt').textContent = `${events.length}`;
-  $('js-events').innerHTML = events.map(e => `
-    <div class="ev-card" style="border-left-color:${CAT[e.tag]?.color||'#999'}">
-      <span class="ev-time">${e.time}</span>
-      <span class="ev-title">${e.title}</span>
-    </div>`).join('');
+  const todayEvsFull = [...events, ...getTasksAsEvents('today')]
+    .sort((a, b) => {
+      const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
+      return toMin(a.time) - toMin(b.time);
+    });
+  $('js-ev-cnt').textContent = `${todayEvsFull.length}`;
+  $('js-events').innerHTML = todayEvsFull.length
+    ? todayEvsFull.map(e => `
+        <div class="ev-card" style="border-left-color:${CAT[e.tag]?.color||'#999'}">
+          <span class="ev-time">${e.time || '—'}</span>
+          <span class="ev-title">${e.title}</span>
+        </div>`).join('')
+    : `<div class="empty" style="padding:16px 0">
+         <div class="empty-txt">Dnes žádné pevné časy.</div>
+       </div>`;
 
   const today  = tasks.filter(t => t.date === 'today');
   const active = today.filter(t => !t.done);
@@ -2875,17 +2903,23 @@ function getDayItems(dateStr) {
   const tomStr = dStr(tomD);
   let evs = [], taskList = [];
   if (dateStr === todStr) {
-    evs = events; taskList = tasks.filter(t => t.date === 'today');
+    evs = [...events, ...getTasksAsEvents('today')];
+    taskList = tasks.filter(t => t.date === 'today');
   } else if (dateStr === tomStr) {
+    evs = getTasksAsEvents('tomorrow');
     taskList = tasks.filter(t => t.date === 'tomorrow');
   } else {
-    evs = calExtra[dateStr] || [];
+    evs = [...(calExtra[dateStr] || []), ...getTasksAsEvents(dateStr)];
+    taskList = tasks.filter(t => t.date === dateStr);
   }
   // add pushToMain recurring events
   const recEvs = recurringEvents
     .filter(r => r.pushToMain && occursOnDate(r, dateStr))
     .map(r => ({ title: r.title, time: '', tag: r.category === 'osobni' ? 'rodina' : r.category, _isRec: true, _recId: r.id }));
-  evs = [...evs, ...recEvs];
+  evs = [...evs, ...recEvs].sort((a, b) => {
+    const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
+    return toMin(a.time) - toMin(b.time);
+  });
   return { evs, taskList };
 }
 
