@@ -804,6 +804,48 @@
 
     .sheet-pill  { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 20px; }
     .sheet-title { font-family: var(--f-display); font-size: 22px; font-weight: 800; color: var(--ink); margin-bottom: 20px; letter-spacing: -.02em; }
+
+    /* ── Type toggle ── */
+    .type-toggle { display: flex; gap: 6px; margin-bottom: 22px; }
+    .type-btn {
+      flex: 1; padding: 10px 0; border-radius: 10px;
+      border: 2px solid var(--border); background: transparent;
+      font-family: var(--f-display); font-size: 14px; font-weight: 800;
+      color: var(--ink-2); cursor: pointer; transition: all .15s; letter-spacing: .01em;
+    }
+    .type-btn.on { border-color: var(--primary); background: var(--primary-lt); color: var(--primary); }
+    .type-ev-row { display: flex; gap: 8px; margin-bottom: 22px; align-items: center; }
+    .type-ev-date-in, .type-ev-time-in {
+      flex: 1; font-family: var(--f-mono); font-size: 14px; color: var(--ink);
+      border: none; border-bottom: 2px solid var(--border); padding: 6px 0 8px;
+      background: transparent; outline: none; transition: border-color .15s;
+    }
+    .type-ev-date-in:focus, .type-ev-time-in:focus { border-bottom-color: var(--primary); }
+    .type-ev-time-in { max-width: 90px; }
+    .s-date-specific { font-family: var(--f-mono); font-size: 11px; flex: 1; color: var(--ink);
+      border: none; border-bottom: 2px solid var(--border); padding: 4px 0 6px;
+      background: transparent; outline: none; transition: border-color .15s; }
+    .s-date-specific:focus { border-bottom-color: var(--primary); }
+    .s-date-specific::placeholder { color: var(--ink-3); }
+
+    /* ── Dnes/Zítra day toggle ── */
+    .dnes-day-toggle { display: flex; gap: 6px; margin-top: 14px; }
+    .dnes-day-btn {
+      font-family: var(--f-mono); font-size: 12px; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--ink-3); cursor: pointer; transition: all .15s;
+    }
+    .dnes-day-btn.on { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+    .dnes-day-btn.tomorrow-btn { font-size: 13px; padding: 7px 16px; font-weight: 700; }
+
+    /* ── Event item in "Kde musím být" — with delete ── */
+    .ev-card-del {
+      width: 22px; height: 22px; border: none; background: transparent;
+      color: var(--ink-3); font-size: 14px; cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      opacity: .45; transition: opacity .12s, color .12s;
+    }
+    .ev-card-del:hover { opacity: 1; color: #c4614a; }
     .sheet-input {
       width: 100%; font-family: var(--f-body); font-size: 17px; color: var(--ink);
       border: none; border-bottom: 2px solid var(--border); padding: 6px 0 10px;
@@ -1653,10 +1695,16 @@
           </svg>
           VypusTo
         </div>
-        <div class="date-wrap">
-          <span class="date-day" id="js-day"></span>
-          <span class="date-main" id="js-date"></span>
-          <span class="date-year" id="js-year"></span>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div class="date-wrap">
+            <span class="date-day" id="js-day"></span>
+            <span class="date-main" id="js-date"></span>
+            <span class="date-year" id="js-year"></span>
+          </div>
+          <div class="dnes-day-toggle" style="margin-top:6px;flex-shrink:0">
+            <button class="dnes-day-btn on" id="js-dnes-today">Dnes</button>
+            <button class="dnes-day-btn tomorrow-btn" id="js-dnes-tom">Zítra →</button>
+          </div>
         </div>
         <div id="js-tl" class="tl-wrap"></div>
       </div>
@@ -1819,13 +1867,16 @@
   </button>
 </nav>
 
-<!-- ADD TASK MODAL -->
+<!-- ADD TASK / EVENT MODAL -->
 <div class="overlay" id="js-overlay">
   <div class="sheet">
     <div class="sheet-pill"></div>
-    <div class="sheet-title">Nový úkol</div>
+    <div class="type-toggle">
+      <button class="type-btn on" id="js-type-task" data-type="task">✓ Úkol</button>
+      <button class="type-btn"   id="js-type-event" data-type="event">📅 Událost</button>
+    </div>
     <input type="text" class="sheet-input" id="js-task-input" placeholder="Co potřebuješ udělat?" autocomplete="off" spellcheck="false"/>
-    <div class="sheet-sec">Kategorie</div>
+    <div class="sheet-sec">Štítek</div>
     <div class="sheet-tags">
       <button class="s-tag" data-tag="prace">Práce</button>
       <button class="s-tag" data-tag="rodina">Rodina</button>
@@ -1833,18 +1884,27 @@
       <button class="s-tag" data-tag="ostatni">Ostatní</button>
     </div>
     <div class="sheet-sec">Datum</div>
-    <div class="sheet-dates">
+    <div class="sheet-dates" id="js-date-btns">
       <button class="s-date on" data-d="today">Dnes</button>
       <button class="s-date" data-d="tomorrow">Zítra</button>
-      <button class="s-date" data-d="none">Bez data</button>
+      <button class="s-date js-task-only" data-d="none">Bez data</button>
     </div>
-    <div class="sheet-sec">Opakování</div>
-    <div class="sheet-recs">
-      <button class="s-rec on" data-r="none">Jednorázově</button>
-      <button class="s-rec" data-r="daily">Denně</button>
-      <button class="s-rec" data-r="weekly">Týdně</button>
-      <button class="s-rec" data-r="monthly">Měsíčně</button>
-      <button class="s-rec" data-r="quarterly">Každé 3 měs.</button>
+    <div class="type-ev-row js-event-only" id="js-ev-date-row" style="display:none">
+      <input type="text" class="s-date-specific" id="js-ev-date" placeholder="nebo konkrétní datum: dd.mm.rrrr" autocomplete="off"/>
+    </div>
+    <div class="type-ev-row js-event-only" id="js-ev-time-row" style="display:none">
+      <div class="sheet-sec" style="margin:0 0 0;white-space:nowrap">Čas</div>
+      <input type="text" class="type-ev-time-in" id="js-ev-time" placeholder="HH:MM (nepovinné)" autocomplete="off"/>
+    </div>
+    <div id="js-rec-section">
+      <div class="sheet-sec">Opakování</div>
+      <div class="sheet-recs">
+        <button class="s-rec on" data-r="none">Jednorázově</button>
+        <button class="s-rec" data-r="daily">Denně</button>
+        <button class="s-rec" data-r="weekly">Týdně</button>
+        <button class="s-rec" data-r="monthly">Měsíčně</button>
+        <button class="s-rec" data-r="quarterly">Každé 3 měs.</button>
+      </div>
     </div>
     <div class="sheet-sec">Barva</div>
     <div class="cp-row" id="js-task-colors"></div>
@@ -2198,6 +2258,11 @@ function _saveRecLocal() { localStorage.setItem(STORE_REC, JSON.stringify(recurr
 function _loadRecLocal() {
   try { const raw = localStorage.getItem(STORE_REC); if (!raw) return false; recurringEvents = JSON.parse(raw); return true; } catch(e) { return false; }
 }
+const STORE_EVENTS = 'vypusto-events-v2';
+function _saveEventsLocal() { localStorage.setItem(STORE_EVENTS, JSON.stringify(calEvents)); }
+function _loadEventsLocal() {
+  try { const raw = localStorage.getItem(STORE_EVENTS); if (!raw) return false; calEvents = JSON.parse(raw); return true; } catch(e) { return false; }
+}
 
 /* public save functions — write local cache + Firestore */
 function saveTasks() {
@@ -2219,28 +2284,31 @@ function saveRec() {
   _saveRecLocal();
   if (currentUser) userDataRef('recurring').set({ items: recurringEvents }).catch(console.warn);
 }
+function saveCalEvents() {
+  _saveEventsLocal();
+  if (currentUser) userDataRef('calEvents').set({ items: calEvents }).catch(console.warn);
+}
 
 /* load all data from Firestore; fall back to localStorage */
 async function loadAllData() {
   if (!currentUser) {
-    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); return;
+    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal(); return;
   }
   try {
-    const [td, bd, nd, rd] = await Promise.all([
+    const [td, bd, nd, rd, ed] = await Promise.all([
       userDataRef('tasks').get(),
       userDataRef('birthdays').get(),
       userDataRef('notes').get(),
       userDataRef('recurring').get(),
+      userDataRef('calEvents').get(),
     ]);
 
-    /* helper: Firestore → local if data exists, else try localStorage migration */
     function merge(snap, setter, localLoader, localSaver) {
       if (snap.exists && snap.data().items && snap.data().items.length > 0) {
         setter(snap.data().items);
       } else if (localLoader()) {
-        localSaver(); /* migrate existing localStorage → Firestore */
+        localSaver();
       }
-      /* else: keep current defaults (empty arrays for new users) */
     }
 
     merge(td, items => {
@@ -2253,23 +2321,20 @@ async function loadAllData() {
       _saveBdaysLocal();
     }, _loadBdaysLocal, saveBdays);
 
-    merge(nd, items => {
-      notes = items; _saveNotesLocal();
-    }, _loadNotesLocal, saveNotes);
-
-    merge(rd, items => {
-      recurringEvents = items; _saveRecLocal();
-    }, _loadRecLocal, saveRec);
+    merge(nd, items => { notes = items; _saveNotesLocal(); }, _loadNotesLocal, saveNotes);
+    merge(rd, items => { recurringEvents = items; _saveRecLocal(); }, _loadRecLocal, saveRec);
+    merge(ed, items => { calEvents = items; _saveEventsLocal(); }, _loadEventsLocal, saveCalEvents);
 
   } catch(e) {
     console.warn('Firestore load failed, falling back to localStorage', e);
-    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal();
+    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal();
   }
 }
 
 let tasks     = DEFAULT_TASKS.map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
 let birthdays = DEFAULT_BIRTHDAYS.map(b => ({ ...b }));
 let notes     = DEFAULT_NOTES.map(n => ({ ...n }));
+let calEvents = [];   /* calendar events: {id, title, date:'YYYY-MM-DD', time:'HH:MM'|null, tag, color} */
 let editingBdayId = null;
 let editingAnniversaries = [];
 
@@ -2279,10 +2344,11 @@ const S = {
   filter:     'vse',
   noteFilter: 'vse',
   showDone:   false,
+  dnesDay:    'today',
   mesicDate:  new Date(),
   opakDate:   new Date(),
   opakCat:    'all',
-  form:       { title:'', tag:null, date:'today', rec:'none', color:null },
+  form:       { title:'', tag:null, date:'today', rec:'none', color:null, type:'task' },
   noteForm:   { title:'', body:'', tag:null },
   activeNoteId: null,
 };
@@ -2738,23 +2804,10 @@ function toggleRecPush(id) {
 }
 
 /* ─── TIMELINE STRIP ─── */
-/* ── Extract time (HH:MM) from task title, e.g. "Fyzio (16:00)" → "16:00" ── */
-function extractTimeFromTitle(title) {
-  const m = (title || '').match(/\((\d{1,2}:\d{2})\)/);
-  return m ? m[1] : null;
-}
-
-/* ── Build event objects from tasks for a given date filter ── */
-function getTasksAsEvents(dateFilter) {
-  const toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
-  return tasks
-    .filter(t => !t.done && t.date === dateFilter)
-    .map(t => {
-      const time = extractTimeFromTitle(t.title);
-      return time ? { title: t.title, time, tag: t.tag, _taskId: t.id } : null;
-    })
-    .filter(Boolean)
-    .sort((a, b) => toMin(a.time) - toMin(b.time));
+/* ── Get calendar events for a given date string 'YYYY-MM-DD' ── */
+function getCalEventsForDate(dateStr) {
+  const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
+  return calEvents.filter(e => e.date === dateStr).sort((a,b) => toMin(a.time) - toMin(b.time));
 }
 
 function renderTimeline() {
@@ -2781,8 +2834,9 @@ function renderTimeline() {
               <div class="tl-hlbl" style="left:${p}%">${lbl}</div>`;
   }
 
-  // event pins: static events array + tasks with time in title
-  const todayEvs = [...events, ...getTasksAsEvents('today')].filter(e => e.time);
+  // event pins: calendar events for today that have a time
+  const todayStr2 = dStr(now);
+  const todayEvs = getCalEventsForDate(todayStr2).filter(e => e.time);
   let pins = '';
   todayEvs.forEach(e => {
     const [hh, mm] = e.time.split(':').map(Number);
@@ -2816,32 +2870,51 @@ function renderTimeline() {
 }
 
 function renderDnes(animate = false) {
-  renderTimeline();
-  const now = new Date();
-  const bday = birthdays.find(b => b.month === now.getMonth()+1 && b.day === now.getDate());
+  const now  = new Date();
+  const isTom = S.dnesDay === 'tomorrow';
+  const targetD = new Date(now); if (isTom) targetD.setDate(now.getDate() + 1);
+  const targetStr = dStr(targetD);
+
+  // Timeline only for today
+  if (!isTom) renderTimeline(); else { const tl = $('js-tl'); if (tl) tl.style.display='none'; }
+
+  // Day toggle highlight
+  $('js-dnes-today').classList.toggle('on', !isTom);
+  $('js-dnes-tom').classList.toggle('on',   isTom);
+
+  // Date header
+  const days = ['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
+  const mons = ['ledna','února','března','dubna','května','června','července','srpna','září','října','listopadu','prosince'];
+  $('js-day').textContent  = isTom ? 'zítra' : days[now.getDay()];
+  $('js-date').textContent = `${targetD.getDate()}. ${mons[targetD.getMonth()]}`;
+  $('js-year').textContent = String(targetD.getFullYear());
+
+  // Birthday banner
+  const bday = birthdays.find(b => b.month === targetD.getMonth()+1 && b.day === targetD.getDate());
   const bd = $('js-bday');
-  if (bday) { $('js-bday-txt').textContent = `Dnes slaví ${bday.name}`; bd.classList.add('visible'); }
+  if (bday) { $('js-bday-txt').textContent = `${isTom?'Zítra':'Dnes'} slaví ${bday.firstName}`; bd.classList.add('visible'); }
   else       { bd.classList.remove('visible'); }
 
-  const todayEvsFull = [...events, ...getTasksAsEvents('today')]
-    .sort((a, b) => {
-      const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
-      return toMin(a.time) - toMin(b.time);
-    });
-  $('js-ev-cnt').textContent = `${todayEvsFull.length}`;
-  $('js-events').innerHTML = todayEvsFull.length
-    ? todayEvsFull.map(e => `
-        <div class="ev-card" style="border-left-color:${CAT[e.tag]?.color||'#999'}">
+  // Events (from calEvents)
+  const dayEvs = getCalEventsForDate(targetStr);
+  $('js-ev-cnt').textContent = `${dayEvs.length}`;
+  $('js-events').innerHTML = dayEvs.length
+    ? dayEvs.map(e => `
+        <div class="ev-card" style="border-left-color:${e.color || CAT[e.tag]?.color||'#999'}">
           <span class="ev-time">${e.time || '—'}</span>
           <span class="ev-title">${e.title}</span>
+          <button class="ev-card-del" data-evid="${e.id}" title="Smazat událost">×</button>
         </div>`).join('')
     : `<div class="empty" style="padding:16px 0">
-         <div class="empty-txt">Dnes žádné pevné časy.</div>
+         <div class="empty-txt">${isTom?'Zítra':'Dnes'} žádné pevné časy.</div>
+         <button class="empty-cta" onclick="openModal('${targetStr}','event')">+ Přidat událost</button>
        </div>`;
 
-  const today  = tasks.filter(t => t.date === 'today');
-  const active = today.filter(t => !t.done);
-  const done   = today.filter(t =>  t.done);
+  // Tasks
+  const taskDate = isTom ? 'tomorrow' : 'today';
+  const todayTasks = tasks.filter(t => t.date === taskDate);
+  const active = todayTasks.filter(t => !t.done);
+  const done   = todayTasks.filter(t =>  t.done);
 
   $('js-today-cnt').textContent = active.length ? `${active.length} zbývá` : 'vše hotovo ✓';
 
@@ -2853,8 +2926,8 @@ function renderDnes(animate = false) {
     activeEl.innerHTML = `
       <div class="empty">
         <div class="empty-icon">✨</div>
-        <div class="empty-txt">Dnešní seznam je prázdný.</div>
-        <div class="empty-sub">Přidej, co chceš dnes stihnout.</div>
+        <div class="empty-txt">${isTom?'Zítra':'Dnes'} seznam je prázdný.</div>
+        <div class="empty-sub">Přidej, co chceš ${isTom?'zítra':'dnes'} stihnout.</div>
         <button class="empty-cta js-open-modal">+ Přidat úkol</button>
       </div>`;
   }
@@ -2877,15 +2950,7 @@ function renderDnes(animate = false) {
 }
 
 /* ─── CALENDAR DATA ─── */
-const calExtra = {
-  '2026-05-05': [{ title:'Pediatr - Honzík',  time:'9:00',  tag:'rodina'  }],
-  '2026-05-12': [{ title:'Team building',      time:'14:00', tag:'prace'   }],
-  '2026-05-15': [{ title:'Narozeniny - máma',  time:'',      tag:'rodina'  },
-                 { title:'Večeře s rodinou',    time:'19:00', tag:'ostatni' }],
-  '2026-05-20': [{ title:'Meeting Q2',          time:'10:00', tag:'prace'   }],
-  '2026-05-22': [{ title:'Zubař - já',          time:'11:30', tag:'rodina'  }],
-  '2026-06-03': [{ title:'Konference',          time:'9:00',  tag:'prace'   }],
-};
+const calExtra = {}; // legacy — kept for any hardcoded data
 
 /* Czech namedays — key 'M-D' → name */
 const NAMEDAYS = {
@@ -2919,13 +2984,13 @@ function getDayItems(dateStr) {
   const tomStr = dStr(tomD);
   let evs = [], taskList = [];
   if (dateStr === todStr) {
-    evs = [...events, ...getTasksAsEvents('today')];
+    evs = getCalEventsForDate(todStr);
     taskList = tasks.filter(t => t.date === 'today');
   } else if (dateStr === tomStr) {
-    evs = getTasksAsEvents('tomorrow');
+    evs = getCalEventsForDate(tomStr);
     taskList = tasks.filter(t => t.date === 'tomorrow');
   } else {
-    evs = [...(calExtra[dateStr] || []), ...getTasksAsEvents(dateStr)];
+    evs = [...(calExtra[dateStr] || []), ...getCalEventsForDate(dateStr)];
     taskList = tasks.filter(t => t.date === dateStr);
   }
   // add pushToMain recurring events
@@ -3417,6 +3482,7 @@ function toggleDone(id) {
 function rerender() {
   if (S.view === 'dnes')  renderDnes();
   if (S.view === 'ukoly') renderUkoly();
+  if (S.view === 'mesic') renderMesic();
 }
 
 /* ─── VIEW SWITCH ─── */
@@ -3443,33 +3509,91 @@ function setFilter(f) {
 }
 
 /* ─── MODAL ─── */
-function openModal(presetDate) {
+function _setModalType(type) {
+  S.form.type = type;
+  $('js-type-task').classList.toggle('on',  type === 'task');
+  $('js-type-event').classList.toggle('on', type === 'event');
+  const isEv = type === 'event';
+  $('js-ev-date-row').style.display  = isEv ? '' : 'none';
+  $('js-ev-time-row').style.display  = isEv ? '' : 'none';
+  $('js-rec-section').style.display  = isEv ? 'none' : '';
+  // "Bez data" button only for tasks
+  document.querySelectorAll('.js-task-only').forEach(el => { el.style.display = isEv ? 'none' : ''; });
+  // placeholder
+  $('js-task-input').placeholder = isEv ? 'Název události…' : 'Co potřebuješ udělat?';
+  $('js-save').textContent = isEv ? 'Přidat událost' : 'Přidat úkol';
+  // if event and 'none' date selected, reset to today
+  if (isEv && S.form.date === 'none') {
+    S.form.date = 'today';
+    document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === 'today'));
+  }
+}
+
+function openModal(presetDate, presetType) {
   const date = presetDate || 'today';
-  S.form = { title:'', tag:null, date:date, rec:'none', color:null };
+  S.form = { title:'', tag:null, date:date, rec:'none', color:null, type: presetType || 'task' };
   $('js-overlay').classList.add('open');
   $('js-task-input').value = '';
+  $('js-ev-date').value    = '';
+  $('js-ev-time').value    = '';
   $('js-save').disabled = true;
   document.querySelectorAll('.s-tag').forEach(b => b.classList.remove('on'));
   document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === date));
   document.querySelectorAll('.s-rec').forEach(b  => b.classList.toggle('on', b.dataset.r === 'none'));
   $('js-task-colors').innerHTML = colorSwatchesHTML(null, 'task');
+  _setModalType(S.form.type);
   setTimeout(() => $('js-task-input').focus(), 320);
 }
 
 function closeModal() { $('js-overlay').classList.remove('open'); }
 
+function _parseEvDate(dateStr, evDateInput) {
+  /* Returns YYYY-MM-DD string from button selection or manual input */
+  const now = new Date();
+  const tom = new Date(now); tom.setDate(now.getDate() + 1);
+  if (dateStr === 'today')    return dStr(now);
+  if (dateStr === 'tomorrow') return dStr(tom);
+  // manual input
+  const val = evDateInput.trim();
+  if (val) {
+    const m = val.match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+    if (m) {
+      const day = parseInt(m[1]), mon = parseInt(m[2]);
+      const yr  = m[3] ? parseInt(m[3]) : now.getFullYear();
+      if (day >= 1 && day <= 31 && mon >= 1 && mon <= 12)
+        return `${yr}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+  }
+  return dStr(now); // fallback
+}
+
 function saveTask() {
   if (!S.form.title.trim()) return;
-  tasks.unshift({
-    id:    Date.now(),
-    title: S.form.title.trim(),
-    tag:   S.form.tag || 'ostatni',
-    done:  false,
-    date:  S.form.date === 'none' ? null : S.form.date,
-    rec:   S.form.rec,
-    color: S.form.color || null,
-  });
-  saveTasks();
+  if (S.form.type === 'event') {
+    const dateStr = _parseEvDate(S.form.date, $('js-ev-date').value);
+    const timeRaw = $('js-ev-time').value.trim();
+    const timeVal = timeRaw.match(/^\d{1,2}:\d{2}$/) ? timeRaw.padStart(5,'0') : null;
+    calEvents.unshift({
+      id:    Date.now(),
+      title: S.form.title.trim(),
+      tag:   S.form.tag || 'ostatni',
+      color: S.form.color || null,
+      date:  dateStr,
+      time:  timeVal,
+    });
+    saveCalEvents();
+  } else {
+    tasks.unshift({
+      id:    Date.now(),
+      title: S.form.title.trim(),
+      tag:   S.form.tag || 'ostatni',
+      done:  false,
+      date:  S.form.date === 'none' ? null : S.form.date,
+      rec:   S.form.rec,
+      color: S.form.color || null,
+    });
+    saveTasks();
+  }
   closeModal();
   rerender();
 }
@@ -4014,7 +4138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       /* reset data to empty defaults for fresh users */
       tasks = []; birthdays = DEFAULT_BIRTHDAYS.map(b => ({ ...b }));
-      notes = []; recurringEvents = [];
+      notes = []; recurringEvents = []; calEvents = [];
 
       await loadAllData();
 
@@ -4045,6 +4169,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p) setFilter(p.dataset.f);
   });
 
+  /* ── Dnes/Zítra toggle ── */
+  $('js-dnes-today').addEventListener('click', () => { S.dnesDay = 'today';    renderDnes(); });
+  $('js-dnes-tom').addEventListener('click',   () => { S.dnesDay = 'tomorrow'; renderDnes(); });
+
+  /* ── Type toggle in modal ── */
+  $('js-type-task').addEventListener('click',  () => _setModalType('task'));
+  $('js-type-event').addEventListener('click', () => _setModalType('event'));
+
+  /* ── Event date specific input — deselect buttons when user types ── */
+  $('js-ev-date').addEventListener('input', () => {
+    if ($('js-ev-date').value.trim()) {
+      document.querySelectorAll('.s-date').forEach(b => b.classList.remove('on'));
+      S.form.date = '__custom__';
+    }
+  });
+
   document.addEventListener('click', e => {
     const cb = e.target.closest('.task-cb');
     if (cb) toggleDone(Number(cb.dataset.id));
@@ -4060,6 +4200,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const idx = Number(annDel.dataset.aidx);
       editingAnniversaries.splice(idx, 1);
       renderAnniversaryList();
+    }
+    // delete calendar event from Kde musím být
+    const evDel = e.target.closest('.ev-card-del');
+    if (evDel) {
+      const eid = Number(evDel.dataset.evid);
+      calEvents = calEvents.filter(ev => ev.id !== eid);
+      saveCalEvents();
+      rerender();
     }
   });
 
