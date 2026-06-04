@@ -626,6 +626,17 @@
     .task-rec-icon { display: flex; align-items: center; color: var(--ink-3); }
     .task-done-at  { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
 
+    .task-edit-btn {
+      flex-shrink: 0; opacity: 0; padding: 4px 5px;
+      background: none; border: none; cursor: pointer;
+      color: var(--ink-3); font-size: 15px; line-height: 1;
+      border-radius: 4px; transition: opacity .15s, color .12s;
+      align-self: flex-start; margin-top: -1px;
+    }
+    .task-item:hover .task-edit-btn { opacity: 1; }
+    .task-edit-btn:hover { color: var(--primary); }
+    @media (hover: none) { .task-edit-btn { opacity: .5; } }
+
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        DONE TOGGLE
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -911,6 +922,15 @@
       display: flex; align-items: center; justify-content: center; gap: 7px;
     }
     .day-add-btn:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+    .day-row-acts { display: flex; gap: 2px; margin-left: auto; flex-shrink: 0; }
+    .day-row-act {
+      width: 26px; height: 26px; border: none; background: none; cursor: pointer;
+      border-radius: 6px; font-size: 14px; color: var(--ink-3);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s, color .12s;
+    }
+    .day-row-act:hover { background: rgba(0,0,0,.06); color: var(--ink); }
+    .day-row-act.del:hover { color: #c44; background: #fff0f0; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        UNDO TOAST
@@ -2410,6 +2430,7 @@ function taskHTML(t) {
       ${doneAt  ? `<span class="task-done-at">· ${doneAt}</span>` : ''}
     </div>
   </div>
+  <button class="task-edit-btn" data-edit-id="${t.id}" data-edit-type="task" title="Upravit">✎</button>
 </div>`;
 }
 
@@ -3228,6 +3249,8 @@ function renderMesic() {
 }
 
 /* ─── DAY SHEET ─── */
+let currentDaySheet = null; // currently open date string
+
 function czDayName(d)   { return ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'][d.getDay()]; }
 function czMonthGen(m)  {
   return ['ledna','února','března','dubna','května','června',
@@ -3235,6 +3258,7 @@ function czMonthGen(m)  {
 }
 
 function openDaySheet(dateStr) {
+  currentDaySheet = dateStr;
   const [y, mo, d] = dateStr.split('-').map(Number);
   const date   = new Date(y, mo-1, d);
   const now    = new Date();
@@ -3256,6 +3280,10 @@ function openDaySheet(dateStr) {
         <span class="day-ev-time">${e.time||'—'}</span>
         <span class="day-ev-title">${e.title}</span>
         <span class="day-ev-dot" style="background:${CAT[e.tag]?.color||'#999'}"></span>
+        ${!e._isRec ? `<div class="day-row-acts">
+          <button class="day-row-act" data-edit-id="${e.id}" data-edit-type="event" title="Upravit">✎</button>
+          <button class="day-row-act del" data-del-id="${e.id}" data-del-type="event" title="Smazat">✕</button>
+        </div>` : ''}
       </div>`).join('');
   }
 
@@ -3266,6 +3294,10 @@ function openDaySheet(dateStr) {
         <div class="day-task-cb" ${t.done ? 'style="background:var(--primary);border-color:var(--primary)"' : ''}></div>
         <span class="day-task-title" ${t.done ? 'style="opacity:.45;text-decoration:line-through"' : ''}>${t.title}</span>
         <span class="day-task-badge" data-tag="${t.tag}">${CAT[t.tag].label}</span>
+        <div class="day-row-acts">
+          <button class="day-row-act" data-edit-id="${t.id}" data-edit-type="task" title="Upravit">✎</button>
+          <button class="day-row-act del" data-del-id="${t.id}" data-del-type="task" title="Smazat">✕</button>
+        </div>
       </div>`).join('');
   }
 
@@ -3276,7 +3308,7 @@ function openDaySheet(dateStr) {
   const dateArg = dateStr === todStr ? 'today' : dateStr === tomStr ? 'tomorrow' : 'none';
   bodyHtml += `<button class="day-add-btn" data-date-arg="${dateArg}">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Přidat úkol na tento den
+    Přidat záznam
   </button>`;
 
   $('js-day-body').innerHTML = bodyHtml;
@@ -3287,7 +3319,10 @@ function openDaySheet(dateStr) {
   $('js-day-overlay').classList.add('open');
 }
 
-function closeDaySheet() { $('js-day-overlay').classList.remove('open'); }
+function closeDaySheet() {
+  currentDaySheet = null;
+  $('js-day-overlay').classList.remove('open');
+}
 
 /* ─── RENDER ÚKOLY — MOBILE (time groups) ─── */
 function renderUkolyMobile(animate) {
@@ -3485,6 +3520,22 @@ function rerender() {
   if (S.view === 'mesic') renderMesic();
 }
 
+function deleteTask(id) {
+  const sheet = currentDaySheet;
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks();
+  rerender();
+  if (sheet) openDaySheet(sheet);
+}
+
+function deleteCalEvent(id) {
+  const sheet = currentDaySheet;
+  calEvents = calEvents.filter(x => x.id !== id);
+  saveCalEvents();
+  rerender();
+  if (sheet) openDaySheet(sheet);
+}
+
 /* ─── VIEW SWITCH ─── */
 function setView(v) {
   S.view = v;
@@ -3521,7 +3572,10 @@ function _setModalType(type) {
   document.querySelectorAll('.js-task-only').forEach(el => { el.style.display = isEv ? 'none' : ''; });
   // placeholder
   $('js-task-input').placeholder = isEv ? 'Název události…' : 'Co potřebuješ udělat?';
-  $('js-save').textContent = isEv ? 'Přidat událost' : 'Přidat úkol';
+  const isEdit = !!(S.form.editTaskId || S.form.editEvId);
+  $('js-save').textContent = isEv
+    ? (isEdit ? 'Uložit událost' : 'Přidat událost')
+    : (isEdit ? 'Uložit úkol'   : 'Přidat úkol');
   // if event and 'none' date selected, reset to today
   if (isEv && S.form.date === 'none') {
     S.form.date = 'today';
@@ -3529,23 +3583,55 @@ function _setModalType(type) {
   }
 }
 
-function openModal(presetDate, presetType) {
+function openModal(presetDate, presetType, editId, editType) {
   const date = presetDate || 'today';
-  S.form = { title:'', tag:null, date:date, rec:'none', color:null, type: presetType || 'task' };
+  S.form = { title:'', tag:null, date:date, rec:'none', color:null, type: presetType || 'task', editTaskId: null, editEvId: null };
+
+  let prefillTitle = '', prefillEvDate = '', prefillEvTime = '';
+
+  if (editId && editType === 'task') {
+    const t = tasks.find(x => x.id === editId);
+    if (!t) return;
+    S.form.editTaskId = editId;
+    S.form.title = t.title;
+    S.form.tag   = t.tag;
+    S.form.date  = t.date || 'none';
+    S.form.rec   = t.rec || 'none';
+    S.form.color = t.color || null;
+    S.form.type  = 'task';
+    prefillTitle = t.title;
+  } else if (editId && editType === 'event') {
+    const ev = calEvents.find(x => x.id === editId);
+    if (!ev) return;
+    S.form.editEvId = editId;
+    S.form.title = ev.title;
+    S.form.tag   = ev.tag;
+    S.form.date  = '__custom__';
+    S.form.color = ev.color || null;
+    S.form.type  = 'event';
+    prefillTitle = ev.title;
+    const [ey, em, ed_] = ev.date.split('-').map(Number);
+    prefillEvDate = `${ed_}.${em}.${ey}`;
+    prefillEvTime = ev.time || '';
+  }
+
   $('js-overlay').classList.add('open');
-  $('js-task-input').value = '';
-  $('js-ev-date').value    = '';
-  $('js-ev-time').value    = '';
-  $('js-save').disabled = true;
-  document.querySelectorAll('.s-tag').forEach(b => b.classList.remove('on'));
-  document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === date));
-  document.querySelectorAll('.s-rec').forEach(b  => b.classList.toggle('on', b.dataset.r === 'none'));
-  $('js-task-colors').innerHTML = colorSwatchesHTML(null, 'task');
+  $('js-task-input').value = prefillTitle;
+  $('js-ev-date').value    = prefillEvDate;
+  $('js-ev-time').value    = prefillEvTime;
+  $('js-save').disabled = !prefillTitle;
+  document.querySelectorAll('.s-tag').forEach(b => b.classList.toggle('on', !!S.form.tag && b.dataset.tag === S.form.tag));
+  document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === S.form.date));
+  document.querySelectorAll('.s-rec').forEach(b  => b.classList.toggle('on', b.dataset.r === S.form.rec));
+  $('js-task-colors').innerHTML = colorSwatchesHTML(S.form.color, 'task');
   _setModalType(S.form.type);
   setTimeout(() => $('js-task-input').focus(), 320);
 }
 
-function closeModal() { $('js-overlay').classList.remove('open'); }
+function closeModal() {
+  currentDaySheet = null;
+  $('js-overlay').classList.remove('open');
+}
 
 function _parseEvDate(dateStr, evDateInput) {
   /* Returns YYYY-MM-DD string from button selection or manual input */
@@ -3573,29 +3659,38 @@ function saveTask() {
     const dateStr = _parseEvDate(S.form.date, $('js-ev-date').value);
     const timeRaw = $('js-ev-time').value.trim();
     const timeVal = timeRaw.match(/^\d{1,2}:\d{2}$/) ? timeRaw.padStart(5,'0') : null;
-    calEvents.unshift({
-      id:    Date.now(),
-      title: S.form.title.trim(),
-      tag:   S.form.tag || 'ostatni',
-      color: S.form.color || null,
-      date:  dateStr,
-      time:  timeVal,
-    });
+    if (S.form.editEvId) {
+      const idx = calEvents.findIndex(x => x.id === S.form.editEvId);
+      if (idx >= 0) calEvents[idx] = { ...calEvents[idx],
+        title: S.form.title.trim(), tag: S.form.tag || calEvents[idx].tag,
+        color: S.form.color || null, date: dateStr, time: timeVal };
+    } else {
+      calEvents.unshift({ id: Date.now(), title: S.form.title.trim(),
+        tag: S.form.tag || 'ostatni', color: S.form.color || null, date: dateStr, time: timeVal });
+    }
     saveCalEvents();
   } else {
-    tasks.unshift({
-      id:    Date.now(),
-      title: S.form.title.trim(),
-      tag:   S.form.tag || 'ostatni',
-      done:  false,
-      date:  S.form.date === 'none' ? null : S.form.date,
-      rec:   S.form.rec,
-      color: S.form.color || null,
-    });
+    if (S.form.editTaskId) {
+      const t = tasks.find(x => x.id === S.form.editTaskId);
+      if (t) {
+        t.title = S.form.title.trim();
+        t.tag   = S.form.tag || t.tag;
+        t.date  = S.form.date === 'none' ? null : S.form.date;
+        t.rec   = S.form.rec;
+        t.color = S.form.color || null;
+      }
+    } else {
+      tasks.unshift({ id: Date.now(), title: S.form.title.trim(),
+        tag: S.form.tag || 'ostatni', done: false,
+        date: S.form.date === 'none' ? null : S.form.date,
+        rec: S.form.rec, color: S.form.color || null });
+    }
     saveTasks();
   }
+  const reopenSheet = currentDaySheet;
   closeModal();
   rerender();
+  if (reopenSheet) openDaySheet(reopenSheet);
 }
 
 /* ─── NAROZENINY HELPERS (global) ─── */
@@ -4201,13 +4296,34 @@ document.addEventListener('DOMContentLoaded', () => {
       editingAnniversaries.splice(idx, 1);
       renderAnniversaryList();
     }
-    // delete calendar event from Kde musím být
+    // delete calendar event from Kde musím být (Dnes view)
     const evDel = e.target.closest('.ev-card-del');
     if (evDel) {
       const eid = Number(evDel.dataset.evid);
       calEvents = calEvents.filter(ev => ev.id !== eid);
       saveCalEvents();
       rerender();
+    }
+    // edit task or event (task list / day sheet)
+    const editBtn = e.target.closest('[data-edit-id][data-edit-type]');
+    if (editBtn && !editBtn.closest('#js-bday-overlay') && !editBtn.closest('#js-bday-body')) {
+      const id   = Number(editBtn.dataset.editId);
+      const type = editBtn.dataset.editType;
+      if (type === 'task' || type === 'event') {
+        // close day sheet if open — preserve date so saveTask can reopen it
+        const savedDate = currentDaySheet;
+        if (currentDaySheet) closeDaySheet();
+        currentDaySheet = savedDate; // restore so saveTask reopens the sheet
+        openModal(null, type, id, type);
+      }
+    }
+    // delete task or event from day sheet
+    const delBtn = e.target.closest('[data-del-id][data-del-type]');
+    if (delBtn) {
+      const id   = Number(delBtn.dataset.delId);
+      const type = delBtn.dataset.delType;
+      if (type === 'task')  deleteTask(id);
+      else if (type === 'event') deleteCalEvent(id);
     }
   });
 
