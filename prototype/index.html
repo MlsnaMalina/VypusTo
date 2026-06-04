@@ -4402,7 +4402,11 @@ function noteDate(dateStr) {
 }
 
 function noteHTML(n) {
-  const color = CAT[n.tag]?.color || '#999';
+  /* Normalize unknown tags from old Firestore data */
+  const validTags = ['prace','rodina','domacnost','ostatni'];
+  const tag   = validTags.includes(n.tag) ? n.tag : 'ostatni';
+  const cat   = CAT[tag] || CAT.ostatni;
+  const color = cat.color;
   const doodle = n.pinned ? `<svg class="note-doodle" viewBox="0 0 100 100" width="100%" height="100%" fill="none" preserveAspectRatio="none" aria-hidden="true">
     <path d="M8 5 C33 4.2,63 5.6,95 5" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
     <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
@@ -4416,7 +4420,7 @@ function noteHTML(n) {
     </div>
     ${n.body ? `<div class="note-body">${n.body}</div>` : ''}
     <div class="note-foot">
-      <span class="note-badge" data-tag="${n.tag}">${CAT[n.tag].label}</span>
+      <span class="note-badge" data-tag="${tag}">${cat.label}</span>
       <span class="note-date">${noteDate(n.createdAt)}</span>
     </div>
   </div>`;
