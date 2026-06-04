@@ -1307,10 +1307,15 @@
     @media (min-width: 720px) { .bday-overlay .sheet { left: auto; right: 28px; bottom: 28px; border-radius: 16px; max-width: 400px; max-height: 80dvh; } }
 
     .bday-field { margin-bottom: 18px; }
-    .bday-field-lbl { font-family: var(--f-hand); font-size: 16px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; display: block; }
+    .bday-field-lbl { font-family: var(--f-hand); font-size: 16px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; display: flex; align-items: baseline; gap: 6px; }
     .bday-optional { font-weight: 400; font-size: 12px; color: var(--ink-3); }
     .bday-name-row { display: flex; gap: 14px; }
     .bday-name-row > div { flex: 1; min-width: 0; }
+    .bday-date-wrap { display: flex; align-items: center; gap: 6px; }
+    .bday-clear-btn { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; color: var(--ink-3); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .12s, color .12s; }
+    .bday-clear-btn:hover { border-color: #c4614a; color: #c4614a; }
+    .bday-nd-hint { font-size: 11.5px; color: var(--ink-3); margin-top: 5px; min-height: 16px; }
+    .bday-nd-hint.auto { font-style: italic; }
 
     /* Anniversaries in modal */
     .bday-ann-section { display: none; border-top: 1px solid var(--border); padding-top: 18px; margin-bottom: 20px; }
@@ -1875,12 +1880,23 @@
       </div>
     </div>
     <div class="bday-field">
-      <label class="bday-field-lbl">Datum narození</label>
-      <div class="bday-date-row">
-        <input type="number" id="js-bday-day"  placeholder="Den" min="1" max="31"/>
-        <input type="number" id="js-bday-month" placeholder="Měsíc" min="1" max="12"/>
-        <input type="number" id="js-bday-year" placeholder="Rok (nepovinné)" min="1900" max="2030"/>
+      <label class="bday-field-lbl">Narozeniny <small class="bday-optional">(nepovinné)</small></label>
+      <div class="bday-date-wrap">
+        <div class="bday-date-row" style="flex:1">
+          <input type="number" id="js-bday-day"   placeholder="Den"  min="1" max="31"/>
+          <input type="number" id="js-bday-month" placeholder="Měsíc" min="1" max="12"/>
+          <input type="number" id="js-bday-year"  placeholder="Rok"  min="1900" max="2030"/>
+        </div>
+        <button type="button" class="bday-clear-btn" id="js-bday-bday-clear" title="Smazat narozeniny">×</button>
       </div>
+    </div>
+    <div class="bday-field">
+      <label class="bday-field-lbl">Svátek <small class="bday-optional">(nepovinné)</small></label>
+      <div class="bday-date-wrap">
+        <input type="text" id="js-bday-nd" placeholder="dd.mm." style="flex:1" autocomplete="off"/>
+        <button type="button" class="bday-clear-btn" id="js-bday-nd-clear" title="Vypnout svátek">×</button>
+      </div>
+      <div class="bday-nd-hint" id="js-bday-nd-hint"></div>
     </div>
     <div class="bday-ann-section" id="js-bday-ann-section">
       <div class="bday-ann-hdr">Výročí</div>
@@ -3569,8 +3585,10 @@ function renderNarozeniny() {
   const allEvents = [];
   for (const b of birthdays) {
     const fullName = (b.firstName + (b.lastName ? ' ' + b.lastName : '')).trim();
-    allEvents.push({ type:'birthday', firstName:b.firstName, lastName:b.lastName||'', fullName, month:b.month, day:b.day, yearBorn:b.yearBorn, id:b.id });
-    const nd = lookupNameday(b.firstName);
+    if (b.day && b.month) {
+      allEvents.push({ type:'birthday', firstName:b.firstName, lastName:b.lastName||'', fullName, month:b.month, day:b.day, yearBorn:b.yearBorn, id:b.id });
+    }
+    const nd = getEffectiveNameday(b);
     if (nd) {
       allEvents.push({ type:'nameday', firstName:b.firstName, lastName:b.lastName||'', fullName, month:nd.month, day:nd.day, id:b.id });
     }
@@ -3631,19 +3649,25 @@ function renderNarozeniny() {
   }
 
   function renderBdayList() {
-    const bySorted = [...birthdays].sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
+    const bySorted = [...birthdays].sort((a, b) => {
+      const am = a.month || 0, bm = b.month || 0;
+      if (am !== bm) return am - bm;
+      return (a.day || 0) - (b.day || 0);
+    });
     const rows = bySorted.map(b => {
       const autoNd   = lookupNameday(b.firstName);
       const effNd    = getEffectiveNameday(b);
-      const ndVal    = formatNdStr(effNd);
-      const ndAuto   = formatNdStr(autoNd);
-      const bdayStr  = formatBdayInput(b);
+      // ndVal: show explicit override; if suppressed show '—'; if auto keep placeholder
+      let ndVal = '', ndPlaceholder = formatNdStr(autoNd) || 'dd.mm.';
+      if (b.namedayOverride === false) { ndVal = '—'; ndPlaceholder = '—'; }
+      else if (effNd) ndVal = formatNdStr(effNd);
+      const bdayStr  = (b.day && b.month) ? formatBdayInput(b) : '';
       const annCount = (b.anniversaries || []).length;
       return `<tr class="bday-trow" data-bid="${b.id}">
         <td><input class="bday-cell-in" data-field="firstName" value="${b.firstName}" placeholder="Jméno"/></td>
         <td><input class="bday-cell-in" data-field="lastName"  value="${b.lastName||''}" placeholder="Příjmení"/></td>
-        <td><input class="bday-cell-in bday-cell-date" data-field="nameday" value="${ndVal}" placeholder="${ndAuto || 'dd.mm.'}"/></td>
-        <td><input class="bday-cell-in bday-cell-date" data-field="bday"    value="${bdayStr}" placeholder="dd.mm.rrrr"/></td>
+        <td><input class="bday-cell-in bday-cell-date" data-field="nameday" value="${ndVal}" placeholder="${ndPlaceholder}" title="Prázdné = automaticky dle jména"/></td>
+        <td><input class="bday-cell-in bday-cell-date" data-field="bday"    value="${bdayStr}" placeholder="dd.mm.rrrr" title="Prázdné = bez narozenin"/></td>
         <td>
           <div style="display:flex;gap:2px;align-items:center">
             <button class="bday-row-btn edit" data-bid="${b.id}" aria-label="Upravit" title="Upravit / výročí${annCount ? ' (' + annCount + ')' : ''}">✎${annCount ? `<sup style="font-size:8px;margin-left:1px">${annCount}</sup>` : ''}</button>
@@ -3838,6 +3862,16 @@ function addAnniversaryToModal() {
   $('js-ann-title').focus();
 }
 
+function _bdayNdHint(firstName, ndVal) {
+  const hint = $('js-bday-nd-hint');
+  if (!hint) return;
+  if (ndVal === '__off__') { hint.textContent = 'Svátek vypnut'; hint.className = 'bday-nd-hint'; return; }
+  if (ndVal) { hint.textContent = ''; hint.className = 'bday-nd-hint'; return; }
+  const auto = lookupNamedayGlobal(firstName);
+  if (auto) { hint.textContent = `Automaticky: ${formatNdStr(auto)} (podle jména)`; hint.className = 'bday-nd-hint auto'; }
+  else       { hint.textContent = ''; hint.className = 'bday-nd-hint'; }
+}
+
 function openBdayModal() {
   editingBdayId = null;
   editingAnniversaries = [];
@@ -3848,9 +3882,12 @@ function openBdayModal() {
   $('js-bday-day').value       = '';
   $('js-bday-month').value     = '';
   $('js-bday-year').value      = '';
+  $('js-bday-nd').value        = '';
+  $('js-bday-nd').dataset.off  = '';
   $('js-bday-ann-section').classList.remove('visible');
   $('js-bday-save').textContent = 'Přidat';
   $('js-bday-save').disabled = true;
+  _bdayNdHint('', '');
   setTimeout(() => $('js-bday-firstname').focus(), 320);
 }
 
@@ -3864,9 +3901,21 @@ function openBdayEdit(id) {
   $('js-bday-overlay').classList.add('open');
   $('js-bday-firstname').value = b.firstName || '';
   $('js-bday-lastname').value  = b.lastName  || '';
-  $('js-bday-day').value       = b.day;
-  $('js-bday-month').value     = b.month;
+  $('js-bday-day').value       = b.day   || '';
+  $('js-bday-month').value     = b.month || '';
   $('js-bday-year').value      = b.yearBorn || '';
+  // nameday field
+  const ndInp = $('js-bday-nd');
+  if (b.namedayOverride === false) {
+    ndInp.value = ''; ndInp.dataset.off = '1';
+    _bdayNdHint(b.firstName, '__off__');
+  } else if (b.namedayOverride && b.namedayOverride.day) {
+    ndInp.value = formatNdStr(b.namedayOverride); ndInp.dataset.off = '';
+    _bdayNdHint(b.firstName, ndInp.value);
+  } else {
+    ndInp.value = ''; ndInp.dataset.off = '';
+    _bdayNdHint(b.firstName, '');
+  }
   $('js-ann-title').value      = '';
   $('js-ann-date').value       = '';
   $('js-bday-ann-section').classList.add('visible');
@@ -3892,19 +3941,46 @@ function closeBdayModal() {
 function saveBday() {
   const firstName = $('js-bday-firstname').value.trim();
   const lastName  = $('js-bday-lastname').value.trim();
-  const day   = parseInt($('js-bday-day').value);
-  const month = parseInt($('js-bday-month').value);
+  if (!firstName) return;
+
+  // Birthday — optional
+  const dayRaw   = parseInt($('js-bday-day').value);
+  const monthRaw = parseInt($('js-bday-month').value);
+  const day   = (dayRaw >= 1 && dayRaw <= 31)     ? dayRaw   : null;
+  const month = (monthRaw >= 1 && monthRaw <= 12) ? monthRaw : null;
   const year  = parseInt($('js-bday-year').value) || null;
-  if (!firstName || !day || !month) return;
+  const hasBday = !!(day && month);
+
+  // Nameday — optional, can be: auto (empty + no off), explicit (dd.mm.), off (dataset.off='1')
+  const ndInp  = $('js-bday-nd');
+  const ndOff  = ndInp.dataset.off === '1';
+  const ndVal  = ndInp.value.trim();
+  let namedayOverride;
+  if (ndOff) {
+    namedayOverride = false;                 // explicitly disabled
+  } else if (ndVal) {
+    const parsed = parseNdStr(ndVal);
+    namedayOverride = parsed || undefined;   // explicit or unchanged
+  } else {
+    namedayOverride = undefined;             // auto (lookup by first name)
+  }
+
   if (editingBdayId !== null) {
     const b = birthdays.find(x => Number(x.id) === Number(editingBdayId));
     if (b) {
       b.firstName = firstName; b.lastName = lastName;
-      b.day = day; b.month = month; b.yearBorn = year;
+      b.day = hasBday ? day : null; b.month = hasBday ? month : null; b.yearBorn = hasBday ? year : null;
+      if (namedayOverride !== undefined) b.namedayOverride = namedayOverride;
+      else if (!ndOff && !ndVal) b.namedayOverride = null; // reset to auto
       b.anniversaries = [...editingAnniversaries];
     }
   } else {
-    birthdays.push({ id: Date.now(), firstName, lastName, month, day, yearBorn: year, anniversaries: [...editingAnniversaries] });
+    birthdays.push({
+      id: Date.now(), firstName, lastName,
+      day: hasBday ? day : null, month: hasBday ? month : null, yearBorn: hasBday ? year : null,
+      namedayOverride: ndOff ? false : (ndVal ? parseNdStr(ndVal) || null : null),
+      anniversaries: [...editingAnniversaries],
+    });
   }
   saveBdays();
   closeBdayModal();
@@ -4012,13 +4088,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const bdayValidate = () => {
-    const ok = $('js-bday-firstname').value.trim() &&
-               $('js-bday-day').value &&
-               $('js-bday-month').value;
-    $('js-bday-save').disabled = !ok;
+    $('js-bday-save').disabled = !$('js-bday-firstname').value.trim();
   };
   ['js-bday-firstname','js-bday-lastname','js-bday-day','js-bday-month','js-bday-year'].forEach(id => {
     $(id).addEventListener('input', bdayValidate);
+  });
+  $('js-bday-firstname').addEventListener('input', () => {
+    _bdayNdHint($('js-bday-firstname').value.trim(), $('js-bday-nd').value.trim());
+  });
+  $('js-bday-nd').addEventListener('input', () => {
+    $('js-bday-nd').dataset.off = '';
+    _bdayNdHint($('js-bday-firstname').value.trim(), $('js-bday-nd').value.trim());
+  });
+  $('js-bday-bday-clear').addEventListener('click', () => {
+    $('js-bday-day').value = ''; $('js-bday-month').value = ''; $('js-bday-year').value = '';
+  });
+  $('js-bday-nd-clear').addEventListener('click', () => {
+    $('js-bday-nd').value = ''; $('js-bday-nd').dataset.off = '1';
+    _bdayNdHint($('js-bday-firstname').value.trim(), '__off__');
   });
   $('js-bday-firstname').addEventListener('keydown', e => { if (e.key === 'Enter') $('js-bday-lastname').focus(); if (e.key === 'Escape') closeBdayModal(); });
   $('js-bday-save').addEventListener('click', saveBday);
@@ -4053,27 +4140,41 @@ document.addEventListener('DOMContentLoaded', () => {
       b.lastName = inp.value.trim();
     } else if (field === 'nameday') {
       const val = inp.value.trim();
-      if (val === '') {
-        // explicitly cleared — override to false (suppress auto)
-        b.namedayOverride = false;
+      if (val === '' || val === '—') {
+        if (val === '—') {
+          // explicitly suppress nameday
+          b.namedayOverride = false;
+          inp.value = '—';
+        } else {
+          // empty = reset to auto
+          b.namedayOverride = null;
+          inp.value = '';
+          const autoNd = lookupNamedayGlobal(b.firstName);
+          inp.placeholder = formatNdStr(autoNd) || 'dd.mm.';
+        }
       } else {
         const nd = parseNdStr(val);
         if (nd) {
           b.namedayOverride = nd;
-          inp.value = formatNdStr(nd); // normalize display
+          inp.value = formatNdStr(nd);
         } else {
-          // invalid format — revert to effective value
-          inp.value = formatNdStr(getEffectiveNameday(b));
+          inp.value = b.namedayOverride === false ? '—' : formatNdStr(getEffectiveNameday(b));
         }
       }
     } else if (field === 'bday') {
-      const m2 = inp.value.trim().match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
-      if (m2) {
-        const day = parseInt(m2[1]), month = parseInt(m2[2]), year = m2[3] ? parseInt(m2[3]) : null;
-        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-          b.day = day; b.month = month; b.yearBorn = year;
-          const d2 = String(day).padStart(2,'0'), mo2 = String(month).padStart(2,'0');
-          inp.value = year ? `${d2}.${mo2}.${year}` : `${d2}.${mo2}.`;
+      const val = inp.value.trim();
+      if (val === '') {
+        // empty = clear birthday
+        b.day = null; b.month = null; b.yearBorn = null;
+      } else {
+        const m2 = val.match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+        if (m2) {
+          const day = parseInt(m2[1]), month = parseInt(m2[2]), year = m2[3] ? parseInt(m2[3]) : null;
+          if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+            b.day = day; b.month = month; b.yearBorn = year;
+            const d2 = String(day).padStart(2,'0'), mo2 = String(month).padStart(2,'0');
+            inp.value = year ? `${d2}.${mo2}.${year}` : `${d2}.${mo2}.`;
+          }
         }
       }
     }
