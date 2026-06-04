@@ -1530,12 +1530,11 @@
       position: fixed; right: 20px; bottom: calc(var(--nav-h) + var(--safe-b) + 14px);
       width: 52px; height: 52px; border-radius: 50%;
       background: var(--primary); color: #fff; font-size: 28px; line-height: 1;
-      display: none; align-items: center; justify-content: center;
+      align-items: center; justify-content: center;
       box-shadow: 0 4px 18px rgba(185,48,102,.38); z-index: 100; border: none;
       transition: transform .2s var(--ease-out), box-shadow .15s;
     }
     .note-add-fab:active { transform: scale(.9); box-shadow: 0 2px 8px rgba(185,48,102,.22); }
-    #v-poznamky.active .note-add-fab { display: flex; }
     @media (min-width: 720px) { .note-add-fab { right: 32px; bottom: 32px; } }
 
     .note-textarea { resize: vertical; min-height: 88px; font-size: 15px !important; line-height: 1.5 !important; }
@@ -1553,6 +1552,68 @@
     .note-overlay .sheet { position: absolute; bottom: 0; left: 0; right: 0; max-height: 88dvh; background: var(--bg); border-radius: 20px 20px 0 0; padding: 0 22px calc(20px + var(--safe-b)); overflow-y: auto; transform: translateY(100%); transition: transform .3s var(--ease-out); box-shadow: 0 -4px 40px rgba(0,0,0,.12); }
     .note-overlay.open .sheet { transform: translateY(0); }
     @media (min-width: 720px) { .note-overlay .sheet { left: auto; right: 28px; bottom: 28px; border-radius: 16px; max-width: 400px; max-height: 80dvh; } }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       REMEMBER POPUP
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .remember-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .24s;
+    }
+    .remember-overlay.open { opacity: 1; pointer-events: auto; }
+    .remember-card {
+      width: 100%; max-width: 480px; background: var(--bg);
+      border-radius: 20px 20px 0 0; padding: 20px 22px calc(24px + var(--safe-b));
+      transform: translateY(100%); transition: transform .3s var(--ease-out);
+      box-shadow: 0 -4px 40px rgba(0,0,0,.14);
+    }
+    .remember-overlay.open .remember-card { transform: translateY(0); }
+    @media (min-width: 720px) {
+      .remember-overlay { align-items: center; }
+      .remember-card { border-radius: 16px; padding-bottom: 24px; }
+    }
+    .remember-pill { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+    .remember-icon { font-size: 32px; text-align: center; margin-bottom: 8px; }
+    .remember-q { font-family: var(--f-display); font-size: 18px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; text-align: center; margin-bottom: 4px; }
+    .remember-ev-name {
+      font-family: var(--f-hand); font-size: 16px; font-weight: 700; color: var(--primary);
+      text-align: center; margin-bottom: 18px;
+    }
+    .remember-btns { display: flex; gap: 10px; }
+    .remember-btn-yes {
+      flex: 1; padding: 12px; background: var(--primary); color: #fff;
+      border-radius: 12px; font-family: var(--f-body); font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer; transition: opacity .15s;
+    }
+    .remember-btn-yes:hover { opacity: .88; }
+    .remember-btn-no {
+      flex: 1; padding: 12px; background: none; color: var(--ink-2);
+      border-radius: 12px; font-family: var(--f-body); font-size: 15px;
+      border: 1.5px solid var(--border); cursor: pointer; transition: all .15s;
+    }
+    .remember-btn-no:hover { border-color: var(--ink-3); color: var(--ink); }
+    /* Form step */
+    .remember-form-lbl { font-size: 12px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; margin-top: 16px; }
+    .remember-select {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--border);
+      font-family: var(--f-body); font-size: 15px; color: var(--ink);
+      background: var(--bg); outline: none; cursor: pointer;
+    }
+    .remember-select:focus { border-color: var(--primary); }
+    .remember-input {
+      width: 100%; padding: 10px 0 10px; border: none; border-bottom: 2px solid var(--border);
+      font-family: var(--f-body); font-size: 15px; color: var(--ink);
+      background: transparent; outline: none; transition: border-color .15s;
+    }
+    .remember-input:focus { border-bottom-color: var(--primary); }
+    .remember-save-btn {
+      display: block; width: 100%; padding: 12px; border-radius: 12px; margin-top: 20px;
+      background: var(--primary); color: #fff; font-family: var(--f-body); font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer; transition: opacity .15s;
+    }
+    .remember-save-btn:hover { opacity: .88; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        PLACEHOLDER VIEWS
@@ -1873,7 +1934,6 @@
         <button class="fp" data-pf="ostatni">Ostatní</button>
       </div>
       <div id="js-poz-body" class="poz-body"></div>
-      <button class="note-add-fab" id="js-note-add" aria-label="Přidat poznámku">+</button>
     </div>
 
     <!-- ─── NASTAVENÍ ─── -->
@@ -1948,6 +2008,7 @@
 
 <!-- FAB -->
 <button class="fab" id="js-fab" aria-label="Přidat úkol">+</button>
+<button class="note-add-fab" id="js-note-add" aria-label="Přidat poznámku" style="display:none">+</button>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -2121,6 +2182,34 @@
         <span>🗑</span>
         <span>Smazat poznámku</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- REMEMBER EVENT POPUP -->
+<div class="remember-overlay" id="js-remember-overlay">
+  <div class="remember-card">
+    <div class="remember-pill"></div>
+    <!-- Step 1: confirmation -->
+    <div id="js-remember-step1">
+      <div class="remember-icon">💝</div>
+      <div class="remember-q">Mám si tohle zapamatovat?</div>
+      <div class="remember-ev-name" id="js-remember-evname"></div>
+      <div class="remember-btns">
+        <button class="remember-btn-yes" id="js-remember-yes">Ano, zapamatovat</button>
+        <button class="remember-btn-no"  id="js-remember-no">Přeskočit</button>
+      </div>
+    </div>
+    <!-- Step 2: form -->
+    <div id="js-remember-step2" style="display:none">
+      <div class="remember-q" style="margin-bottom:4px">Uložit jako výročí</div>
+      <div class="remember-form-lbl">Ke které osobě?</div>
+      <select class="remember-select" id="js-remember-person"></select>
+      <div class="remember-form-lbl">Popis výročí</div>
+      <input type="text" class="remember-input" id="js-remember-title" placeholder="Popis (např. První rande)" autocomplete="off"/>
+      <div class="remember-form-lbl">Datum</div>
+      <input type="text" class="remember-input" id="js-remember-date" placeholder="dd.mm.rrrr" autocomplete="off"/>
+      <button class="remember-save-btn" id="js-remember-save">Uložit výročí</button>
     </div>
   </div>
 </div>
@@ -2390,6 +2479,122 @@ function renderSettings() {
   });
 }
 
+/* ─── REMEMBER (výročí popup) ─── */
+const STORE_REMEMBER = 'vypusto-remember-v2';
+let rememberDismissed = []; // array of calEvent IDs already handled
+let _rememberEventId  = null; // currently shown event ID
+
+function _loadRememberLocal() {
+  try {
+    const raw = localStorage.getItem(STORE_REMEMBER);
+    if (raw) rememberDismissed = JSON.parse(raw) || [];
+  } catch(e) {}
+}
+function _saveRememberLocal() {
+  try { localStorage.setItem(STORE_REMEMBER, JSON.stringify(rememberDismissed)); } catch(e) {}
+}
+
+/* Returns number of hearts (1–5) for a given year */
+function heartStr(year) {
+  const currentYear = new Date().getFullYear();
+  if (!year) return '❤️';
+  const years = Math.max(1, Math.min(5, currentYear - year));
+  return '❤️'.repeat(years);
+}
+
+/* Check for calendar events that ended today and haven't been handled yet */
+function checkEndedEvents() {
+  const now  = new Date();
+  const todStr = dStr(now);
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+
+  const ended = calEvents.filter(ev => {
+    if (ev.date !== todStr) return false;
+    if (!ev.timeTo) return false;
+    if (rememberDismissed.includes(ev.id)) return false;
+    const [h, m] = ev.timeTo.split(':').map(Number);
+    return (h * 60 + m) <= nowMins;
+  });
+
+  if (ended.length > 0) {
+    // Show popup for the most recently ended event (latest timeTo)
+    ended.sort((a, b) => {
+      const [ah, am] = a.timeTo.split(':').map(Number);
+      const [bh, bm] = b.timeTo.split(':').map(Number);
+      return (bh*60+bm) - (ah*60+am);
+    });
+    openRememberPopup(ended[0].id);
+  }
+}
+
+function openRememberPopup(eventId) {
+  const ev = calEvents.find(e => e.id === eventId);
+  if (!ev) return;
+  _rememberEventId = eventId;
+  $('js-remember-evname').textContent = ev.title;
+  $('js-remember-step1').style.display = '';
+  $('js-remember-step2').style.display = 'none';
+  $('js-remember-overlay').classList.add('open');
+}
+
+function closeRememberPopup() {
+  $('js-remember-overlay').classList.remove('open');
+  _rememberEventId = null;
+}
+
+function dismissRemember() {
+  if (_rememberEventId !== null) {
+    rememberDismissed.push(_rememberEventId);
+    _saveRememberLocal();
+  }
+  closeRememberPopup();
+}
+
+function openRememberForm() {
+  const ev = calEvents.find(e => e.id === _rememberEventId);
+  // Populate person select
+  const sel = $('js-remember-person');
+  sel.innerHTML = birthdays.map(b =>
+    `<option value="${b.id}">${b.firstName}${b.lastName ? ' ' + b.lastName : ''}</option>`
+  ).join('');
+  if (!birthdays.length) {
+    sel.innerHTML = '<option value="">— Nejdřív přidej kontakt v Narozeninách —</option>';
+  }
+  // Pre-fill title and date
+  if (ev) {
+    $('js-remember-title').value = ev.title;
+    // Format today's date as dd.mm.yyyy
+    const now = new Date();
+    $('js-remember-date').value = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  }
+  $('js-remember-step1').style.display = 'none';
+  $('js-remember-step2').style.display = '';
+}
+
+function saveRememberAnniversary() {
+  const sel   = $('js-remember-person');
+  const bid   = Number(sel.value);
+  const title = $('js-remember-title').value.trim();
+  const dateStr = $('js-remember-date').value.trim();
+  const b = birthdays.find(x => x.id === bid);
+  if (!b) return;
+  const m = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+  let day = null, month = null, year = null;
+  if (m) {
+    day = parseInt(m[1]); month = parseInt(m[2]);
+    year = m[3] ? parseInt(m[3]) : null;
+    if (day < 1 || day > 31 || month < 1 || month > 12) { day = null; month = null; }
+  }
+  if (!b.anniversaries) b.anniversaries = [];
+  b.anniversaries.push({ title: title || 'Výročí', day, month, year });
+  saveBdays();
+  if (_rememberEventId !== null) {
+    rememberDismissed.push(_rememberEventId);
+    _saveRememberLocal();
+  }
+  closeRememberPopup();
+}
+
 const DEFAULT_TASKS     = [];
 const DEFAULT_NOTES     = [];
 const DEFAULT_BIRTHDAYS = [];
@@ -2504,6 +2709,7 @@ function saveCalEvents() {
 /* load all data from Firestore; fall back to localStorage */
 async function loadAllData() {
   _loadSettingsLocal();
+  _loadRememberLocal();
   if (!currentUser) {
     _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal(); return;
   }
@@ -3769,7 +3975,8 @@ function setView(v) {
   document.getElementById(`v-${v}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.sb-item').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('js-fab').style.display = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav') ? 'none' : '';
+  $('js-fab').style.display      = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav') ? 'none' : '';
+  $('js-note-add').style.display = (v === 'poznamky') ? 'flex' : 'none';
   if (v === 'mesic')      renderMesic();
   if (v === 'ukoly')      renderUkoly(true);
   if (v === 'nastav')     renderSettings();
@@ -4091,20 +4298,25 @@ function renderNarozeniny() {
     const illusCol = isToday ? '#b93066' : col.fg;
     const dateTxt  = `${ev.day}. ${czMonthShort(ev.month)}.`;
     const cls      = isToday ? 'soon' : days <= 3 ? 'soon' : days <= 14 ? 'near' : 'far';
-    const todayEmoji = ev.type === 'nameday' ? '🌸 dnes' : ev.type === 'anniversary' ? '🎈 dnes' : '🎂 dnes';
+    const annHeartsToday = ev.type === 'anniversary' ? heartStr(ev.yearStart) + ' dnes' : '';
+    const todayEmoji = ev.type === 'nameday' ? '🌸 dnes' : ev.type === 'anniversary' ? annHeartsToday : '🎂 dnes';
     const badge    = isToday ? todayEmoji : days === 1 ? 'zítra' : days <= 14 ? `za ${days} dní` : dateTxt;
     const extraCls = isToday ? ' today-tile' : '';
     let age = null;
     if (ev.type === 'birthday' && ev.yearBorn) age = todY - ev.yearBorn + (days > 0 ? 1 : 0);
     if (ev.type === 'anniversary' && ev.yearStart) age = todY - ev.yearStart + (days > 0 ? 1 : 0);
     const typeLbl = ev.type === 'nameday' ? 'svátek' : ev.type === 'anniversary' ? ev.annTitle : '';
+    /* For anniversaries show hearts; for birthdays show "X let" */
+    const ageLbl = ev.type === 'anniversary' && ev.yearStart
+      ? `<div class="bday-tile-age" title="${age} let">${heartStr(ev.yearStart)}</div>`
+      : (age ? `<div class="bday-tile-age">${age} let</div>` : '');
     return `<div class="bday-tile${extraCls}">
       <div class="bday-illus-wrap" style="background:${isToday ? 'rgba(185,48,102,.1)' : col.bg}">
         ${bdayIllus(ev.type, illusCol)}
       </div>
       <div class="bday-tile-name">${ev.firstName}</div>
       ${typeLbl ? `<div class="bday-tile-type">${typeLbl}</div>` : ''}
-      ${age ? `<div class="bday-tile-age">${age} let</div>` : ''}
+      ${ageLbl}
       <span class="bday-tile-badge ${cls}">${badge}</span>
     </div>`;
   }
@@ -4258,12 +4470,16 @@ function openNoteModal() {
 function closeNoteModal() { $('js-note-overlay').classList.remove('open'); }
 
 function saveNote() {
-  if (!S.noteForm.title.trim()) return;
+  /* Read directly from inputs as the source of truth */
+  const title = ($('js-note-title').value || S.noteForm.title || '').trim();
+  const body  = ($('js-note-body').value  || S.noteForm.body  || '').trim();
+  const tag   = S.noteForm.tag || 'ostatni';
+  if (!title) return;
   notes.unshift({
     id:        Date.now(),
-    title:     S.noteForm.title.trim(),
-    body:      S.noteForm.body.trim(),
-    tag:       S.noteForm.tag || 'ostatni',
+    title,
+    body,
+    tag,
     pinned:    false,
     createdAt: dStr(new Date()),
   });
@@ -4300,8 +4516,9 @@ function renderAnniversaryList() {
     const dateTxt = a.day && a.month
       ? `${a.day}. ${_czMonthShortGlobal(a.month)}.${a.year ? ' ' + a.year : ''}`
       : '—';
+    const hearts = heartStr(a.year);
     return `<div class="bday-ann-item">
-      <span class="bday-ann-item-icon">🎈</span>
+      <span class="bday-ann-item-icon" title="${a.year ? (new Date().getFullYear() - a.year) + ' let' : ''}">${hearts}</span>
       <div class="bday-ann-item-text">
         <div class="bday-ann-item-title">${a.title || 'Výročí'}</div>
         <div class="bday-ann-item-date">${dateTxt}</div>
@@ -4458,6 +4675,8 @@ function initAppUI() {
   initDate();
   applySettingsColors();
   renderDnes(true);
+  /* check for ended events after a short delay so the UI settles first */
+  setTimeout(checkEndedEvents, 1800);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -4771,7 +4990,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   noteTitleInp.addEventListener('input', noteValidate);
   noteBodyInp.addEventListener('input',  noteValidate);
-  noteTitleInp.addEventListener('keydown', e => { if (e.key === 'Escape') closeNoteModal(); });
+  noteTitleInp.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNoteModal();
+    if (e.key === 'Enter' && noteTitleInp.value.trim()) { e.preventDefault(); $('js-note-body').focus(); }
+  });
 
   document.querySelectorAll('.s-ntag').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.s-ntag').forEach(x => x.classList.remove('on'));
@@ -4798,6 +5020,14 @@ document.addEventListener('DOMContentLoaded', () => {
     saveNotes();
     closeNoteAction();
     renderPoznamky();
+  });
+
+  /* ── Remember popup ── */
+  $('js-remember-yes').addEventListener('click', openRememberForm);
+  $('js-remember-no').addEventListener('click', dismissRemember);
+  $('js-remember-save').addEventListener('click', saveRememberAnniversary);
+  $('js-remember-overlay').addEventListener('click', e => {
+    if (e.target === $('js-remember-overlay')) dismissRemember();
   });
 
   $('js-cal-prev').addEventListener('click', () => {

@@ -1,4 +1,4 @@
-const CACHE = 'vypusto-v2';
+const CACHE = 'vypusto-v3';
 const CORE  = ['/prototype/', '/prototype/index.html'];
 
 self.addEventListener('install', e => {
