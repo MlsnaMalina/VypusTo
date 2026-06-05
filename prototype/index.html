@@ -1756,8 +1756,8 @@
       display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
     }
     .cyklus-title {
-      font-family: var(--f-doodle); font-size: 28px; font-weight: 400;
-      color: var(--ink); line-height: 1;
+      font-family: var(--f-display); font-size: 32px; font-weight: 800;
+      color: var(--ink); line-height: 1; letter-spacing: -.025em;
     }
     .cyklus-log-btn {
       flex-shrink: 0; padding: 8px 16px; border-radius: 20px;
@@ -1921,7 +1921,8 @@
       padding: 12px 16px 0;
     }
     .cykl-wave-year {
-      font-family: var(--f-doodle); font-size: 14px; color: var(--ink-3);
+      font-family: var(--f-mono); font-size: 12px; font-weight: 600;
+      letter-spacing: .08em; color: var(--ink-3);
     }
     .cykl-wave-legend {
       display: flex; gap: 10px; align-items: center;
@@ -2247,6 +2248,49 @@
       .fin-top { padding: 24px 24px 0; }
       .fin-empty { grid-column: 1 / -1; }
     }
+
+    /* ─── Custom select arrow ─── */
+    select.fin-input, select.rec-input {
+      -webkit-appearance: none; appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      background-size: 12px; padding-right: 34px;
+    }
+    select.fin-input:focus, select.rec-input:focus {
+      border-color: var(--primary); background-color: #fff;
+    }
+
+    /* ─── Enhanced checkbox ─── */
+    @keyframes cb-pop {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.28); }
+      65%  { transform: scale(.88); }
+      82%  { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    @keyframes cb-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(185,48,102,.45); }
+      100% { box-shadow: 0 0 0 7px rgba(185,48,102,.0); }
+    }
+    .task-cb {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .18s, background .18s, box-shadow .18s;
+      margin-top: 1px; cursor: pointer;
+    }
+    .task-cb:hover { border-color: var(--primary); background: rgba(185,48,102,.05); }
+    .task-item.is-done .task-cb {
+      background: var(--primary); border-color: var(--primary);
+    }
+    .task-cb.cb-pop { animation: cb-pop .35s cubic-bezier(.34,1.56,.64,1), cb-ring .5s ease-out; }
+    .cb-check { opacity: 0; transition: opacity .15s .05s; }
+    .task-item.is-done .cb-check { opacity: 1; }
+
+    /* ─── Note pin icon ─── */
+    .note-pin-icon { display: flex; align-items: center; flex-shrink: 0; margin-top: 1px;
+      opacity: .55; color: var(--primary); }
+
   </style>
 </head>
 <body>
@@ -2373,10 +2417,6 @@
             <button class="dnes-day-btn on" id="js-dnes-today">Dnes</button>
             <button class="dnes-day-btn tomorrow-btn" id="js-dnes-tom">Zítra →</button>
           </div>
-        </div>
-        <div id="js-cycle-pill" class="cycle-pill" style="display:none" role="status" aria-live="polite">
-          <span class="cycle-pill-dot"></span>
-          <span id="js-cycle-pill-txt"></span>
         </div>
         <div id="js-tl" class="tl-wrap"></div>
       </div>
@@ -2574,29 +2614,7 @@
           <div class="fin-h1">Finance</div>
         </div>
       </div>
-      <div class="fin-summary">
-        <div class="fin-summary-card">
-          <div class="fin-summary-label">Zbývá splatit</div>
-          <div class="fin-summary-value" id="js-fin-total-debt" style="color:#c55">–</div>
-        </div>
-        <div class="fin-summary-card">
-          <div class="fin-summary-label">Naspořeno</div>
-          <div class="fin-summary-value" id="js-fin-total-saved" style="color:var(--c-dom)">–</div>
-        </div>
-        <div class="fin-summary-card" id="js-fin-summary-paid-wrap">
-          <div class="fin-summary-label">Celkem splaceno</div>
-          <div class="fin-summary-value" id="js-fin-total-paid">–</div>
-        </div>
-      </div>
-
       <div class="fin-sec-row" style="margin-top:6px">
-        <span class="fin-sec-title">Platební kalendář</span>
-        <button class="fin-sec-add-btn" onclick="openFinRecModal(null)" title="Přidat pravidelnou platbu">+</button>
-      </div>
-      <div class="fin-cal-wrap" id="js-fin-cal"></div>
-      <div class="fin-rec-list" id="js-fin-rec"></div>
-
-      <div class="fin-sec-row">
         <span class="fin-sec-title">Dluhy</span>
         <button class="fin-sec-add-btn" onclick="openDebtModal(null)" title="Přidat dluh">+</button>
       </div>
@@ -2607,6 +2625,13 @@
         <button class="fin-sec-add-btn" onclick="openSavModal(null)" title="Přidat cíl spoření">+</button>
       </div>
       <div class="fin-sav-list" id="js-fin-savings"></div>
+
+      <div class="fin-sec-row">
+        <span class="fin-sec-title">Platební kalendář</span>
+        <button class="fin-sec-add-btn" onclick="openFinRecModal(null)" title="Přidat pravidelnou platbu">+</button>
+      </div>
+      <div class="fin-cal-wrap" id="js-fin-cal"></div>
+      <div class="fin-rec-list" id="js-fin-rec"></div>
     </div><!-- /v-finance -->
 
   </div><!-- /.main-panel -->
@@ -2789,7 +2814,7 @@
     <div class="note-action-name" id="js-note-action-name"></div>
     <div class="note-action-btns">
       <button class="note-action-btn" id="js-note-pin-btn">
-        <span id="js-note-pin-icon">📌</span>
+        <span id="js-note-pin-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-2a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15Z"/></svg></span>
         <span id="js-note-pin-lbl">Připnout</span>
       </button>
       <button class="note-action-btn danger" id="js-note-delete-btn">
@@ -4172,7 +4197,8 @@ function formatCompletedAt(date) {
 }
 
 /* ─── ICONS ─── */
-const CHECK_SVG = `<svg class="cb-check" width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
+const CHECK_SVG = `<svg class="cb-check" width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
+const PIN_SVG   = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-2a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15Z"/></svg>`;
 const RECUR_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.14"/></svg>`;
 
 /* ─── TASK HTML ─── */
@@ -6406,7 +6432,7 @@ function noteHTML(n) {
     ${doodle}
     <div class="note-card-top">
       <div class="note-title">${n.title}</div>
-      ${n.pinned ? '<span class="note-pin-icon">📌</span>' : ''}
+      ${n.pinned ? `<span class="note-pin-icon">${PIN_SVG}</span>` : ''}
     </div>
     ${n.body ? `<div class="note-body">${n.body}</div>` : ''}
     <div class="note-foot">
@@ -6438,11 +6464,11 @@ function renderPoznamky() {
   let html = '';
 
   if (pinned.length) {
-    html += `<div class="note-sec-lbl"><span>📌</span> Připnuté</div>
+    html += `<div class="note-sec-lbl"><span class="note-pin-icon">${PIN_SVG}</span> Připnuté</div>
              <div class="poz-notes-stack">${pinned.map(noteHTML).join('')}</div>`;
   }
   if (rest.length) {
-    if (pinned.length) html += `<div class="note-sec-lbl" style="margin-top:2px"><span>🗒️</span> Poznámky</div>`;
+    if (pinned.length) html += `<div class="note-sec-lbl" style="margin-top:2px"><span>📝</span> Poznámky</div>`;
     html += `<div class="poz-notes-stack">${rest.map(noteHTML).join('')}</div>`;
   }
 
@@ -6484,8 +6510,8 @@ function openNoteAction(id) {
   const n = notes.find(x => x.id === id);
   if (!n) return;
   $('js-note-action-name').textContent = n.title;
-  $('js-note-pin-icon').textContent = n.pinned ? '📌' : '📌';
-  $('js-note-pin-lbl').textContent  = n.pinned ? 'Odepnout' : 'Připnout';
+  $('js-note-pin-icon').innerHTML = PIN_SVG;
+  $('js-note-pin-lbl').textContent = n.pinned ? 'Odepnout' : 'Připnout';
   $('js-note-action-overlay').classList.add('open');
 }
 
@@ -6748,7 +6774,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('click', e => {
     const cb = e.target.closest('.task-cb');
-    if (cb) toggleDone(Number(cb.dataset.id));
+    if (cb) {
+      const tid = Number(cb.dataset.id);
+      const t = tasks.find(x => x.id === tid);
+      if (t && !t.done) { cb.classList.add('cb-pop'); cb.addEventListener('animationend', () => cb.classList.remove('cb-pop'), {once:true}); }
+      toggleDone(tid);
+    }
     if (e.target.closest('.js-open-modal')) openModal();
     const bdayEditBtn = e.target.closest('.bday-row-btn.edit');
     if (bdayEditBtn) openBdayEdit(Number(bdayEditBtn.dataset.bid));
