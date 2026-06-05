@@ -2142,7 +2142,7 @@
 
     /* Empty state */
     .fin-empty { padding: 32px 20px; text-align: center; }
-    .fin-empty-icon { font-size: 32px; margin-bottom: 8px; }
+    .fin-empty-icon { margin-bottom: 8px; display: flex; justify-content: center; }
     .fin-empty-txt { font-family: var(--f-hand); font-size: 20px; color: var(--ink-3); }
     .fin-empty-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
 
@@ -3496,7 +3496,7 @@ function renderFinanceSnap() {
   }
   el.style.display = '';
   el.innerHTML = `
-    <div class="fin-snap-icon">💰</div>
+    <div class="fin-snap-icon"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="var(--ink-2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="8.5" cy="12" rx="4.5" ry="1.6"/><line x1="4" y1="9" x2="4" y2="12"/><line x1="13" y1="9" x2="13" y2="12"/><ellipse cx="8.5" cy="9" rx="4.5" ry="1.6"/><line x1="4" y1="6" x2="4" y2="9"/><line x1="13" y1="6" x2="13" y2="9"/><ellipse cx="8.5" cy="6" rx="4.5" ry="1.6"/></svg></div>
     <div class="fin-snap-content">
       <div class="fin-snap-title">Finance</div>
       <div class="fin-snap-row">
@@ -3527,7 +3527,7 @@ function renderFinance() {
 
   /* Debt cards */
   if (financeData.debts.length === 0) {
-    debtEl.innerHTML = `<div class="fin-empty"><div class="fin-empty-icon">🎉</div>
+    debtEl.innerHTML = `<div class="fin-empty"><div class="fin-empty-icon"><svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="17" r="12"/><path d="M11 17 l4.5 4.5 l7.5-7.5"/></svg></div>
       <div class="fin-empty-txt">Žádné dluhy!</div>
       <div class="fin-empty-sub">Přidej dluh tlačítkem + výše</div></div>`;
   } else {
@@ -3536,7 +3536,7 @@ function renderFinance() {
 
   /* Savings cards */
   if (financeData.savings.length === 0) {
-    savEl.innerHTML = `<div class="fin-empty"><div class="fin-empty-icon">🏦</div>
+    savEl.innerHTML = `<div class="fin-empty"><div class="fin-empty-icon"><svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="11" y="7" width="12" height="3.5" rx="1.75"/><path d="M11 10.5 Q8 13 8 17 L8 24 Q8 28 17 28 Q26 28 26 24 L26 17 Q26 13 23 10.5"/><line x1="14.5" y1="7" x2="19.5" y2="7"/></svg></div>
       <div class="fin-empty-txt">Žádné cíle spoření</div>
       <div class="fin-empty-sub">Přidej cíl tlačítkem + výše</div></div>`;
   } else {
