@@ -2312,6 +2312,19 @@
       position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
       color: var(--ink-3); pointer-events: none;
     }
+    .sheet-inp-ico-btn {
+      position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 4px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; color: var(--ink-3); transition: color .14s;
+      line-height: 0; -webkit-tap-highlight-color: transparent;
+    }
+    .sheet-inp-ico-btn:hover { color: var(--primary); }
+    .sheet-inp-native {
+      position: absolute; width: 1px; height: 1px; opacity: 0;
+      pointer-events: none; border: none; padding: 0; margin: 0;
+      top: 0; left: 0; overflow: hidden;
+    }
     .sheet-quick-dates { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
 
     /* ─── Custom select arrow ─── */
@@ -2787,12 +2800,15 @@
         <div class="sheet-inp-wrap">
           <input type="text" class="sheet-fld-in" id="js-ev-date"
             placeholder="dd.mm.rrrr" autocomplete="off"/>
-          <svg class="sheet-inp-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+          <input type="date" class="sheet-inp-native" id="js-ev-date-picker" tabindex="-1"/>
+          <button type="button" class="sheet-inp-ico-btn" id="js-ev-date-cal-btn" aria-label="Otevřít kalendář">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </button>
         </div>
         <div class="sheet-quick-dates" id="js-date-btns">
           <button class="s-date on" data-d="today">Dnes</button>
@@ -2805,15 +2821,26 @@
         <div class="sheet-inp-wrap">
           <input type="text" class="sheet-fld-in" id="js-ev-time"
             placeholder="HH:MM" autocomplete="off"/>
-          <svg class="sheet-inp-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
+          <input type="time" class="sheet-inp-native" id="js-ev-time-picker" tabindex="-1"/>
+          <button type="button" class="sheet-inp-ico-btn" id="js-ev-time-btn" aria-label="Vybrat čas začátku">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </button>
         </div>
         <div class="sheet-inp-wrap" style="margin-top:6px">
           <input type="text" class="sheet-fld-in" id="js-ev-time-to"
             placeholder="Konec HH:MM" autocomplete="off"/>
+          <input type="time" class="sheet-inp-native" id="js-ev-time-to-picker" tabindex="-1"/>
+          <button type="button" class="sheet-inp-ico-btn" id="js-ev-time-to-btn" aria-label="Vybrat čas konce">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -6881,6 +6908,55 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.s-date').forEach(b => b.classList.remove('on'));
       S.form.date = '__custom__';
     }
+  });
+
+  /* ── Date picker via calendar icon ── */
+  $('js-ev-date-cal-btn').addEventListener('click', () => {
+    const picker = $('js-ev-date-picker');
+    // Pre-fill native picker with current value if possible
+    const curText = $('js-ev-date').value.trim();
+    if (curText) {
+      const iso = parseCzDate(curText);
+      if (iso) picker.value = iso;
+    } else if (S.form.date === 'today') {
+      picker.value = dStr(new Date());
+    } else if (S.form.date === 'tomorrow') {
+      const tom = new Date(); tom.setDate(tom.getDate() + 1);
+      picker.value = dStr(tom);
+    }
+    try { picker.showPicker(); } catch(e) { picker.click(); }
+  });
+  $('js-ev-date-picker').addEventListener('change', () => {
+    const val = $('js-ev-date-picker').value; // YYYY-MM-DD
+    if (val) {
+      const [y, m, d] = val.split('-');
+      $('js-ev-date').value = `${d}.${m}.${y}`;
+      S.form.date = '__custom__';
+      document.querySelectorAll('.s-date').forEach(b => b.classList.remove('on'));
+    }
+  });
+
+  /* ── Time pickers via clock icons ── */
+  $('js-ev-time-btn').addEventListener('click', () => {
+    const picker = $('js-ev-time-picker');
+    const cur = $('js-ev-time').value.trim();
+    if (cur && /^\d{1,2}:\d{2}$/.test(cur)) picker.value = cur.padStart(5, '0');
+    try { picker.showPicker(); } catch(e) { picker.click(); }
+  });
+  $('js-ev-time-picker').addEventListener('change', () => {
+    const val = $('js-ev-time-picker').value;
+    if (val) $('js-ev-time').value = val;
+  });
+
+  $('js-ev-time-to-btn').addEventListener('click', () => {
+    const picker = $('js-ev-time-to-picker');
+    const cur = $('js-ev-time-to').value.trim();
+    if (cur && /^\d{1,2}:\d{2}$/.test(cur)) picker.value = cur.padStart(5, '0');
+    try { picker.showPicker(); } catch(e) { picker.click(); }
+  });
+  $('js-ev-time-to-picker').addEventListener('change', () => {
+    const val = $('js-ev-time-to-picker').value;
+    if (val) $('js-ev-time-to').value = val;
   });
 
   document.addEventListener('click', e => {
