@@ -2598,7 +2598,7 @@
 
       <div class="fin-sec-row" style="margin-top:6px">
         <span class="fin-sec-title">Platební kalendář</span>
-        <button class="fin-sec-add-btn" onclick="openRecModal(null)" title="Přidat pravidelnou platbu">+</button>
+        <button class="fin-sec-add-btn" onclick="openFinRecModal(null)" title="Přidat pravidelnou platbu">+</button>
       </div>
       <div class="fin-cal-wrap" id="js-fin-cal"></div>
       <div class="fin-rec-list" id="js-fin-rec"></div>
@@ -2940,25 +2940,25 @@
 </div>
 
 <!-- FINANCE: RECURRING PAYMENT MODAL -->
-<div class="fin-overlay" id="js-rec-overlay">
+<div class="fin-overlay" id="js-fin-rec-overlay">
   <div class="fin-sheet">
     <div class="fin-pill"></div>
     <div class="fin-sheet-title-row">
-      <span class="fin-sheet-title" id="js-rec-modal-title">Přidat platbu</span>
-      <button class="fin-close-btn" onclick="closeRecModal()">✕</button>
+      <span class="fin-sheet-title" id="js-fin-rec-modal-title">Přidat platbu</span>
+      <button class="fin-close-btn" onclick="closeFinRecModal()">✕</button>
     </div>
     <div class="fin-field">
       <label class="fin-field-lbl">Název</label>
-      <input type="text" class="fin-input" id="js-rec-name" placeholder="Netflix, Claude, Pojistka auta…" autocomplete="off"/>
+      <input type="text" class="fin-input" id="js-fin-rec-name" placeholder="Netflix, Claude, Pojistka auta…" autocomplete="off"/>
     </div>
     <div class="fin-row">
       <div class="fin-field">
         <label class="fin-field-lbl">Částka (Kč)</label>
-        <input type="number" class="fin-input" id="js-rec-amount" placeholder="299" min="0" inputmode="numeric"/>
+        <input type="number" class="fin-input" id="js-fin-rec-amount" placeholder="299" min="0" inputmode="numeric"/>
       </div>
       <div class="fin-field" style="max-width:140px">
         <label class="fin-field-lbl">Frekvence</label>
-        <select class="fin-input" id="js-rec-freq" onchange="toggleRecMonth()">
+        <select class="fin-input" id="js-fin-rec-freq" onchange="toggleFinRecMonth()">
           <option value="monthly">Měsíčně</option>
           <option value="yearly">Ročně</option>
         </select>
@@ -2967,11 +2967,11 @@
     <div class="fin-row">
       <div class="fin-field">
         <label class="fin-field-lbl">Den v měsíci</label>
-        <input type="number" class="fin-input" id="js-rec-day" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
+        <input type="number" class="fin-input" id="js-fin-rec-day" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
       </div>
-      <div class="fin-field" id="js-rec-month-wrap">
+      <div class="fin-field" id="js-fin-rec-month-wrap">
         <label class="fin-field-lbl">Měsíc</label>
-        <select class="fin-input" id="js-rec-month">
+        <select class="fin-input" id="js-fin-rec-month">
           <option value="1">Leden</option><option value="2">Únor</option>
           <option value="3">Březen</option><option value="4">Duben</option>
           <option value="5">Květen</option><option value="6">Červen</option>
@@ -2983,10 +2983,10 @@
     </div>
     <div class="fin-field">
       <label class="fin-field-lbl">Barva</label>
-      <div class="fin-colors" id="js-rec-colors"></div>
+      <div class="fin-colors" id="js-fin-rec-colors"></div>
     </div>
-    <button class="fin-save-btn" onclick="saveRec()">Uložit</button>
-    <button class="fin-delete-btn" id="js-rec-delete-btn" onclick="deleteRec()" style="display:none">Smazat platbu</button>
+    <button class="fin-save-btn" onclick="saveFinRec()">Uložit</button>
+    <button class="fin-delete-btn" id="js-fin-rec-delete-btn" onclick="deleteFinRec()" style="display:none">Smazat platbu</button>
   </div>
 </div>
 
@@ -3713,7 +3713,7 @@ function renderRecurring() {
           <span class="fin-rec-when">${when}</span>
         </div>
         <span class="fin-rec-amount" style="color:${r.color}">${fmtCzk(r.amount)}</span>
-        <button class="fin-rec-edit" onclick="openRecModal('${r.id}')">
+        <button class="fin-rec-edit" onclick="openFinRecModal('${r.id}')">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
         </button>
       </div>`;
@@ -3732,61 +3732,61 @@ function renderRecurring() {
   el.innerHTML = html;
 }
 
-/* ── RECURRING CRUD ── */
-let editingRecId    = null;
-let currentRecColor = DEBT_COLORS[0];
+/* ── FINANCE RECURRING PAYMENTS CRUD ── */
+let editingFinRecId    = null;
+let currentFinRecColor = DEBT_COLORS[0];
 
-function openRecModal(id) {
-  editingRecId = id || null;
+function openFinRecModal(id) {
+  editingFinRecId = id || null;
   const r = id ? (financeData.recurring||[]).find(x => String(x.id) === String(id)) : null;
-  $('js-rec-modal-title').textContent = r ? 'Upravit platbu' : 'Přidat platbu';
-  $('js-rec-name').value   = r ? r.name : '';
-  $('js-rec-amount').value = r ? r.amount : '';
-  $('js-rec-freq').value   = r ? r.freq : 'monthly';
-  $('js-rec-day').value    = r ? r.day : '';
-  $('js-rec-month').value  = r ? (r.month || new Date().getMonth()+1) : new Date().getMonth()+1;
-  currentRecColor = r ? r.color : DEBT_COLORS[(financeData.recurring||[]).length % DEBT_COLORS.length];
-  $('js-rec-delete-btn').style.display = r ? '' : 'none';
-  _renderRecColors();
-  toggleRecMonth();
-  $('js-rec-overlay').classList.add('open');
-  setTimeout(() => $('js-rec-name').focus(), 100);
+  $('js-fin-rec-modal-title').textContent = r ? 'Upravit platbu' : 'Přidat platbu';
+  $('js-fin-rec-name').value   = r ? r.name : '';
+  $('js-fin-rec-amount').value = r ? r.amount : '';
+  $('js-fin-rec-freq').value   = r ? r.freq : 'monthly';
+  $('js-fin-rec-day').value    = r ? r.day : '';
+  $('js-fin-rec-month').value  = r ? (r.month || new Date().getMonth()+1) : new Date().getMonth()+1;
+  currentFinRecColor = r ? r.color : DEBT_COLORS[(financeData.recurring||[]).length % DEBT_COLORS.length];
+  $('js-fin-rec-delete-btn').style.display = r ? '' : 'none';
+  _renderFinRecColors();
+  toggleFinRecMonth();
+  $('js-fin-rec-overlay').classList.add('open');
+  setTimeout(() => $('js-fin-rec-name').focus(), 100);
 }
 
-function closeRecModal() { $('js-rec-overlay').classList.remove('open'); }
+function closeFinRecModal() { $('js-fin-rec-overlay').classList.remove('open'); }
 
-function toggleRecMonth() {
-  $('js-rec-month-wrap').style.display = $('js-rec-freq').value === 'yearly' ? '' : 'none';
+function toggleFinRecMonth() {
+  $('js-fin-rec-month-wrap').style.display = $('js-fin-rec-freq').value === 'yearly' ? '' : 'none';
 }
 
-function _renderRecColors() {
-  $('js-rec-colors').innerHTML = DEBT_COLORS.map(c =>
-    `<button class="fin-color-swatch${c===currentRecColor?' on':''}" style="background:${c}"
-      onclick="currentRecColor='${c}';_renderRecColors()"></button>`
+function _renderFinRecColors() {
+  $('js-fin-rec-colors').innerHTML = DEBT_COLORS.map(c =>
+    `<button class="fin-color-swatch${c===currentFinRecColor?' on':''}" style="background:${c}"
+      onclick="currentFinRecColor='${c}';_renderFinRecColors()"></button>`
   ).join('');
 }
 
-function saveRec() {
-  const name   = $('js-rec-name').value.trim();
-  const amount = parseFloat($('js-rec-amount').value) || 0;
-  const freq   = $('js-rec-freq').value;
-  const day    = Math.min(28, Math.max(1, parseInt($('js-rec-day').value) || 1));
-  const month  = freq === 'yearly' ? (parseInt($('js-rec-month').value) || 1) : null;
+function saveFinRec() {
+  const name   = $('js-fin-rec-name').value.trim();
+  const amount = parseFloat($('js-fin-rec-amount').value) || 0;
+  const freq   = $('js-fin-rec-freq').value;
+  const day    = Math.min(28, Math.max(1, parseInt($('js-fin-rec-day').value) || 1));
+  const month  = freq === 'yearly' ? (parseInt($('js-fin-rec-month').value) || 1) : null;
   if (!name || amount <= 0) return;
   if (!financeData.recurring) financeData.recurring = [];
-  if (editingRecId) {
-    const r = financeData.recurring.find(x => String(x.id) === String(editingRecId));
-    if (r) Object.assign(r, { name, amount, freq, day, month, color: currentRecColor });
+  if (editingFinRecId) {
+    const r = financeData.recurring.find(x => String(x.id) === String(editingFinRecId));
+    if (r) Object.assign(r, { name, amount, freq, day, month, color: currentFinRecColor });
   } else {
-    financeData.recurring.push({ id: Date.now(), name, amount, freq, day, month, color: currentRecColor });
+    financeData.recurring.push({ id: Date.now(), name, amount, freq, day, month, color: currentFinRecColor });
   }
-  saveFinance(); renderFinCal(); renderRecurring(); closeRecModal();
+  saveFinance(); renderFinCal(); renderRecurring(); closeFinRecModal();
 }
 
-function deleteRec() {
-  if (!editingRecId || !confirm('Opravdu smazat tuto platbu?')) return;
-  financeData.recurring = (financeData.recurring||[]).filter(r => String(r.id) !== String(editingRecId));
-  saveFinance(); renderFinCal(); renderRecurring(); closeRecModal();
+function deleteFinRec() {
+  if (!editingFinRecId || !confirm('Opravdu smazat tuto platbu?')) return;
+  financeData.recurring = (financeData.recurring||[]).filter(r => String(r.id) !== String(editingFinRecId));
+  saveFinance(); renderFinCal(); renderRecurring(); closeFinRecModal();
 }
 
 function _debtCardHTML(d) {
