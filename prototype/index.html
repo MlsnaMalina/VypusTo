@@ -2046,6 +2046,67 @@
     }
     .cyklus-first-note strong { color: var(--ink); }
 
+    /* ── Period river / pulse timeline ── */
+    .cykl-river-wrap {
+      margin: 20px 20px 0;
+      background: var(--bg-off); border-radius: 14px;
+      padding: 16px 14px 20px;
+    }
+    .cykl-river-title {
+      font-family: var(--f-hand); font-size: 15px; font-weight: 700;
+      color: var(--ink-2); margin-bottom: 4px;
+    }
+    .cykl-river-subtitle {
+      font-size: 11px; color: var(--ink-3); margin-bottom: 14px;
+    }
+    .cykl-river-scroll {
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      padding: 14px 0 24px; /* space for top gap labels + bottom date labels */
+      scrollbar-width: none;
+    }
+    .cykl-river-scroll::-webkit-scrollbar { display: none; }
+    .cykl-river-track {
+      display: flex; align-items: center;
+      min-width: fit-content; padding: 0 8px;
+    }
+    .cykl-period-pill {
+      flex-shrink: 0; height: 24px; min-width: 14px;
+      background: var(--c-men); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; cursor: default;
+    }
+    .cykl-period-pill-dur {
+      font-family: var(--f-mono); font-size: 8px;
+      color: rgba(255,255,255,.9); white-space: nowrap; padding: 0 5px;
+    }
+    .cykl-period-pill-date {
+      position: absolute; bottom: -17px; left: 50%; transform: translateX(-50%);
+      font-family: var(--f-mono); font-size: 8px; color: var(--ink-3);
+      white-space: nowrap; pointer-events: none;
+    }
+    .cykl-gap-seg {
+      flex-shrink: 0; height: 1px; min-width: 20px;
+      background: var(--border); position: relative;
+      border-top: 1px dashed var(--border);
+      background: transparent;
+    }
+    .cykl-gap-lbl {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      font-family: var(--f-mono); font-size: 8px; color: var(--ink-3);
+      white-space: nowrap; pointer-events: none;
+    }
+    .cykl-today-dot {
+      flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid var(--primary); background: var(--bg);
+      position: relative; margin-left: 0;
+    }
+    .cykl-today-dot::after {
+      content: 'dnes';
+      position: absolute; bottom: -17px; left: 50%; transform: translateX(-50%);
+      font-family: var(--f-mono); font-size: 8px; color: var(--primary);
+      white-space: nowrap;
+    }
+
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        FINANCE VIEW
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -2876,10 +2937,14 @@
   <div class="cyklus-log-sheet">
     <div class="cyklus-log-pill"></div>
     <div class="cyklus-log-title">Zaznamenat periodu</div>
-    <div class="cyklus-log-sub">Kdy začala? Čím přesněji zaznamenáš, tím lépe budu předpovídat příští cykly.</div>
+    <div class="cyklus-log-sub">Zadej začátek a konec — nebo jen začátek, pokud ještě neskončila.</div>
     <div class="cyklus-log-field">
-      <label class="cyklus-log-lbl" for="js-cyklus-date">Datum začátku</label>
+      <label class="cyklus-log-lbl" for="js-cyklus-date">Od</label>
       <input type="text" class="cyklus-log-input" id="js-cyklus-date" placeholder="dd.mm.rrrr" autocomplete="off" inputmode="numeric"/>
+    </div>
+    <div class="cyklus-log-field">
+      <label class="cyklus-log-lbl" for="js-cyklus-date-end">Do <span style="font-weight:400;opacity:.6">(nepovinné)</span></label>
+      <input type="text" class="cyklus-log-input" id="js-cyklus-date-end" placeholder="dd.mm.rrrr" autocomplete="off" inputmode="numeric"/>
     </div>
     <button class="cyklus-save-btn" id="js-cyklus-save" disabled>Uložit</button>
   </div>
@@ -4673,7 +4738,7 @@ function getCalEventsForDate(dateStr) {
 /* ═══════════════════════════════════════════════
    CYKLUS — data, logic, render
 ═══════════════════════════════════════════════ */
-let cycleData = { periodStarts: [], cycleLength: 28, periodLength: 5 };
+let cycleData = { periodStarts: [], periodEnds: {}, cycleLength: 28, periodLength: 5 };
 
 function saveCycle() {
   localStorage.setItem('vypusto-cycle-v2', JSON.stringify(cycleData));
@@ -4690,6 +4755,7 @@ function loadCycleLocal() {
       const parsed = JSON.parse(raw);
       cycleData = {
         periodStarts: Array.isArray(parsed.periodStarts) ? parsed.periodStarts.sort() : [],
+        periodEnds:   (parsed.periodEnds && typeof parsed.periodEnds === 'object') ? parsed.periodEnds : {},
         cycleLength:  Number(parsed.cycleLength)  || 28,
         periodLength: Number(parsed.periodLength) || 5,
       };
@@ -4706,6 +4772,7 @@ async function loadCycleFirestore() {
       const d = snap.data();
       cycleData = {
         periodStarts: Array.isArray(d.periodStarts) ? d.periodStarts.sort() : [],
+        periodEnds:   (d.periodEnds && typeof d.periodEnds === 'object') ? d.periodEnds : {},
         cycleLength:  Number(d.cycleLength)  || 28,
         periodLength: Number(d.periodLength) || 5,
       };
@@ -4857,11 +4924,18 @@ function renderCyklus() {
     let h = `<div class="cyklus-hist-hd">Historie</div><div class="cyklus-hist-list">`;
     [...sorted].reverse().forEach((s, i, arr) => {
       const prev   = arr[i + 1];
-      const lenTxt = prev ? `${daysBetween(prev, s)} dní` : '';
+      const end    = cycleData.periodEnds?.[s];
+      const durDays = end ? daysBetween(s, end) + 1 : null;
+      const dateDisplay = end
+        ? `${formatCzFull(s)} – ${end.split('-').slice(1).map(Number).join('. ')}.`
+        : formatCzFull(s);
+      const lenTxt = durDays
+        ? `${durDays} dní`
+        : (prev ? `interval ${daysBetween(prev, s)} dní` : '');
       h += `
         <div class="cyklus-hist-item">
           <div class="cyklus-hist-dot"></div>
-          <div class="cyklus-hist-date">${formatCzFull(s)}</div>
+          <div class="cyklus-hist-date">${dateDisplay}</div>
           ${lenTxt ? `<div class="cyklus-hist-len">${lenTxt}</div>` : ''}
           <button class="cyklus-hist-del" data-del-start="${s}" title="Smazat záznam" aria-label="Smazat ${s}">×</button>
         </div>`;
@@ -4917,7 +4991,7 @@ function renderCyklus() {
         </div>`;
     }
 
-    body.innerHTML = lastCardHTML + patternHTML + buildYearStrip(today, true) + buildHistHTML();
+    body.innerHTML = lastCardHTML + patternHTML + buildPeriodRiver(today) + buildHistHTML();
 
   } else {
     /* ── REGULAR MODE ── */
@@ -4974,7 +5048,7 @@ function renderCyklus() {
         </div>
       </div>`;
 
-    body.innerHTML = phaseCardHTML + settingsHTML + buildYearStrip(today, false) + buildHistHTML();
+    body.innerHTML = phaseCardHTML + settingsHTML + buildYearStrip(today) + buildHistHTML();
   }
 
   /* Wire adjusters */
@@ -4994,17 +5068,35 @@ function renderCyklus() {
   /* Wire delete */
   body.querySelectorAll('[data-del-start]').forEach(btn => {
     btn.addEventListener('click', () => {
-      cycleData.periodStarts = cycleData.periodStarts.filter(x => x !== btn.dataset.delStart);
+      const s = btn.dataset.delStart;
+      cycleData.periodStarts = cycleData.periodStarts.filter(x => x !== s);
+      delete cycleData.periodEnds[s];
       saveCycle(); renderCyklus(); renderCyclePill();
     });
   });
 }
 
-function buildYearStrip(today, dotsOnly) {
+function buildYearStrip(today) {
   const now  = new Date();
   const year = now.getFullYear();
   const CZ_MON = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
-  const periodSet = new Set(cycleData.periodStarts);
+
+  /* Build a set of all days covered by a logged period (start..end) */
+  const periodDaySet = new Set();
+  cycleData.periodStarts.forEach(start => {
+    const end = cycleData.periodEnds?.[start];
+    if (end) {
+      let cur = new Date(start + 'T00:00:00');
+      const endDate = new Date(end + 'T00:00:00');
+      while (cur <= endDate) {
+        periodDaySet.add(dStr(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+    } else {
+      periodDaySet.add(start);
+    }
+  });
+
   let rows = '';
   for (let m = 0; m < 12; m++) {
     const daysInMonth = new Date(year, m + 1, 0).getDate();
@@ -5014,8 +5106,8 @@ function buildYearStrip(today, dotsOnly) {
       const isToday  = ds === today;
       const isFuture = ds > today;
       let phaseCls = '';
-      if (dotsOnly) {
-        phaseCls = periodSet.has(ds) ? 'phase-men' : '';
+      if (periodDaySet.has(ds)) {
+        phaseCls = 'phase-men';
       } else {
         const info = cyclePhaseForDate(ds);
         phaseCls = info ? `phase-${info.phase}` : '';
@@ -5028,21 +5120,79 @@ function buildYearStrip(today, dotsOnly) {
         <div class="cyklus-strip-days">${cells}</div>
       </div>`;
   }
-  const legend = dotsOnly
-    ? `<div class="cyklus-legend">
-        <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:var(--c-men)"></div>Zaznamenaná perioda</div>
-      </div>`
-    : `<div class="cyklus-legend">
+  return `
+    <div class="cyklus-strip-wrap">
+      <div class="cyklus-strip-hd">${year} — cyklus v roce</div>
+      ${rows}
+      <div class="cyklus-legend">
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:var(--c-men)"></div>Perioda</div>
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(200,136,58,.5)"></div>Folikulární</div>
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(74,151,104,.6)"></div>Ovulace</div>
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(128,99,194,.35)"></div>Luteální</div>
+      </div>
+    </div>`;
+}
+
+/* ─── PERIOD RIVER (pulse timeline) ─── */
+function buildPeriodRiver(today) {
+  const sorted = [...cycleData.periodStarts].sort();
+  if (!sorted.length) return '';
+
+  const toShow = sorted.slice(-10);
+  let html = '';
+
+  toShow.forEach((start, i) => {
+    const end     = cycleData.periodEnds?.[start];
+    const durDays = end ? daysBetween(start, end) + 1 : null;
+
+    /* gap connector from previous period */
+    if (i > 0) {
+      const prevStart  = toShow[i - 1];
+      const prevEnd    = cycleData.periodEnds?.[prevStart];
+      const gapFrom    = prevEnd || prevStart;
+      const gapDays    = daysBetween(gapFrom, start);
+      const gapW       = Math.max(22, Math.min(130, Math.round(gapDays * 1.1)));
+      html += `<div class="cykl-gap-seg" style="width:${gapW}px"><span class="cykl-gap-lbl">${gapDays}d</span></div>`;
+    }
+
+    /* period pill */
+    const pillW   = durDays ? Math.max(18, Math.min(72, durDays * 4)) : 18;
+    const [, mo, dd] = start.split('-').map(Number);
+    const dateLbl = `${dd}.${mo}.`;
+    const durLbl  = durDays ? `${durDays}d` : '';
+    const titleTxt = end
+      ? `${formatCzFull(start)} – ${formatCzFull(end)} (${durDays} dní)`
+      : formatCzFull(start);
+    html += `
+      <div class="cykl-period-pill" style="width:${pillW}px" title="${titleTxt}">
+        ${pillW >= 26 && durLbl ? `<span class="cykl-period-pill-dur">${durLbl}</span>` : ''}
+        <span class="cykl-period-pill-date">${dateLbl}</span>
       </div>`;
+  });
+
+  /* gap from last period to today */
+  const lastStart  = toShow[toShow.length - 1];
+  const lastEnd    = cycleData.periodEnds?.[lastStart];
+  const gapFrom    = lastEnd || lastStart;
+  const daysToday  = daysBetween(gapFrom, today);
+  if (daysToday > 0) {
+    const gapW = Math.max(22, Math.min(130, Math.round(daysToday * 1.1)));
+    html += `<div class="cykl-gap-seg" style="width:${gapW}px"><span class="cykl-gap-lbl">${daysToday}d</span></div>`;
+  }
+
+  html += `<div class="cykl-today-dot"></div>`;
+
+  const note = toShow.length < sorted.length
+    ? `Zobrazeno posledních ${toShow.length} z ${sorted.length} záznamů`
+    : '';
+
   return `
-    <div class="cyklus-strip-wrap">
-      <div class="cyklus-strip-hd">${year}${dotsOnly ? ' — zaznamenaná data' : ' — cyklus v roce'}</div>
-      ${rows}
-      ${legend}
+    <div class="cykl-river-wrap">
+      <div class="cykl-river-title">Průběh</div>
+      ${note ? `<div class="cykl-river-subtitle">${note}</div>` : ''}
+      <div class="cykl-river-scroll">
+        <div class="cykl-river-track">${html}</div>
+      </div>
     </div>`;
 }
 
@@ -5051,6 +5201,7 @@ function openCyklusLog() {
   const inp = $('js-cyklus-date');
   const now = new Date();
   inp.value = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  $('js-cyklus-date-end').value = '';
   $('js-cyklus-save').disabled = false;
   $('js-cyklus-overlay').classList.add('open');
   setTimeout(() => inp.select(), 320);
@@ -5061,11 +5212,18 @@ function closeCyklusLog() {
 }
 
 function saveCyklusLog() {
-  const ds = parseCzDate($('js-cyklus-date').value.trim());
+  const ds  = parseCzDate($('js-cyklus-date').value.trim());
   if (!ds) return;
+  const endRaw = $('js-cyklus-date-end').value.trim();
+  const de  = endRaw ? parseCzDate(endRaw) : null;
   if (!cycleData.periodStarts.includes(ds)) {
     cycleData.periodStarts.push(ds);
     cycleData.periodStarts.sort();
+  }
+  if (de && de >= ds) {
+    cycleData.periodEnds[ds] = de;
+  } else {
+    delete cycleData.periodEnds[ds];
   }
   saveCycle();
   closeCyklusLog();
@@ -6966,11 +7124,21 @@ document.addEventListener('DOMContentLoaded', () => {
   $('js-cyklus-overlay').addEventListener('click', e => {
     if (e.target === $('js-cyklus-overlay')) closeCyklusLog();
   });
-  const cyklusDateInp = $('js-cyklus-date');
-  cyklusDateInp.addEventListener('input', () => {
-    $('js-cyklus-save').disabled = !parseCzDate(cyklusDateInp.value.trim());
-  });
+  const cyklusDateInp    = $('js-cyklus-date');
+  const cyklusDateEndInp = $('js-cyklus-date-end');
+  const updateCyklusSaveBtn = () => {
+    const startOk = !!parseCzDate(cyklusDateInp.value.trim());
+    const endRaw  = cyklusDateEndInp.value.trim();
+    const endOk   = !endRaw || !!parseCzDate(endRaw);
+    $('js-cyklus-save').disabled = !(startOk && endOk);
+  };
+  cyklusDateInp.addEventListener('input', updateCyklusSaveBtn);
+  cyklusDateEndInp.addEventListener('input', updateCyklusSaveBtn);
   cyklusDateInp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !$('js-cyklus-save').disabled) saveCyklusLog();
+    if (e.key === 'Escape') closeCyklusLog();
+  });
+  cyklusDateEndInp.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !$('js-cyklus-save').disabled) saveCyklusLog();
     if (e.key === 'Escape') closeCyklusLog();
   });
