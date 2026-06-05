@@ -2146,6 +2146,31 @@
     .fin-empty-txt { font-family: var(--f-hand); font-size: 20px; color: var(--ink-3); }
     .fin-empty-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
 
+    /* Finance calendar */
+    .fin-cal-wrap { padding: 0 20px 4px; }
+    .fin-cal-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 10px; }
+    .fin-cal-nav-btn { background: none; border: none; color: var(--ink-2); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
+    .fin-cal-nav-btn:active { opacity: .6; }
+    .fin-cal-month { font-family: var(--f-display); font-size: 15px; font-weight: 700; color: var(--ink); }
+    .fin-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .fin-cal-dow { font-size: 9.5px; color: var(--ink-3); text-align: center; padding: 0 0 6px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .fin-cal-dow.wknd { color: rgba(185,48,102,.55); }
+    .fin-cal-day { min-height: 36px; border-radius: 8px; padding: 4px 2px 3px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .fin-cal-day.today { background: var(--primary-lt); }
+    .fin-cal-day.off { visibility: hidden; }
+    .fin-cal-dn { font-size: 11px; font-weight: 600; color: var(--ink-2); line-height: 1.2; }
+    .fin-cal-day.today .fin-cal-dn { color: var(--primary); font-weight: 800; }
+    .fin-cal-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
+    .fin-cal-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    /* Upcoming payments */
+    .fin-upcoming { padding: 4px 20px 8px; display: flex; flex-direction: column; gap: 5px; }
+    .fin-up-item { display: flex; align-items: center; gap: 9px; padding: 8px 11px; background: var(--bg-off); border-radius: 10px; border: 1px solid transparent; }
+    .fin-up-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .fin-up-name { flex: 1; font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fin-up-date { font-size: 11.5px; color: var(--ink-3); flex-shrink: 0; }
+    .fin-up-amount { font-family: var(--f-mono); font-size: 12px; font-weight: 600; flex-shrink: 0; }
+    .fin-cal-empty { font-size: 12.5px; color: var(--ink-3); text-align: center; padding: 16px 0 8px; font-family: var(--f-hand); }
+
     /* Finance snapshot card in Dnes view */
     .fin-snap {
       margin: 0 20px 16px;
@@ -2558,6 +2583,12 @@
         </div>
       </div>
 
+      <div class="fin-sec-row" style="margin-top:6px">
+        <span class="fin-sec-title">Platební kalendář</span>
+      </div>
+      <div class="fin-cal-wrap" id="js-fin-cal"></div>
+      <div class="fin-upcoming" id="js-fin-upcoming"></div>
+
       <div class="fin-sec-row">
         <span class="fin-sec-title">Dluhy</span>
         <button class="fin-sec-add-btn" onclick="openDebtModal(null)" title="Přidat dluh">+</button>
@@ -2798,9 +2829,15 @@
         <input type="number" class="fin-input" id="js-debt-paid" placeholder="0" min="0" inputmode="numeric"/>
       </div>
     </div>
-    <div class="fin-field">
-      <label class="fin-field-lbl">Měsíční splátka (Kč) — nepovinné</label>
-      <input type="number" class="fin-input" id="js-debt-monthly" placeholder="12 500" min="0" inputmode="numeric"/>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Měsíční splátka (Kč) — nepovinné</label>
+        <input type="number" class="fin-input" id="js-debt-monthly" placeholder="12 500" min="0" inputmode="numeric"/>
+      </div>
+      <div class="fin-field" style="max-width:110px">
+        <label class="fin-field-lbl">Den splátky</label>
+        <input type="number" class="fin-input" id="js-debt-payday" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
+      </div>
     </div>
     <div class="fin-field">
       <label class="fin-field-lbl">Barva</label>
@@ -2864,9 +2901,15 @@
         <input type="number" class="fin-input" id="js-sav-current" placeholder="0" min="0" inputmode="numeric"/>
       </div>
     </div>
-    <div class="fin-field">
-      <label class="fin-field-lbl">Měsíční vklad (Kč) — nepovinné</label>
-      <input type="number" class="fin-input" id="js-sav-monthly" placeholder="8 000" min="0" inputmode="numeric"/>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Měsíční vklad (Kč) — nepovinné</label>
+        <input type="number" class="fin-input" id="js-sav-monthly" placeholder="8 000" min="0" inputmode="numeric"/>
+      </div>
+      <div class="fin-field" style="max-width:110px">
+        <label class="fin-field-lbl">Den vkladu</label>
+        <input type="number" class="fin-input" id="js-sav-depositday" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
+      </div>
     </div>
     <div class="fin-field">
       <label class="fin-field-lbl">Barva</label>
@@ -3542,7 +3585,89 @@ function renderFinance() {
   } else {
     savEl.innerHTML = financeData.savings.map(g => _savCardHTML(g)).join('');
   }
+  renderFinCal();
 }
+
+/* ── FINANCE CALENDAR ── */
+let finCalDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+function renderFinCal() {
+  const calEl = $('js-fin-cal');
+  const upEl  = $('js-fin-upcoming');
+  if (!calEl || !upEl) return;
+
+  const y = finCalDate.getFullYear(), m = finCalDate.getMonth();
+  const now    = new Date();
+  const todStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+  const czMon = ['Leden','Únor','Březen','Duben','Květen','Červen',
+                 'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+
+  const payEvents = [];
+  financeData.debts.forEach(d => {
+    if (d.payDay && d.monthlyPayment && (d.paidAmount||0) < (d.totalAmount||0))
+      payEvents.push({ day: d.payDay, name: d.name, amount: d.monthlyPayment, color: d.color, type: 'debt' });
+  });
+  financeData.savings.forEach(g => {
+    if (g.depositDay && g.monthlyDeposit && (g.currentAmount||0) < (g.targetAmount||0))
+      payEvents.push({ day: g.depositDay, name: g.name, amount: g.monthlyDeposit, color: g.color, type: 'sav' });
+  });
+
+  const firstDow  = (new Date(y, m, 1).getDay() + 6) % 7; // Mon=0
+  const daysInMon = new Date(y, m + 1, 0).getDate();
+  const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
+
+  let html = `<div class="fin-cal-nav">
+    <button class="fin-cal-nav-btn" onclick="finCalPrev()">‹</button>
+    <span class="fin-cal-month">${czMon[m]} ${y}</span>
+    <button class="fin-cal-nav-btn" onclick="finCalNext()">›</button>
+  </div>
+  <div class="fin-cal-grid">`;
+
+  DOW.forEach((d, i) => { html += `<div class="fin-cal-dow${i>=5?' wknd':''}">${d}</div>`; });
+  for (let i = 0; i < firstDow; i++) html += `<div class="fin-cal-day off"></div>`;
+
+  for (let day = 1; day <= daysInMon; day++) {
+    const ds  = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const evs = payEvents.filter(e => e.day === day);
+    const dots = evs.map(e => `<div class="fin-cal-dot" style="background:${e.color}"></div>`).join('');
+    html += `<div class="fin-cal-day${ds===todStr?' today':''}">
+      <span class="fin-cal-dn">${day}</span>
+      ${dots ? `<div class="fin-cal-dots">${dots}</div>` : ''}
+    </div>`;
+  }
+  html += `</div>`;
+
+  if (payEvents.length === 0) {
+    html += `<p class="fin-cal-empty">Nastav den splátky nebo vkladu u dluhů a spoření.</p>`;
+  }
+  calEl.innerHTML = html;
+
+  /* Upcoming list — next 60 days from today */
+  const upcoming = [];
+  for (let offset = 0; offset < 60; offset++) {
+    const d = new Date(now); d.setDate(now.getDate() + offset);
+    const day = d.getDate();
+    const maxDay = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    payEvents.forEach(e => {
+      const effectiveDay = Math.min(e.day, maxDay);
+      if (effectiveDay === day) {
+        upcoming.push({ date: new Date(d), dateStr: d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }), ...e });
+      }
+    });
+  }
+
+  upEl.innerHTML = upcoming.slice(0, 8).map(p => `
+    <div class="fin-up-item">
+      <div class="fin-up-dot" style="background:${p.color}"></div>
+      <span class="fin-up-name">${p.name}</span>
+      <span class="fin-up-date">${p.dateStr}</span>
+      <span class="fin-up-amount" style="color:${p.color}">${fmtCzk(p.amount)}</span>
+    </div>`).join('');
+}
+
+function finCalPrev() { finCalDate.setMonth(finCalDate.getMonth()-1); renderFinCal(); }
+function finCalNext() { finCalDate.setMonth(finCalDate.getMonth()+1); renderFinCal(); }
 
 function _debtCardHTML(d) {
   const remaining = Math.max((d.totalAmount || 0) - (d.paidAmount || 0), 0);
@@ -3638,6 +3763,7 @@ function openDebtModal(id) {
   $('js-debt-total').value   = d ? d.totalAmount : '';
   $('js-debt-paid').value    = d ? d.paidAmount : '0';
   $('js-debt-monthly').value = d && d.monthlyPayment ? d.monthlyPayment : '';
+  $('js-debt-payday').value  = d && d.payDay ? d.payDay : '';
   currentDebtColor = d ? d.color : DEBT_COLORS[financeData.debts.length % DEBT_COLORS.length];
   $('js-debt-delete-btn').style.display = d ? '' : 'none';
   _renderDebtColors();
@@ -3659,12 +3785,13 @@ function saveDebt() {
   const total   = parseFloat($('js-debt-total').value)   || 0;
   const paid    = parseFloat($('js-debt-paid').value)    || 0;
   const monthly = parseFloat($('js-debt-monthly').value) || 0;
+  const payDay  = parseInt($('js-debt-payday').value) || null;
   if (!name || total <= 0) return;
   if (editingDebtId) {
     const d = financeData.debts.find(x => String(x.id) === String(editingDebtId));
-    if (d) Object.assign(d, { name, totalAmount: total, paidAmount: paid, monthlyPayment: monthly, color: currentDebtColor });
+    if (d) Object.assign(d, { name, totalAmount: total, paidAmount: paid, monthlyPayment: monthly, payDay, color: currentDebtColor });
   } else {
-    financeData.debts.push({ id: Date.now(), name, totalAmount: total, paidAmount: paid, color: currentDebtColor, monthlyPayment: monthly, payments: [] });
+    financeData.debts.push({ id: Date.now(), name, totalAmount: total, paidAmount: paid, color: currentDebtColor, monthlyPayment: monthly, payDay, payments: [] });
   }
   saveFinance(); renderFinance(); renderFinanceSnap(); closeDebtModal();
 }
@@ -3720,7 +3847,8 @@ function openSavModal(id) {
   $('js-sav-desc').value    = g ? (g.description || '') : '';
   $('js-sav-target').value  = g ? g.targetAmount : '';
   $('js-sav-current').value = g ? g.currentAmount : '0';
-  $('js-sav-monthly').value = g && g.monthlyDeposit ? g.monthlyDeposit : '';
+  $('js-sav-monthly').value     = g && g.monthlyDeposit ? g.monthlyDeposit : '';
+  $('js-sav-depositday').value  = g && g.depositDay ? g.depositDay : '';
   currentSavColor = g ? g.color : DEBT_COLORS[financeData.savings.length % DEBT_COLORS.length];
   $('js-sav-delete-btn').style.display = g ? '' : 'none';
   _renderSavColors();
@@ -3741,14 +3869,15 @@ function saveSavGoal() {
   const name    = $('js-sav-name').value.trim();
   const target  = parseFloat($('js-sav-target').value)  || 0;
   const current = parseFloat($('js-sav-current').value) || 0;
-  const monthly = parseFloat($('js-sav-monthly').value) || 0;
-  const desc    = $('js-sav-desc').value.trim();
+  const monthly    = parseFloat($('js-sav-monthly').value) || 0;
+  const depositDay = parseInt($('js-sav-depositday').value) || null;
+  const desc       = $('js-sav-desc').value.trim();
   if (!name || target <= 0) return;
   if (editingSavId) {
     const g = financeData.savings.find(x => String(x.id) === String(editingSavId));
-    if (g) Object.assign(g, { name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, color: currentSavColor });
+    if (g) Object.assign(g, { name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, depositDay, color: currentSavColor });
   } else {
-    financeData.savings.push({ id: Date.now(), name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, color: currentSavColor });
+    financeData.savings.push({ id: Date.now(), name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, depositDay, color: currentSavColor });
   }
   saveFinance(); renderFinance(); renderFinanceSnap(); closeSavModal();
 }
