@@ -1,5 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#b93066"/>
-  <path d="M256 110C206 148 172 214 172 274c0 56 42 100 84 108 42-8 84-52 84-108C340 214 306 148 256 110z" stroke="white" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M224 286l28 28 46-52" stroke="white" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- full-bleed background (Android applies its own shape mask) -->
+  <rect width="512" height="512" fill="#ffffff"/>
+
+  <!-- safe zone = center 80% = ~51px padding each side -->
+  <!-- "to" ghost — full text, faded -->
+  <text x="256" y="318"
+    text-anchor="middle"
+    font-family="'Syne', ui-sans-serif, system-ui, sans-serif"
+    font-weight="800"
+    font-size="240"
+    fill="#111111"
+    letter-spacing="-6"
+    opacity="0.10">to</text>
+
+  <!-- strikethrough bar (within safe zone) -->
+  <line x1="72" y1="252" x2="440" y2="252"
+    stroke="#b93066" stroke-width="46" stroke-linecap="round"/>
+
+  <!-- top half of "to" — full opacity, clipped above bar -->
+  <clipPath id="above-m">
+    <rect x="0" y="0" width="512" height="229"/>
+  </clipPath>
+  <text x="256" y="318"
+    text-anchor="middle"
+    font-family="'Syne', ui-sans-serif, system-ui, sans-serif"
+    font-weight="800"
+    font-size="240"
+    fill="#111111"
+    letter-spacing="-6"
+    clip-path="url(#above-m)">to</text>
 </svg>

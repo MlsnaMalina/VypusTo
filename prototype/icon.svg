@@ -1,5 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#b93066"/>
-  <path d="M256 90C196 132 158 206 158 272c0 62 46 110 98 118 52-8 98-56 98-118C354 206 316 132 256 90z" stroke="white" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M218 283l34 34 52-58" stroke="white" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- background -->
+  <rect width="512" height="512" rx="115" fill="#ffffff"/>
+
+  <!-- "to" ghost — full text, very faded -->
+  <text x="256" y="336"
+    text-anchor="middle"
+    font-family="'Syne', ui-sans-serif, system-ui, sans-serif"
+    font-weight="800"
+    font-size="290"
+    fill="#111111"
+    letter-spacing="-8"
+    opacity="0.10">to</text>
+
+  <!-- strikethrough bar -->
+  <line x1="44" y1="258" x2="468" y2="258"
+    stroke="#b93066" stroke-width="54" stroke-linecap="round"/>
+
+  <!-- "to" top half — full opacity, clipped above the bar -->
+  <clipPath id="above">
+    <rect x="0" y="0" width="512" height="231"/>
+  </clipPath>
+  <text x="256" y="336"
+    text-anchor="middle"
+    font-family="'Syne', ui-sans-serif, system-ui, sans-serif"
+    font-weight="800"
+    font-size="290"
+    fill="#111111"
+    letter-spacing="-8"
+    clip-path="url(#above)">to</text>
 </svg>
