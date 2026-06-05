@@ -1996,6 +1996,243 @@
       box-shadow: 0 3px 12px var(--c-men-mid);
     }
     .cyklus-empty-cta:active { opacity: .8; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       FINANCE VIEW
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #v-finance { padding-bottom: 80px; }
+    .fin-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 20px 20px 0;
+    }
+    .fin-wm {
+      font-family: var(--f-display); font-size: 10px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+      margin-bottom: 4px;
+    }
+    .fin-h1 {
+      font-family: var(--f-display); font-size: 28px; font-weight: 800;
+      color: var(--ink); letter-spacing: -.03em;
+    }
+
+    /* Summary strip */
+    .fin-summary {
+      margin: 14px 20px 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .fin-summary-card {
+      background: var(--bg-off); border: 1px solid var(--border); border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .fin-summary-label {
+      font-size: 9.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 4px;
+    }
+    .fin-summary-value {
+      font-family: var(--f-mono); font-size: 20px; font-weight: 500; letter-spacing: -.03em;
+    }
+    .fin-summary-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+    /* Section header */
+    .fin-sec-row {
+      padding: 20px 20px 8px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .fin-sec-title {
+      font-family: var(--f-hand); font-size: 22px; font-weight: 700; color: var(--ink-2);
+    }
+    .fin-sec-add-btn {
+      width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      color: var(--ink-3); line-height: 1; transition: all .12s;
+    }
+    .fin-sec-add-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+
+    /* Debt list */
+    .fin-debt-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Debt card */
+    .debt-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; transition: border-color .15s;
+    }
+    .debt-card:hover { border-color: rgba(0,0,0,.15); }
+    .debt-card-body { display: flex; align-items: center; gap: 12px; padding: 14px 14px 10px; }
+    .debt-donut-wrap { flex-shrink: 0; position: relative; }
+    .debt-donut-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .debt-pct {
+      font-family: var(--f-mono); font-size: 13px; font-weight: 500;
+      letter-spacing: -.02em; line-height: 1;
+    }
+    .debt-pct-lbl { font-size: 7.5px; color: var(--ink-3); margin-top: 1px; }
+    .debt-info { flex: 1; min-width: 0; }
+    .debt-name {
+      font-family: var(--f-display); font-size: 14.5px; font-weight: 700;
+      color: var(--ink); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .debt-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+    .dstat { display: flex; flex-direction: column; }
+    .dstat-label {
+      font-size: 9px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 2px;
+    }
+    .dstat-val { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: -.02em; }
+    .debt-recent-payments { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+    .debt-recent-row {
+      display: flex; justify-content: space-between; font-size: 10.5px;
+    }
+    .debt-payoff {
+      margin: 0 12px 10px; padding: 6px 10px;
+      background: var(--bg-off); border-radius: 8px; font-size: 11px; color: var(--ink-2);
+    }
+    .debt-payoff strong { font-family: var(--f-mono); }
+    .debt-footer { border-top: 1px solid var(--border); display: flex; }
+    .debt-pay-btn {
+      flex: 1; padding: 10px; text-align: center;
+      font-family: var(--f-display); font-size: 13px; font-weight: 700;
+      color: var(--ink-2); transition: all .12s;
+    }
+    .debt-pay-btn:hover { color: var(--primary); background: var(--primary-lt); }
+    .debt-edit-btn {
+      width: 44px; display: flex; align-items: center; justify-content: center;
+      border-left: 1px solid var(--border); color: var(--ink-3); transition: all .12s;
+    }
+    .debt-edit-btn:hover { color: var(--ink); background: var(--bg-off); }
+    .debt-complete-badge {
+      flex: 1; padding: 10px; text-align: center;
+      font-family: var(--f-display); font-size: 13px; font-weight: 700;
+      color: var(--c-dom); background: var(--c-dom-bg);
+    }
+
+    /* Savings list */
+    .fin-sav-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
+    .sav-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px 14px 12px; transition: border-color .15s;
+    }
+    .sav-card:hover { border-color: rgba(0,0,0,.15); }
+    .sav-name { font-family: var(--f-display); font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+    .sav-desc { font-size: 12px; color: var(--ink-3); margin-bottom: 10px; }
+    .sav-progress-wrap {
+      height: 5px; background: var(--bg-off); border-radius: 3px; overflow: hidden; margin-bottom: 8px;
+    }
+    .sav-progress-bar { height: 100%; border-radius: 3px; transition: width .5s; }
+    .sav-amounts { display: flex; justify-content: space-between; align-items: baseline; }
+    .sav-current { font-family: var(--f-mono); font-size: 16px; font-weight: 500; letter-spacing: -.03em; }
+    .sav-target { font-size: 11px; color: var(--ink-3); }
+    .sav-eta { margin-top: 4px; font-size: 11px; color: var(--ink-3); }
+    .sav-footer {
+      border-top: 1px solid var(--border); margin-top: 10px; padding-top: 9px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .sav-deposit-btn {
+      padding: 5px 13px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: var(--f-body); font-size: 12px; font-weight: 600; color: var(--ink-2);
+      transition: all .12s;
+    }
+    .sav-deposit-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+    .sav-edit-btn {
+      width: 28px; height: 28px; border: 1.5px solid var(--border); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-3); transition: all .12s;
+    }
+    .sav-edit-btn:hover { color: var(--ink); border-color: rgba(0,0,0,.2); background: var(--bg-off); }
+
+    /* Empty state */
+    .fin-empty { padding: 32px 20px; text-align: center; }
+    .fin-empty-icon { font-size: 32px; margin-bottom: 8px; }
+    .fin-empty-txt { font-family: var(--f-hand); font-size: 20px; color: var(--ink-3); }
+    .fin-empty-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+
+    /* Finance snapshot card in Dnes view */
+    .fin-snap {
+      margin: 0 20px 16px;
+      background: var(--bg-off); border: 1px solid var(--border); border-radius: 14px;
+      padding: 11px 13px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: border-color .15s;
+    }
+    .fin-snap:hover { border-color: rgba(0,0,0,.15); }
+    .fin-snap-icon { font-size: 18px; flex-shrink: 0; }
+    .fin-snap-content { flex: 1; min-width: 0; }
+    .fin-snap-title {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px;
+    }
+    .fin-snap-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .fin-snap-item { font-size: 11.5px; color: var(--ink-2); }
+    .fin-snap-item strong { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink); }
+    .fin-snap-arr { font-size: 13px; color: var(--ink-3); flex-shrink: 0; }
+
+    /* Finance modal overlay */
+    .fin-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 800; opacity: 0; pointer-events: none; transition: opacity .22s;
+    }
+    .fin-overlay.open { opacity: 1; pointer-events: auto; }
+    .fin-sheet {
+      background: var(--bg); border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 560px; max-height: 88vh;
+      overflow-y: auto; padding: 12px 20px 32px;
+      transform: translateY(100%); transition: transform .25s cubic-bezier(.22,1,.36,1);
+    }
+    .fin-overlay.open .fin-sheet { transform: translateY(0); }
+    .fin-pill { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+    .fin-sheet-title-row {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+    }
+    .fin-sheet-title { font-family: var(--f-display); font-size: 18px; font-weight: 800; color: var(--ink); }
+    .fin-close-btn { color: var(--ink-3); font-size: 20px; line-height: 1; padding: 2px; }
+    .fin-field { margin-bottom: 13px; }
+    .fin-field-lbl {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      color: var(--ink-2); margin-bottom: 5px; display: block;
+    }
+    .fin-input {
+      width: 100%; font-family: var(--f-body); font-size: 14px; color: var(--ink);
+      background: var(--bg-off); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 9px 12px; outline: none;
+    }
+    .fin-input:focus { border-color: var(--primary); background: #fff; }
+    .fin-row { display: flex; gap: 10px; }
+    .fin-row .fin-field { flex: 1; }
+
+    /* Color swatches */
+    .fin-colors { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 4px; }
+    .fin-color-swatch {
+      width: 26px; height: 26px; border-radius: 50%; border: 2.5px solid transparent;
+      cursor: pointer; transition: all .12s; flex-shrink: 0;
+    }
+    .fin-color-swatch.on { border-color: var(--ink); transform: scale(1.15); }
+    .fin-color-swatch:hover:not(.on) { transform: scale(1.1); }
+
+    /* Save / delete buttons in finance modals */
+    .fin-save-btn {
+      width: 100%; margin-top: 6px; padding: 12px; border-radius: 10px;
+      background: var(--primary); color: #fff;
+      font-family: var(--f-display); font-size: 15px; font-weight: 700;
+      transition: opacity .12s;
+    }
+    .fin-save-btn:hover { opacity: .85; }
+    .fin-delete-btn {
+      width: 100%; margin-top: 8px; padding: 10px; border-radius: 10px;
+      border: 1.5px solid #e0e0e0; color: #c55; font-size: 13px; font-weight: 600;
+      transition: all .12s;
+    }
+    .fin-delete-btn:hover { border-color: #c55; background: #fff0f0; }
+
+    @media (min-width: 720px) {
+      .fin-debt-list, .fin-sav-list {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+        padding: 0 24px;
+      }
+      .fin-summary { margin: 14px 24px 0; grid-template-columns: 1fr 1fr 1fr; }
+      .fin-sec-row { padding: 20px 24px 8px; }
+      .fin-top { padding: 24px 24px 0; }
+      .fin-empty { grid-column: 1 / -1; }
+    }
   </style>
 </head>
 <body>
@@ -2081,6 +2318,10 @@
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="22 6"/><circle cx="12" cy="3" r="1.8" fill="currentColor" stroke="none"/></svg>
         Cyklus
       </button>
+      <button class="sb-item" data-v="finance">
+        <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        Finance
+      </button>
       <button class="sb-item" data-v="nastav">
         <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Nastavení
@@ -2158,6 +2399,7 @@
           <div id="js-today-done-wrap"></div>
         </div>
       </div>
+      <div id="js-fin-snap" class="fin-snap" style="display:none" onclick="setView('finance')"></div>
     </div><!-- /v-dnes -->
 
     <!-- ─── ÚKOLY ─── -->
@@ -2293,6 +2535,42 @@
       <div id="js-cyklus-body"></div>
     </div>
 
+    <!-- ─── FINANCE ─── -->
+    <div id="v-finance" class="view">
+      <div class="fin-top">
+        <div>
+          <div class="fin-wm">VypusTo</div>
+          <div class="fin-h1">Finance</div>
+        </div>
+      </div>
+      <div class="fin-summary">
+        <div class="fin-summary-card">
+          <div class="fin-summary-label">Zbývá splatit</div>
+          <div class="fin-summary-value" id="js-fin-total-debt" style="color:#c55">–</div>
+        </div>
+        <div class="fin-summary-card">
+          <div class="fin-summary-label">Naspořeno</div>
+          <div class="fin-summary-value" id="js-fin-total-saved" style="color:var(--c-dom)">–</div>
+        </div>
+        <div class="fin-summary-card" id="js-fin-summary-paid-wrap">
+          <div class="fin-summary-label">Celkem splaceno</div>
+          <div class="fin-summary-value" id="js-fin-total-paid">–</div>
+        </div>
+      </div>
+
+      <div class="fin-sec-row">
+        <span class="fin-sec-title">Dluhy</span>
+        <button class="fin-sec-add-btn" onclick="openDebtModal(null)" title="Přidat dluh">+</button>
+      </div>
+      <div class="fin-debt-list" id="js-fin-debts"></div>
+
+      <div class="fin-sec-row">
+        <span class="fin-sec-title">Spoření</span>
+        <button class="fin-sec-add-btn" onclick="openSavModal(null)" title="Přidat cíl spoření">+</button>
+      </div>
+      <div class="fin-sav-list" id="js-fin-savings"></div>
+    </div><!-- /v-finance -->
+
   </div><!-- /.main-panel -->
 </div><!-- /#app -->
 
@@ -2329,6 +2607,10 @@
   <button class="nav-btn" data-v="cyklus">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="22 6"/><circle cx="12" cy="3" r="1.8" fill="currentColor" stroke="none"/></svg>
     <span class="nav-lbl">Cyklus</span>
+  </button>
+  <button class="nav-btn" data-v="finance">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+    <span class="nav-lbl">Finance</span>
   </button>
   <button class="nav-btn" data-v="nastav">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -2491,6 +2773,124 @@
       <input type="text" class="cyklus-log-input" id="js-cyklus-date" placeholder="dd.mm.rrrr" autocomplete="off" inputmode="numeric"/>
     </div>
     <button class="cyklus-save-btn" id="js-cyklus-save" disabled>Uložit</button>
+  </div>
+</div>
+
+<!-- FINANCE: DEBT MODAL -->
+<div class="fin-overlay" id="js-debt-overlay">
+  <div class="fin-sheet">
+    <div class="fin-pill"></div>
+    <div class="fin-sheet-title-row">
+      <span class="fin-sheet-title" id="js-debt-modal-title">Přidat dluh</span>
+      <button class="fin-close-btn" onclick="closeDebtModal()">✕</button>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Název dluhu</label>
+      <input type="text" class="fin-input" id="js-debt-name" placeholder="Hypotéka, auto, kreditní karta…" autocomplete="off"/>
+    </div>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Celková částka (Kč)</label>
+        <input type="number" class="fin-input" id="js-debt-total" placeholder="500 000" min="0" inputmode="numeric"/>
+      </div>
+      <div class="fin-field">
+        <label class="fin-field-lbl">Již splaceno (Kč)</label>
+        <input type="number" class="fin-input" id="js-debt-paid" placeholder="0" min="0" inputmode="numeric"/>
+      </div>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Měsíční splátka (Kč) — nepovinné</label>
+      <input type="number" class="fin-input" id="js-debt-monthly" placeholder="12 500" min="0" inputmode="numeric"/>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Barva</label>
+      <div class="fin-colors" id="js-debt-colors"></div>
+    </div>
+    <button class="fin-save-btn" onclick="saveDebt()">Uložit</button>
+    <button class="fin-delete-btn" id="js-debt-delete-btn" onclick="deleteDebt()" style="display:none">Smazat dluh</button>
+  </div>
+</div>
+
+<!-- FINANCE: PAYMENT MODAL -->
+<div class="fin-overlay" id="js-pay-overlay">
+  <div class="fin-sheet">
+    <div class="fin-pill"></div>
+    <div class="fin-sheet-title-row">
+      <span class="fin-sheet-title">Zadat splátku</span>
+      <button class="fin-close-btn" onclick="closePaymentModal()">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--ink-2);margin-bottom:14px" id="js-pay-debt-name"></div>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Částka (Kč)</label>
+        <input type="number" class="fin-input" id="js-pay-amount" placeholder="12 500" min="0" inputmode="numeric"/>
+      </div>
+      <div class="fin-field">
+        <label class="fin-field-lbl">Datum splátky</label>
+        <input type="text" class="fin-input" id="js-pay-date" placeholder="dd.mm.rrrr" autocomplete="off" inputmode="numeric"/>
+      </div>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Poznámka — nepovinné</label>
+      <input type="text" class="fin-input" id="js-pay-note" placeholder="Např. mimořádná splátka" autocomplete="off"/>
+    </div>
+    <button class="fin-save-btn" onclick="savePayment()">Uložit splátku</button>
+  </div>
+</div>
+
+<!-- FINANCE: SAVINGS MODAL -->
+<div class="fin-overlay" id="js-sav-overlay">
+  <div class="fin-sheet">
+    <div class="fin-pill"></div>
+    <div class="fin-sheet-title-row">
+      <span class="fin-sheet-title" id="js-sav-modal-title">Přidat cíl spoření</span>
+      <button class="fin-close-btn" onclick="closeSavModal()">✕</button>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Název cíle</label>
+      <input type="text" class="fin-input" id="js-sav-name" placeholder="Dovolená, nové auto, nouzový fond…" autocomplete="off"/>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Popis — nepovinné</label>
+      <input type="text" class="fin-input" id="js-sav-desc" placeholder="Krátký popis" autocomplete="off"/>
+    </div>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Cílová částka (Kč)</label>
+        <input type="number" class="fin-input" id="js-sav-target" placeholder="200 000" min="0" inputmode="numeric"/>
+      </div>
+      <div class="fin-field">
+        <label class="fin-field-lbl">Naspořeno (Kč)</label>
+        <input type="number" class="fin-input" id="js-sav-current" placeholder="0" min="0" inputmode="numeric"/>
+      </div>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Měsíční vklad (Kč) — nepovinné</label>
+      <input type="number" class="fin-input" id="js-sav-monthly" placeholder="8 000" min="0" inputmode="numeric"/>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Barva</label>
+      <div class="fin-colors" id="js-sav-colors"></div>
+    </div>
+    <button class="fin-save-btn" onclick="saveSavGoal()">Uložit</button>
+    <button class="fin-delete-btn" id="js-sav-delete-btn" onclick="deleteSavGoal()" style="display:none">Smazat cíl</button>
+  </div>
+</div>
+
+<!-- FINANCE: DEPOSIT MODAL -->
+<div class="fin-overlay" id="js-dep-overlay">
+  <div class="fin-sheet">
+    <div class="fin-pill"></div>
+    <div class="fin-sheet-title-row">
+      <span class="fin-sheet-title">Přidat vklad</span>
+      <button class="fin-close-btn" onclick="closeSavDepositModal()">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--ink-2);margin-bottom:14px" id="js-dep-sav-name"></div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Částka (Kč)</label>
+      <input type="number" class="fin-input" id="js-dep-amount" placeholder="8 000" min="0" inputmode="numeric"/>
+    </div>
+    <button class="fin-save-btn" onclick="saveDeposit()">Uložit vklad</button>
   </div>
 </div>
 
@@ -3015,6 +3415,380 @@ function saveCalEvents() {
 }
 
 /* load all data from Firestore; fall back to localStorage */
+/* ══════════════════════════════════════════
+   FINANCE — DATA & FUNCTIONS
+══════════════════════════════════════════ */
+
+const FINANCE_LS_KEY = 'vypusto-finance-v2';
+
+const DEBT_COLORS = [
+  '#1C3557', '#C4614A', '#4A7C59', '#7A6E8A',
+  '#b93066', '#2E7D8C', '#8B5E3C', '#5C4D7D'
+];
+
+let financeData = { debts: [], savings: [] };
+
+function _loadFinanceLocal() {
+  try {
+    const raw = localStorage.getItem(FINANCE_LS_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      financeData = { debts: p.debts || [], savings: p.savings || [] };
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function _saveFinanceLocal() {
+  localStorage.setItem(FINANCE_LS_KEY, JSON.stringify(financeData));
+}
+
+function saveFinance() {
+  _saveFinanceLocal();
+  if (currentUser) {
+    userDataRef('finance').set({ debts: financeData.debts, savings: financeData.savings }).catch(console.warn);
+  }
+}
+
+async function loadFinanceFirestore() {
+  if (!currentUser) return;
+  try {
+    const snap = await userDataRef('finance').get();
+    if (snap.exists && snap.data()) {
+      const d = snap.data();
+      if ((d.debts && d.debts.length > 0) || (d.savings && d.savings.length > 0)) {
+        financeData = { debts: d.debts || [], savings: d.savings || [] };
+        _saveFinanceLocal();
+      }
+    }
+  } catch(e) { console.warn('Finance Firestore load failed', e); }
+}
+
+function fmtCzk(n) {
+  return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 }).format(n || 0);
+}
+
+function debtDonutSVG(paid, total, color, size, strokeW) {
+  size = size || 76; strokeW = strokeW || 7;
+  const r = (size - strokeW) / 2;
+  const circ = 2 * Math.PI * r;
+  const pct = total > 0 ? Math.min(paid / total, 1) : 0;
+  const dash = pct * circ;
+  const cx = size / 2;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${strokeW}"/>
+    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeW}"
+      stroke-dasharray="${dash.toFixed(1)} ${(circ-dash).toFixed(1)}"
+      style="transform:rotate(-90deg);transform-origin:${cx}px ${cx}px"
+      stroke-linecap="round"/>
+  </svg>`;
+}
+
+function renderFinanceSnap() {
+  const el = $('js-fin-snap');
+  if (!el) return;
+  const debts = financeData.debts.filter(d => d.totalAmount > d.paidAmount);
+  const totalRemaining = debts.reduce((s, d) => s + Math.max(d.totalAmount - d.paidAmount, 0), 0);
+  const totalSaved = financeData.savings.reduce((s, g) => s + (g.currentAmount || 0), 0);
+  if (financeData.debts.length === 0 && financeData.savings.length === 0) {
+    el.style.display = 'none'; return;
+  }
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="fin-snap-icon">💰</div>
+    <div class="fin-snap-content">
+      <div class="fin-snap-title">Finance</div>
+      <div class="fin-snap-row">
+        ${debts.length > 0 ? `<div class="fin-snap-item">Dluhy: <strong>${fmtCzk(totalRemaining)}</strong></div>` : ''}
+        ${totalSaved > 0 ? `<div class="fin-snap-item">Spoření: <strong>${fmtCzk(totalSaved)}</strong></div>` : ''}
+      </div>
+    </div>
+    <div class="fin-snap-arr">→</div>
+  `;
+}
+
+function renderFinance() {
+  const debtEl = $('js-fin-debts');
+  const savEl  = $('js-fin-savings');
+  if (!debtEl || !savEl) return;
+
+  const activeDebts = financeData.debts.filter(d => d.paidAmount < d.totalAmount);
+  const totalDebt   = activeDebts.reduce((s, d) => s + Math.max(d.totalAmount - d.paidAmount, 0), 0);
+  const totalPaid   = financeData.debts.reduce((s, d) => s + (d.paidAmount || 0), 0);
+  const totalSaved  = financeData.savings.reduce((s, g) => s + (g.currentAmount || 0), 0);
+
+  const debtEl2 = $('js-fin-total-debt');
+  const savEl2  = $('js-fin-total-saved');
+  const paidEl2 = $('js-fin-total-paid');
+  if (debtEl2) debtEl2.textContent = totalDebt > 0 ? fmtCzk(totalDebt) : '0 Kč';
+  if (savEl2)  savEl2.textContent  = fmtCzk(totalSaved);
+  if (paidEl2) paidEl2.textContent = fmtCzk(totalPaid);
+
+  /* Debt cards */
+  if (financeData.debts.length === 0) {
+    debtEl.innerHTML = `<div class="fin-empty"><div class="fin-empty-icon">🎉</div>
+      <div class="fin-empty-txt">Žádné dluhy!</div>
+      <div class="fin-empty-sub">Přidej dluh tlačítkem + výše</div></div>`;
+  } else {
+    debtEl.innerHTML = financeData.debts.map(d => _debtCardHTML(d)).join('');
+  }
+
+  /* Savings cards */
+  if (financeData.savings.length === 0) {
+    savEl.innerHTML = `<div class="fin-empty"><div class="fin-empty-icon">🏦</div>
+      <div class="fin-empty-txt">Žádné cíle spoření</div>
+      <div class="fin-empty-sub">Přidej cíl tlačítkem + výše</div></div>`;
+  } else {
+    savEl.innerHTML = financeData.savings.map(g => _savCardHTML(g)).join('');
+  }
+}
+
+function _debtCardHTML(d) {
+  const remaining = Math.max((d.totalAmount || 0) - (d.paidAmount || 0), 0);
+  const pct       = d.totalAmount > 0 ? Math.min((d.paidAmount || 0) / d.totalAmount, 1) : 0;
+  const isComplete = (d.paidAmount || 0) >= (d.totalAmount || 0);
+  const payoffM   = (d.monthlyPayment > 0 && remaining > 0) ? Math.ceil(remaining / d.monthlyPayment) : null;
+  const payoffDate = payoffM !== null ? (() => {
+    const dt = new Date(); dt.setMonth(dt.getMonth() + payoffM);
+    return dt.toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' });
+  })() : null;
+  const lastPays  = [...(d.payments || [])].reverse().slice(0, 2);
+
+  return `<div class="debt-card">
+    <div class="debt-card-body">
+      <div class="debt-donut-wrap">
+        ${debtDonutSVG(d.paidAmount || 0, d.totalAmount || 0, d.color)}
+        <div class="debt-donut-center">
+          <span class="debt-pct" style="color:${d.color}">${Math.round(pct*100)}%</span>
+          <span class="debt-pct-lbl">splac.</span>
+        </div>
+      </div>
+      <div class="debt-info">
+        <div class="debt-name">${d.name}</div>
+        <div class="debt-stats">
+          <div class="dstat"><span class="dstat-label">Celkem</span><span class="dstat-val">${fmtCzk(d.totalAmount)}</span></div>
+          <div class="dstat"><span class="dstat-label">Splaceno</span><span class="dstat-val" style="color:${d.color}">${fmtCzk(d.paidAmount)}</span></div>
+          <div class="dstat"><span class="dstat-label">Zbývá</span><span class="dstat-val" style="font-weight:600">${fmtCzk(remaining)}</span></div>
+        </div>
+        ${lastPays.length > 0 ? `<div class="debt-recent-payments">
+          ${lastPays.map(p => `<div class="debt-recent-row">
+            <span style="color:var(--ink-3)">${_isoToCz(p.date)}</span>
+            <span style="font-family:var(--f-mono);color:${d.color}">+${fmtCzk(p.amount)}</span>
+          </div>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>
+    ${payoffM !== null ? `<div class="debt-payoff">
+      Splatíš za <strong>~${payoffM} ${payoffM===1?'měsíc':payoffM<5?'měsíce':'měsíců'}</strong>
+      <span style="color:var(--ink-3);font-size:10px;margin-left:6px">(${payoffDate})</span>
+    </div>` : ''}
+    <div class="debt-footer">
+      ${!isComplete
+        ? `<button class="debt-pay-btn" onclick="openPaymentModal('${d.id}')">+ Zadat splátku</button>`
+        : `<div class="debt-complete-badge">✓ Dluh splacen!</div>`
+      }
+      <button class="debt-edit-btn" onclick="openDebtModal('${d.id}')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function _savCardHTML(g) {
+  const pct       = g.targetAmount > 0 ? Math.min((g.currentAmount||0) / g.targetAmount, 1) : 0;
+  const remaining = Math.max((g.targetAmount||0) - (g.currentAmount||0), 0);
+  const monthsLeft = (g.monthlyDeposit > 0 && remaining > 0)
+    ? Math.ceil(remaining / g.monthlyDeposit) : null;
+  return `<div class="sav-card">
+    <div class="sav-name">${g.name}</div>
+    ${g.description ? `<div class="sav-desc">${g.description}</div>` : '<div style="margin-bottom:10px"></div>'}
+    <div class="sav-progress-wrap">
+      <div class="sav-progress-bar" style="width:${Math.round(pct*100)}%;background:${g.color}"></div>
+    </div>
+    <div class="sav-amounts">
+      <span class="sav-current" style="color:${g.color}">${fmtCzk(g.currentAmount)}</span>
+      <span class="sav-target">z ${fmtCzk(g.targetAmount)}</span>
+    </div>
+    ${monthsLeft !== null ? `<div class="sav-eta">Splněno za ~${monthsLeft} ${monthsLeft===1?'měsíc':monthsLeft<5?'měsíce':'měsíců'}</div>` : ''}
+    <div class="sav-footer">
+      <button class="sav-deposit-btn" onclick="openSavDepositModal('${g.id}')">+ Přidat vklad</button>
+      <button class="sav-edit-btn" onclick="openSavModal('${g.id}')">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function _isoToCz(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${+d}. ${+m}. ${y}`;
+}
+
+/* ── DEBT MODAL ── */
+let editingDebtId = null;
+let currentDebtColor = DEBT_COLORS[0];
+
+function openDebtModal(id) {
+  editingDebtId = id || null;
+  const d = id ? financeData.debts.find(x => String(x.id) === String(id)) : null;
+  $('js-debt-modal-title').textContent = d ? 'Upravit dluh' : 'Přidat dluh';
+  $('js-debt-name').value    = d ? d.name : '';
+  $('js-debt-total').value   = d ? d.totalAmount : '';
+  $('js-debt-paid').value    = d ? d.paidAmount : '0';
+  $('js-debt-monthly').value = d && d.monthlyPayment ? d.monthlyPayment : '';
+  currentDebtColor = d ? d.color : DEBT_COLORS[financeData.debts.length % DEBT_COLORS.length];
+  $('js-debt-delete-btn').style.display = d ? '' : 'none';
+  _renderDebtColors();
+  $('js-debt-overlay').classList.add('open');
+  setTimeout(() => $('js-debt-name').focus(), 100);
+}
+
+function closeDebtModal() { $('js-debt-overlay').classList.remove('open'); }
+
+function _renderDebtColors() {
+  $('js-debt-colors').innerHTML = DEBT_COLORS.map(c =>
+    `<button class="fin-color-swatch${c===currentDebtColor?' on':''}" style="background:${c}"
+      onclick="currentDebtColor='${c}';_renderDebtColors()"></button>`
+  ).join('');
+}
+
+function saveDebt() {
+  const name    = $('js-debt-name').value.trim();
+  const total   = parseFloat($('js-debt-total').value)   || 0;
+  const paid    = parseFloat($('js-debt-paid').value)    || 0;
+  const monthly = parseFloat($('js-debt-monthly').value) || 0;
+  if (!name || total <= 0) return;
+  if (editingDebtId) {
+    const d = financeData.debts.find(x => String(x.id) === String(editingDebtId));
+    if (d) Object.assign(d, { name, totalAmount: total, paidAmount: paid, monthlyPayment: monthly, color: currentDebtColor });
+  } else {
+    financeData.debts.push({ id: Date.now(), name, totalAmount: total, paidAmount: paid, color: currentDebtColor, monthlyPayment: monthly, payments: [] });
+  }
+  saveFinance(); renderFinance(); renderFinanceSnap(); closeDebtModal();
+}
+
+function deleteDebt() {
+  if (!editingDebtId || !confirm('Opravdu smazat tento dluh?')) return;
+  financeData.debts = financeData.debts.filter(d => String(d.id) !== String(editingDebtId));
+  saveFinance(); renderFinance(); renderFinanceSnap(); closeDebtModal();
+}
+
+/* ── PAYMENT MODAL ── */
+let payingDebtId = null;
+
+function openPaymentModal(debtId) {
+  payingDebtId = debtId;
+  const d = financeData.debts.find(x => String(x.id) === String(debtId));
+  if (!d) return;
+  $('js-pay-debt-name').textContent = d.name;
+  $('js-pay-amount').value = d.monthlyPayment || '';
+  const t = new Date();
+  $('js-pay-date').value = `${String(t.getDate()).padStart(2,'0')}.${String(t.getMonth()+1).padStart(2,'0')}.${t.getFullYear()}`;
+  $('js-pay-note').value = '';
+  $('js-pay-overlay').classList.add('open');
+  setTimeout(() => $('js-pay-amount').focus(), 100);
+}
+
+function closePaymentModal() { $('js-pay-overlay').classList.remove('open'); }
+
+function savePayment() {
+  const amount  = parseFloat($('js-pay-amount').value) || 0;
+  const dateCz  = $('js-pay-date').value.trim();
+  const note    = $('js-pay-note').value.trim();
+  if (amount <= 0 || !dateCz) return;
+  const dateISO = parseCzDate(dateCz);
+  if (!dateISO) { alert('Datum ve špatném formátu. Použij dd.mm.rrrr'); return; }
+  const d = financeData.debts.find(x => String(x.id) === String(payingDebtId));
+  if (!d) return;
+  if (!d.payments) d.payments = [];
+  d.payments.push({ id: Date.now(), amount, date: dateISO, note });
+  d.paidAmount = (d.paidAmount || 0) + amount;
+  saveFinance(); renderFinance(); renderFinanceSnap(); closePaymentModal();
+}
+
+/* ── SAVINGS MODAL ── */
+let editingSavId = null;
+let currentSavColor = DEBT_COLORS[0];
+
+function openSavModal(id) {
+  editingSavId = id || null;
+  const g = id ? financeData.savings.find(x => String(x.id) === String(id)) : null;
+  $('js-sav-modal-title').textContent = g ? 'Upravit cíl spoření' : 'Přidat cíl spoření';
+  $('js-sav-name').value    = g ? g.name : '';
+  $('js-sav-desc').value    = g ? (g.description || '') : '';
+  $('js-sav-target').value  = g ? g.targetAmount : '';
+  $('js-sav-current').value = g ? g.currentAmount : '0';
+  $('js-sav-monthly').value = g && g.monthlyDeposit ? g.monthlyDeposit : '';
+  currentSavColor = g ? g.color : DEBT_COLORS[financeData.savings.length % DEBT_COLORS.length];
+  $('js-sav-delete-btn').style.display = g ? '' : 'none';
+  _renderSavColors();
+  $('js-sav-overlay').classList.add('open');
+  setTimeout(() => $('js-sav-name').focus(), 100);
+}
+
+function closeSavModal() { $('js-sav-overlay').classList.remove('open'); }
+
+function _renderSavColors() {
+  $('js-sav-colors').innerHTML = DEBT_COLORS.map(c =>
+    `<button class="fin-color-swatch${c===currentSavColor?' on':''}" style="background:${c}"
+      onclick="currentSavColor='${c}';_renderSavColors()"></button>`
+  ).join('');
+}
+
+function saveSavGoal() {
+  const name    = $('js-sav-name').value.trim();
+  const target  = parseFloat($('js-sav-target').value)  || 0;
+  const current = parseFloat($('js-sav-current').value) || 0;
+  const monthly = parseFloat($('js-sav-monthly').value) || 0;
+  const desc    = $('js-sav-desc').value.trim();
+  if (!name || target <= 0) return;
+  if (editingSavId) {
+    const g = financeData.savings.find(x => String(x.id) === String(editingSavId));
+    if (g) Object.assign(g, { name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, color: currentSavColor });
+  } else {
+    financeData.savings.push({ id: Date.now(), name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, color: currentSavColor });
+  }
+  saveFinance(); renderFinance(); renderFinanceSnap(); closeSavModal();
+}
+
+function deleteSavGoal() {
+  if (!editingSavId || !confirm('Opravdu smazat tento cíl spoření?')) return;
+  financeData.savings = financeData.savings.filter(g => String(g.id) !== String(editingSavId));
+  saveFinance(); renderFinance(); renderFinanceSnap(); closeSavModal();
+}
+
+/* ── DEPOSIT MODAL ── */
+let depositSavId = null;
+
+function openSavDepositModal(id) {
+  depositSavId = id;
+  const g = financeData.savings.find(x => String(x.id) === String(id));
+  if (!g) return;
+  $('js-dep-sav-name').textContent = g.name;
+  $('js-dep-amount').value = g.monthlyDeposit || '';
+  $('js-dep-overlay').classList.add('open');
+  setTimeout(() => $('js-dep-amount').focus(), 100);
+}
+
+function closeSavDepositModal() { $('js-dep-overlay').classList.remove('open'); }
+
+function saveDeposit() {
+  const amount = parseFloat($('js-dep-amount').value) || 0;
+  if (amount <= 0) return;
+  const g = financeData.savings.find(x => String(x.id) === String(depositSavId));
+  if (!g) return;
+  g.currentAmount = (g.currentAmount || 0) + amount;
+  saveFinance(); renderFinance(); renderFinanceSnap(); closeSavDepositModal();
+}
+
+/* ── CLOSE OVERLAYS ON BACKDROP CLICK ── */
+['js-debt-overlay','js-pay-overlay','js-sav-overlay','js-dep-overlay'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
 async function loadAllData() {
   _loadSettingsLocal();
   _loadRememberLocal();
@@ -3059,6 +3833,9 @@ async function loadAllData() {
   /* Cycle data — always loaded separately (own Firestore doc structure) */
   loadCycleLocal();
   await loadCycleFirestore();
+  /* Finance data */
+  _loadFinanceLocal();
+  await loadFinanceFirestore();
 }
 
 let tasks     = DEFAULT_TASKS.map(t => ({ ...t, completedAt: t.completedAt ? new Date(t.completedAt) : undefined }));
@@ -4600,7 +5377,7 @@ function setView(v) {
   document.getElementById(`v-${v}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.sb-item').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('js-fab').style.display      = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav' || v === 'cyklus') ? 'none' : '';
+  $('js-fab').style.display      = (v === 'narozeniny' || v === 'poznamky' || v === 'opak' || v === 'nastav' || v === 'cyklus' || v === 'finance') ? 'none' : '';
   $('js-note-add').style.display = (v === 'poznamky') ? 'flex' : 'none';
   if (v === 'mesic')      renderMesic();
   if (v === 'ukoly')      renderUkoly(true);
@@ -4610,6 +5387,7 @@ function setView(v) {
   if (v === 'poznamky')   renderPoznamky();
   if (v === 'opak')       renderOpak();
   if (v === 'cyklus')     renderCyklus();
+  if (v === 'finance')    renderFinance();
 }
 
 /* ─── FILTER (mobile only) ─── */
@@ -5300,6 +6078,7 @@ function initAppUI() {
   applySettingsColors();
   renderDnes(true);
   renderCyclePill();
+  renderFinanceSnap();
   /* check for ended events after a short delay so the UI settles first */
   setTimeout(checkEndedEvents, 1800);
 }
