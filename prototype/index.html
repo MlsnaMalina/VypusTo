@@ -2249,6 +2249,71 @@
       .fin-empty { grid-column: 1 / -1; }
     }
 
+    /* ─── Redesigned Add Task/Event Modal ─── */
+    .sheet-modal-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding-top: 2px;
+    }
+    .sheet-modal-ttl {
+      font-family: var(--f-display); font-size: 22px; font-weight: 800;
+      color: var(--ink); letter-spacing: -.025em;
+    }
+    .type-toggle {
+      display: flex; gap: 3px; background: var(--bg-off);
+      border-radius: 10px; padding: 3px; border: 1.5px solid var(--border);
+    }
+    .type-btn {
+      padding: 5px 13px; border-radius: 7px;
+      font-family: var(--f-body); font-size: 13px; font-weight: 600;
+      color: var(--ink-3); background: none; transition: all .14s;
+    }
+    .type-btn.on { background: var(--bg); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.09); }
+    .sheet-fld { margin-bottom: 14px; }
+    .sheet-fld-lbl {
+      font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 7px; display: flex; align-items: center; gap: 5px;
+    }
+    .sheet-fld-opt { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .7; }
+    /* title input overrides */
+    .sheet-input.sheet-fld-main {
+      border: 1.5px solid var(--border) !important;
+      border-bottom: 1.5px solid var(--border) !important;
+      border-radius: 12px; padding: 12px 14px; background: var(--bg-off);
+      font-size: 15px; color: var(--ink);
+    }
+    .sheet-input.sheet-fld-main:focus { border-color: var(--primary) !important; background: #fff; outline: none; }
+    /* tag grid */
+    .sheet-tag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .s-tag {
+      display: flex; align-items: center; gap: 9px; padding: 10px 14px;
+      border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-off);
+      font-family: var(--f-body); font-size: 14px; font-weight: 500; color: var(--ink-2);
+      transition: border-color .14s, background .14s, color .14s; text-align: left; width: 100%;
+    }
+    .s-tag-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .s-tag.on { border-color: var(--primary); background: rgba(185,48,102,.07); color: var(--ink); }
+    .s-tag[data-tag="prace"].on     { border-color: var(--c-prace);  background: var(--c-prace-bg);  color: var(--c-prace); }
+    .s-tag[data-tag="rodina"].on    { border-color: var(--c-rodina); background: var(--c-rodina-bg); color: var(--c-rodina); }
+    .s-tag[data-tag="domacnost"].on { border-color: var(--c-dom);    background: var(--c-dom-bg);    color: var(--c-dom); }
+    .s-tag[data-tag="ostatni"].on   { border-color: var(--c-ost);    background: var(--c-ost-bg);    color: var(--c-ost); }
+    /* date + time 2-col */
+    .sheet-dt-wrap { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+    .sheet-fld-date { flex: 1; margin-bottom: 0; }
+    .sheet-fld-time { flex: 0 0 118px; margin-bottom: 0; }
+    .sheet-inp-wrap { position: relative; }
+    .sheet-fld-in {
+      width: 100%; padding: 10px 34px 10px 12px; border: 1.5px solid var(--border);
+      border-radius: 12px; background: var(--bg-off);
+      font-family: var(--f-mono); font-size: 13px; color: var(--ink);
+      outline: none; transition: border-color .14s, background .14s; display: block;
+    }
+    .sheet-fld-in:focus { border-color: var(--primary); background: #fff; }
+    .sheet-inp-ico {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      color: var(--ink-3); pointer-events: none;
+    }
+    .sheet-quick-dates { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+
     /* ─── Custom select arrow ─── */
     select.fin-input, select.rec-input {
       -webkit-appearance: none; appearance: none; cursor: pointer;
@@ -2685,37 +2750,77 @@
 <div class="overlay" id="js-overlay">
   <div class="sheet">
     <div class="sheet-pill"></div>
-    <div class="type-toggle">
-      <button class="type-btn on" id="js-type-task" data-type="task">✓ Úkol</button>
-      <button class="type-btn"   id="js-type-event" data-type="event">📅 Událost</button>
-    </div>
-    <input type="text" class="sheet-input" id="js-task-input" placeholder="Co potřebuješ udělat?" autocomplete="off" spellcheck="false"/>
-    <div class="sheet-sec">Štítek</div>
-    <div class="sheet-tags">
-      <button class="s-tag" data-tag="prace">Práce</button>
-      <button class="s-tag" data-tag="rodina">Rodina</button>
-      <button class="s-tag" data-tag="domacnost">Domácnost</button>
-      <button class="s-tag" data-tag="ostatni">Ostatní</button>
-    </div>
-    <div class="sheet-sec">Datum</div>
-    <div class="sheet-dates" id="js-date-btns">
-      <button class="s-date on" data-d="today">Dnes</button>
-      <button class="s-date" data-d="tomorrow">Zítra</button>
-      <button class="s-date js-task-only" data-d="none">Bez data</button>
-    </div>
-    <div id="js-ev-date-row">
-      <input type="text" class="s-date-specific" id="js-ev-date" placeholder="nebo konkrétní datum: dd.mm.rrrr" autocomplete="off"/>
-    </div>
-    <div id="js-ev-time-row" style="display:none">
-      <div class="sheet-sec" style="margin:12px 0 4px">Čas</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" class="type-ev-time-in" id="js-ev-time" placeholder="Začátek HH:MM" autocomplete="off"/>
-        <span style="color:var(--ink-3);font-size:13px">—</span>
-        <input type="text" class="type-ev-time-in" id="js-ev-time-to" placeholder="Konec HH:MM" autocomplete="off"/>
+
+    <!-- Header: title + type toggle -->
+    <div class="sheet-modal-hdr">
+      <span class="sheet-modal-ttl" id="js-sheet-modal-ttl">Nový úkol</span>
+      <div class="type-toggle">
+        <button class="type-btn on" id="js-type-task" data-type="task">Úkol</button>
+        <button class="type-btn"   id="js-type-event" data-type="event">Událost</button>
       </div>
     </div>
-    <div id="js-rec-section">
-      <div class="sheet-sec">Opakování</div>
+
+    <!-- Main title input -->
+    <div class="sheet-fld">
+      <label class="sheet-fld-lbl" id="js-task-lbl" for="js-task-input">CO JE TŘEBA UDĚLAT?</label>
+      <input type="text" class="sheet-input sheet-fld-main" id="js-task-input"
+        placeholder="např. Dokončit smlouvu" autocomplete="off" spellcheck="false"/>
+    </div>
+
+    <!-- Category grid (tasks only) -->
+    <div class="sheet-fld js-task-only">
+      <div class="sheet-fld-lbl">KATEGORIE</div>
+      <div class="sheet-tag-grid">
+        <button class="s-tag" data-tag="prace"><span class="s-tag-dot" style="background:var(--c-prace)"></span>Práce</button>
+        <button class="s-tag" data-tag="rodina"><span class="s-tag-dot" style="background:var(--c-rodina)"></span>Rodina</button>
+        <button class="s-tag" data-tag="domacnost"><span class="s-tag-dot" style="background:var(--c-dom)"></span>Osobní</button>
+        <button class="s-tag" data-tag="ostatni"><span class="s-tag-dot" style="background:var(--c-ost)"></span>Ostatní</button>
+      </div>
+    </div>
+
+    <!-- Date + Time (2-column) -->
+    <div class="sheet-dt-wrap">
+      <div class="sheet-fld sheet-fld-date">
+        <div class="sheet-fld-lbl">
+          DATUM <span class="sheet-fld-opt js-task-only">(VOLITELNÉ)</span>
+        </div>
+        <div class="sheet-inp-wrap">
+          <input type="text" class="sheet-fld-in" id="js-ev-date"
+            placeholder="dd.mm.rrrr" autocomplete="off"/>
+          <svg class="sheet-inp-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="sheet-quick-dates" id="js-date-btns">
+          <button class="s-date on" data-d="today">Dnes</button>
+          <button class="s-date" data-d="tomorrow">Zítra</button>
+          <button class="s-date js-task-only" data-d="none">Bez data</button>
+        </div>
+      </div>
+      <div class="sheet-fld sheet-fld-time" id="js-ev-time-row" style="display:none">
+        <div class="sheet-fld-lbl">ČAS</div>
+        <div class="sheet-inp-wrap">
+          <input type="text" class="sheet-fld-in" id="js-ev-time"
+            placeholder="HH:MM" autocomplete="off"/>
+          <svg class="sheet-inp-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="sheet-inp-wrap" style="margin-top:6px">
+          <input type="text" class="sheet-fld-in" id="js-ev-time-to"
+            placeholder="Konec HH:MM" autocomplete="off"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recurrence (tasks only) -->
+    <div id="js-rec-section" class="sheet-fld">
+      <div class="sheet-fld-lbl">OPAKOVÁNÍ</div>
       <div class="sheet-recs">
         <button class="s-rec on" data-r="none">Jednorázově</button>
         <button class="s-rec" data-r="daily">Denně</button>
@@ -2724,6 +2829,7 @@
         <button class="s-rec" data-r="quarterly">Každé 3 měs.</button>
       </div>
     </div>
+
     <button class="sheet-save" id="js-save" disabled>Přidat úkol</button>
   </div>
 </div>
@@ -6018,14 +6124,19 @@ function _setModalType(type) {
   $('js-type-task').classList.toggle('on',  type === 'task');
   $('js-type-event').classList.toggle('on', type === 'event');
   const isEv = type === 'event';
-  // time row only for events; date row always visible
+  // time column for events; date takes full width for tasks
   $('js-ev-time-row').style.display  = isEv ? '' : 'none';
   $('js-rec-section').style.display  = isEv ? 'none' : '';
-  // "Bez data" button only for tasks
+  // hide task-only elements for events
   document.querySelectorAll('.js-task-only').forEach(el => { el.style.display = isEv ? 'none' : ''; });
-  // placeholder
-  $('js-task-input').placeholder = isEv ? 'Název události…' : 'Co potřebuješ udělat?';
+  // update label + placeholder
+  const lbl = $('js-task-lbl');
+  if (lbl) lbl.firstChild.textContent = isEv ? 'NÁZEV UDÁLOSTI' : 'CO JE TŘEBA UDĚLAT?';
+  $('js-task-input').placeholder = isEv ? 'např. Schůzka, Narozeniny…' : 'např. Dokončit smlouvu';
+  // update modal title + save button
   const isEdit = !!(S.form.editTaskId || S.form.editEvId);
+  const ttl = $('js-sheet-modal-ttl');
+  if (ttl) ttl.textContent = isEv ? (isEdit ? 'Upravit událost' : 'Nová událost') : (isEdit ? 'Upravit úkol' : 'Nový úkol');
   $('js-save').textContent = isEv
     ? (isEdit ? 'Uložit událost' : 'Přidat událost')
     : (isEdit ? 'Uložit úkol'   : 'Přidat úkol');
