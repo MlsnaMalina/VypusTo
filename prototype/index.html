@@ -2146,30 +2146,20 @@
     .fin-empty-txt { font-family: var(--f-hand); font-size: 20px; color: var(--ink-3); }
     .fin-empty-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
 
-    /* Finance calendar */
-    .fin-cal-wrap { padding: 0 20px 4px; }
-    .fin-cal-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 10px; }
-    .fin-cal-nav-btn { background: none; border: none; color: var(--ink-2); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
-    .fin-cal-nav-btn:active { opacity: .6; }
-    .fin-cal-month { font-family: var(--f-display); font-size: 15px; font-weight: 700; color: var(--ink); }
-    .fin-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-    .fin-cal-dow { font-size: 9.5px; color: var(--ink-3); text-align: center; padding: 0 0 6px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-    .fin-cal-dow.wknd { color: rgba(185,48,102,.55); }
-    .fin-cal-day { min-height: 36px; border-radius: 8px; padding: 4px 2px 3px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .fin-cal-day.today { background: var(--primary-lt); }
-    .fin-cal-day.off { visibility: hidden; }
-    .fin-cal-dn { font-size: 11px; font-weight: 600; color: var(--ink-2); line-height: 1.2; }
-    .fin-cal-day.today .fin-cal-dn { color: var(--primary); font-weight: 800; }
-    .fin-cal-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
-    .fin-cal-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    /* Upcoming payments */
-    .fin-upcoming { padding: 4px 20px 8px; display: flex; flex-direction: column; gap: 5px; }
-    .fin-up-item { display: flex; align-items: center; gap: 9px; padding: 8px 11px; background: var(--bg-off); border-radius: 10px; border: 1px solid transparent; }
-    .fin-up-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .fin-up-name { flex: 1; font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .fin-up-date { font-size: 11.5px; color: var(--ink-3); flex-shrink: 0; }
-    .fin-up-amount { font-family: var(--f-mono); font-size: 12px; font-weight: 600; flex-shrink: 0; }
-    .fin-cal-empty { font-size: 12.5px; color: var(--ink-3); text-align: center; padding: 16px 0 8px; font-family: var(--f-hand); }
+    /* Finance calendar — reuses .cal-grid / .cal-fc classes from main calendar */
+    .fin-cal-wrap { padding: 0 0 4px; }
+    .fin-cal-nav-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 4px; }
+    .fin-cal-month-lbl { font-family: var(--f-display); font-size: 18px; font-weight: 800; color: var(--ink); }
+    .fin-cal-empty { font-size: 12.5px; color: var(--ink-3); text-align: center; padding: 16px 20px 8px; font-family: var(--f-hand); }
+    /* Finance payment row inside cal-fc cell */
+    .cal-fc-fin { display: flex; align-items: center; gap: 3px; overflow: hidden; width: 100%; line-height: 1.3; white-space: nowrap; }
+    .cal-fc-fin-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .cal-fc-fin-name { font-family: var(--f-body); font-size: 9px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    /* Calendar overlay toggles (Měsíc view) */
+    .cal-overlay-row { display: flex; gap: 6px; padding: 6px 20px 2px; }
+    .cal-overlay-pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--ink-3); transition: all .15s; font-family: var(--f-body); line-height: 1.6; }
+    .cal-overlay-pill.on { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cal-overlay-pill:hover:not(.on) { border-color: var(--ink-3); color: var(--ink-2); }
     /* Recurring payments list */
     .fin-rec-list { padding: 0 20px 4px; }
     .fin-rec-group-lbl { font-size: 10.5px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; padding: 10px 0 5px; display: flex; align-items: center; justify-content: space-between; }
@@ -2476,6 +2466,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
+      </div>
+      <div class="cal-overlay-row">
+        <button class="cal-overlay-pill on" id="js-cal-toggle-rec" onclick="toggleCalRec()">Opakující se</button>
+        <button class="cal-overlay-pill on" id="js-cal-toggle-fin" onclick="toggleCalFin()">Finance</button>
       </div>
       <div id="js-cal-focus" class="cal-focus-wrap"></div>
       <div id="js-cal-grid"></div>
@@ -3649,45 +3643,71 @@ function renderFinCal() {
   const calEl = $('js-fin-cal');
   if (!calEl) return;
 
-  const rec = financeData.recurring || [];
-  const y = finCalDate.getFullYear(), m = finCalDate.getMonth();
+  const rec    = financeData.recurring || [];
+  const y      = finCalDate.getFullYear(), m = finCalDate.getMonth();
   const now    = new Date();
   const todStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const czMon  = ['Leden','Únor','Březen','Duben','Květen','Červen',
                   'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+  const czDow  = ['Po','Út','St','Čt','Pá','So','Ne'];
 
-  // Items active in this calendar month
-  const active = rec.filter(r => r.freq === 'monthly' || (r.freq === 'yearly' && r.month === m + 1));
+  const active     = rec.filter(r => r.freq === 'monthly' || (r.freq === 'yearly' && r.month === m + 1));
+  const firstDow   = (new Date(y, m, 1).getDay() + 6) % 7;
+  const daysInMon  = new Date(y, m + 1, 0).getDate();
 
-  const firstDow  = (new Date(y, m, 1).getDay() + 6) % 7;
-  const daysInMon = new Date(y, m + 1, 0).getDate();
-  const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
+  let html = `<div class="fin-cal-nav-row">
+    <button class="cal-btn" onclick="finCalPrev()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <span class="fin-cal-month-lbl">${czMon[m]} ${y}</span>
+    <button class="cal-btn" onclick="finCalNext()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+  <div class="cal-grid-wrap" style="padding-top:0">
+    <div class="cal-grid-dow">
+      ${czDow.map((d, i) => `<span${i >= 5 ? ' class="wknd"' : ''}>${d}</span>`).join('')}
+    </div>
+    <div class="cal-grid">`;
 
-  let html = `<div class="fin-cal-nav">
-    <button class="fin-cal-nav-btn" onclick="finCalPrev()">‹</button>
-    <span class="fin-cal-month">${czMon[m]} ${y}</span>
-    <button class="fin-cal-nav-btn" onclick="finCalNext()">›</button>
-  </div><div class="fin-cal-grid">`;
-
-  DOW.forEach((d, i) => { html += `<div class="fin-cal-dow${i>=5?' wknd':''}">${d}</div>`; });
-  for (let i = 0; i < firstDow; i++) html += `<div class="fin-cal-day off"></div>`;
+  for (let i = 0; i < firstDow; i++) {
+    html += `<div class="cal-fc off"><div class="cal-fc-num"></div></div>`;
+  }
 
   for (let day = 1; day <= daysInMon; day++) {
-    const ds  = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const evs = active.filter(r => r.day === day);
-    const dots = evs.map(r => `<div class="fin-cal-dot" style="background:${r.color}"></div>`).join('');
-    html += `<div class="fin-cal-day${ds===todStr?' today':''}">
-      <span class="fin-cal-dn">${day}</span>
-      ${dots ? `<div class="fin-cal-dots">${dots}</div>` : ''}
+    const ds   = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const evs  = active.filter(r => r.day === day);
+    const rows = evs.slice(0, 3).map(r =>
+      `<div class="cal-fc-fin">
+        <span class="cal-fc-fin-dot" style="background:${r.color}"></span>
+        <span class="cal-fc-fin-name">${r.name}</span>
+      </div>`
+    ).join('');
+    const more = evs.length > 3 ? `<div class="cal-fc-more">+${evs.length - 3}</div>` : '';
+    html += `<div class="cal-fc${ds === todStr ? ' is-today' : ''}">
+      <div class="cal-fc-num">${day}</div>
+      ${rows || more ? `<div class="cal-fc-items">${rows}${more}</div>` : ''}
     </div>`;
   }
-  html += `</div>`;
+
+  html += `</div></div>`;
   if (rec.length === 0) html += `<p class="fin-cal-empty">Přidej pravidelné platby tlačítkem + výše.</p>`;
   calEl.innerHTML = html;
 }
 
 function finCalPrev() { finCalDate.setMonth(finCalDate.getMonth()-1); renderFinCal(); }
 function finCalNext() { finCalDate.setMonth(finCalDate.getMonth()+1); renderFinCal(); }
+
+function toggleCalRec() {
+  S.calShowRec = !S.calShowRec;
+  $('js-cal-toggle-rec').classList.toggle('on', S.calShowRec);
+  renderMesic();
+}
+function toggleCalFin() {
+  S.calShowFin = !S.calShowFin;
+  $('js-cal-toggle-fin').classList.toggle('on', S.calShowFin);
+  renderMesic();
+}
 
 /* ── RECURRING PAYMENTS LIST ── */
 function renderRecurring() {
@@ -4100,6 +4120,8 @@ const S = {
   mesicDate:  new Date(),
   opakDate:   new Date(),
   opakCat:    'all',
+  calShowRec: true,
+  calShowFin: true,
   form:       { title:'', tag:null, date:'today', rec:'none', color:null, type:'task' },
   noteForm:   { title:'', body:'', tag:null },
   activeNoteId: null,
@@ -5078,13 +5100,13 @@ function getDayItems(dateStr) {
     evs = [...(calExtra[dateStr] || []), ...getCalEventsForDate(dateStr)];
     taskList = tasks.filter(t => t.date === dateStr);
   }
-  // add pushToMain recurring events
-  const recEvs = recurringEvents
+  // add pushToMain recurring events (respects calShowRec toggle)
+  const recEvs = S.calShowRec ? recurringEvents
     .filter(r => r.pushToMain && occursOnDate(r, dateStr) && r.type !== 'task')
-    .map(r => ({ title: r.title, time: r.timeFrom || '', tag: r.category === 'osobni' ? 'rodina' : r.category, _isRec: true, _recId: r.id }));
-  const recTasks = recurringEvents
+    .map(r => ({ title: r.title, time: r.timeFrom || '', tag: r.category === 'osobni' ? 'rodina' : r.category, _isRec: true, _recId: r.id })) : [];
+  const recTasks = S.calShowRec ? recurringEvents
     .filter(r => r.pushToMain && occursOnDate(r, dateStr) && r.type === 'task')
-    .map(r => ({ id: r.id, title: r.title, tag: r.category === 'osobni' ? 'rodina' : r.category, done: false, _isRec: true, _recId: r.id, color: r.color || null, rec: 'none', date: dateStr }));
+    .map(r => ({ id: r.id, title: r.title, tag: r.category === 'osobni' ? 'rodina' : r.category, done: false, _isRec: true, _recId: r.id, color: r.color || null, rec: 'none', date: dateStr })) : [];
   evs = [...evs, ...recEvs].sort((a, b) => {
     const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
     return toMin(a.time) - toMin(b.time);
@@ -5292,6 +5314,16 @@ function renderMesic() {
         rows.push(`<div class="cal-fc-nd">${flowerSVG}<span>${nm}</span></div>`);
       }
     });
+
+    if (S.calShowFin) {
+      const finRec = financeData.recurring || [];
+      finRec
+        .filter(r => (r.freq === 'monthly' || (r.freq === 'yearly' && r.month === m + 1)) && r.day === dd)
+        .forEach(r => rows.push(`<div class="cal-fc-fin">
+          <span class="cal-fc-fin-dot" style="background:${r.color}"></span>
+          <span class="cal-fc-fin-name">${r.name}</span>
+        </div>`));
+    }
 
     const MAX = 3;
     let itemsHTML = '';
