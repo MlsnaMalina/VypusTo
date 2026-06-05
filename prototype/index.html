@@ -2170,6 +2170,19 @@
     .fin-up-date { font-size: 11.5px; color: var(--ink-3); flex-shrink: 0; }
     .fin-up-amount { font-family: var(--f-mono); font-size: 12px; font-weight: 600; flex-shrink: 0; }
     .fin-cal-empty { font-size: 12.5px; color: var(--ink-3); text-align: center; padding: 16px 0 8px; font-family: var(--f-hand); }
+    /* Recurring payments list */
+    .fin-rec-list { padding: 0 20px 4px; }
+    .fin-rec-group-lbl { font-size: 10.5px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; padding: 10px 0 5px; display: flex; align-items: center; justify-content: space-between; }
+    .fin-rec-group-sum { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-2); font-weight: 600; text-transform: none; letter-spacing: 0; }
+    .fin-rec-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .fin-rec-row:last-child { border-bottom: none; }
+    .fin-rec-bar { width: 3px; height: 30px; border-radius: 2px; flex-shrink: 0; }
+    .fin-rec-info { flex: 1; min-width: 0; }
+    .fin-rec-name { display: block; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fin-rec-when { display: block; font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+    .fin-rec-amount { font-family: var(--f-mono); font-size: 12.5px; font-weight: 700; flex-shrink: 0; }
+    .fin-rec-edit { background: none; border: none; color: var(--ink-3); cursor: pointer; padding: 4px; flex-shrink: 0; line-height: 1; }
+    .fin-rec-edit:hover { color: var(--ink); }
 
     /* Finance snapshot card in Dnes view */
     .fin-snap {
@@ -2585,9 +2598,10 @@
 
       <div class="fin-sec-row" style="margin-top:6px">
         <span class="fin-sec-title">Platební kalendář</span>
+        <button class="fin-sec-add-btn" onclick="openRecModal(null)" title="Přidat pravidelnou platbu">+</button>
       </div>
       <div class="fin-cal-wrap" id="js-fin-cal"></div>
-      <div class="fin-upcoming" id="js-fin-upcoming"></div>
+      <div class="fin-rec-list" id="js-fin-rec"></div>
 
       <div class="fin-sec-row">
         <span class="fin-sec-title">Dluhy</span>
@@ -2829,15 +2843,9 @@
         <input type="number" class="fin-input" id="js-debt-paid" placeholder="0" min="0" inputmode="numeric"/>
       </div>
     </div>
-    <div class="fin-row">
-      <div class="fin-field">
-        <label class="fin-field-lbl">Měsíční splátka (Kč) — nepovinné</label>
-        <input type="number" class="fin-input" id="js-debt-monthly" placeholder="12 500" min="0" inputmode="numeric"/>
-      </div>
-      <div class="fin-field" style="max-width:110px">
-        <label class="fin-field-lbl">Den splátky</label>
-        <input type="number" class="fin-input" id="js-debt-payday" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
-      </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Měsíční splátka (Kč) — nepovinné</label>
+      <input type="number" class="fin-input" id="js-debt-monthly" placeholder="12 500" min="0" inputmode="numeric"/>
     </div>
     <div class="fin-field">
       <label class="fin-field-lbl">Barva</label>
@@ -2901,15 +2909,9 @@
         <input type="number" class="fin-input" id="js-sav-current" placeholder="0" min="0" inputmode="numeric"/>
       </div>
     </div>
-    <div class="fin-row">
-      <div class="fin-field">
-        <label class="fin-field-lbl">Měsíční vklad (Kč) — nepovinné</label>
-        <input type="number" class="fin-input" id="js-sav-monthly" placeholder="8 000" min="0" inputmode="numeric"/>
-      </div>
-      <div class="fin-field" style="max-width:110px">
-        <label class="fin-field-lbl">Den vkladu</label>
-        <input type="number" class="fin-input" id="js-sav-depositday" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
-      </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Měsíční vklad (Kč) — nepovinné</label>
+      <input type="number" class="fin-input" id="js-sav-monthly" placeholder="8 000" min="0" inputmode="numeric"/>
     </div>
     <div class="fin-field">
       <label class="fin-field-lbl">Barva</label>
@@ -2934,6 +2936,57 @@
       <input type="number" class="fin-input" id="js-dep-amount" placeholder="8 000" min="0" inputmode="numeric"/>
     </div>
     <button class="fin-save-btn" onclick="saveDeposit()">Uložit vklad</button>
+  </div>
+</div>
+
+<!-- FINANCE: RECURRING PAYMENT MODAL -->
+<div class="fin-overlay" id="js-rec-overlay">
+  <div class="fin-sheet">
+    <div class="fin-pill"></div>
+    <div class="fin-sheet-title-row">
+      <span class="fin-sheet-title" id="js-rec-modal-title">Přidat platbu</span>
+      <button class="fin-close-btn" onclick="closeRecModal()">✕</button>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Název</label>
+      <input type="text" class="fin-input" id="js-rec-name" placeholder="Netflix, Claude, Pojistka auta…" autocomplete="off"/>
+    </div>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Částka (Kč)</label>
+        <input type="number" class="fin-input" id="js-rec-amount" placeholder="299" min="0" inputmode="numeric"/>
+      </div>
+      <div class="fin-field" style="max-width:140px">
+        <label class="fin-field-lbl">Frekvence</label>
+        <select class="fin-input" id="js-rec-freq" onchange="toggleRecMonth()">
+          <option value="monthly">Měsíčně</option>
+          <option value="yearly">Ročně</option>
+        </select>
+      </div>
+    </div>
+    <div class="fin-row">
+      <div class="fin-field">
+        <label class="fin-field-lbl">Den v měsíci</label>
+        <input type="number" class="fin-input" id="js-rec-day" placeholder="1–28" min="1" max="28" inputmode="numeric"/>
+      </div>
+      <div class="fin-field" id="js-rec-month-wrap">
+        <label class="fin-field-lbl">Měsíc</label>
+        <select class="fin-input" id="js-rec-month">
+          <option value="1">Leden</option><option value="2">Únor</option>
+          <option value="3">Březen</option><option value="4">Duben</option>
+          <option value="5">Květen</option><option value="6">Červen</option>
+          <option value="7">Červenec</option><option value="8">Srpen</option>
+          <option value="9">Září</option><option value="10">Říjen</option>
+          <option value="11">Listopad</option><option value="12">Prosinec</option>
+        </select>
+      </div>
+    </div>
+    <div class="fin-field">
+      <label class="fin-field-lbl">Barva</label>
+      <div class="fin-colors" id="js-rec-colors"></div>
+    </div>
+    <button class="fin-save-btn" onclick="saveRec()">Uložit</button>
+    <button class="fin-delete-btn" id="js-rec-delete-btn" onclick="deleteRec()" style="display:none">Smazat platbu</button>
   </div>
 </div>
 
@@ -3469,14 +3522,14 @@ const DEBT_COLORS = [
   '#b93066', '#2E7D8C', '#8B5E3C', '#5C4D7D'
 ];
 
-let financeData = { debts: [], savings: [] };
+let financeData = { debts: [], savings: [], recurring: [] };
 
 function _loadFinanceLocal() {
   try {
     const raw = localStorage.getItem(FINANCE_LS_KEY);
     if (raw) {
       const p = JSON.parse(raw);
-      financeData = { debts: p.debts || [], savings: p.savings || [] };
+      financeData = { debts: p.debts || [], savings: p.savings || [], recurring: p.recurring || [] };
       return true;
     }
   } catch(e) {}
@@ -3490,7 +3543,7 @@ function _saveFinanceLocal() {
 function saveFinance() {
   _saveFinanceLocal();
   if (currentUser) {
-    userDataRef('finance').set({ debts: financeData.debts, savings: financeData.savings }).catch(console.warn);
+    userDataRef('finance').set({ debts: financeData.debts, savings: financeData.savings, recurring: financeData.recurring }).catch(console.warn);
   }
 }
 
@@ -3500,8 +3553,8 @@ async function loadFinanceFirestore() {
     const snap = await userDataRef('finance').get();
     if (snap.exists && snap.data()) {
       const d = snap.data();
-      if ((d.debts && d.debts.length > 0) || (d.savings && d.savings.length > 0)) {
-        financeData = { debts: d.debts || [], savings: d.savings || [] };
+      if ((d.debts && d.debts.length > 0) || (d.savings && d.savings.length > 0) || (d.recurring && d.recurring.length > 0)) {
+        financeData = { debts: d.debts || [], savings: d.savings || [], recurring: d.recurring || [] };
         _saveFinanceLocal();
       }
     }
@@ -3586,6 +3639,7 @@ function renderFinance() {
     savEl.innerHTML = financeData.savings.map(g => _savCardHTML(g)).join('');
   }
   renderFinCal();
+  renderRecurring();
 }
 
 /* ── FINANCE CALENDAR ── */
@@ -3593,27 +3647,19 @@ let finCalDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 function renderFinCal() {
   const calEl = $('js-fin-cal');
-  const upEl  = $('js-fin-upcoming');
-  if (!calEl || !upEl) return;
+  if (!calEl) return;
 
+  const rec = financeData.recurring || [];
   const y = finCalDate.getFullYear(), m = finCalDate.getMonth();
   const now    = new Date();
   const todStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const czMon  = ['Leden','Únor','Březen','Duben','Květen','Červen',
+                  'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
 
-  const czMon = ['Leden','Únor','Březen','Duben','Květen','Červen',
-                 'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+  // Items active in this calendar month
+  const active = rec.filter(r => r.freq === 'monthly' || (r.freq === 'yearly' && r.month === m + 1));
 
-  const payEvents = [];
-  financeData.debts.forEach(d => {
-    if (d.payDay && d.monthlyPayment && (d.paidAmount||0) < (d.totalAmount||0))
-      payEvents.push({ day: d.payDay, name: d.name, amount: d.monthlyPayment, color: d.color, type: 'debt' });
-  });
-  financeData.savings.forEach(g => {
-    if (g.depositDay && g.monthlyDeposit && (g.currentAmount||0) < (g.targetAmount||0))
-      payEvents.push({ day: g.depositDay, name: g.name, amount: g.monthlyDeposit, color: g.color, type: 'sav' });
-  });
-
-  const firstDow  = (new Date(y, m, 1).getDay() + 6) % 7; // Mon=0
+  const firstDow  = (new Date(y, m, 1).getDay() + 6) % 7;
   const daysInMon = new Date(y, m + 1, 0).getDate();
   const DOW = ['Po','Út','St','Čt','Pá','So','Ne'];
 
@@ -3621,53 +3667,127 @@ function renderFinCal() {
     <button class="fin-cal-nav-btn" onclick="finCalPrev()">‹</button>
     <span class="fin-cal-month">${czMon[m]} ${y}</span>
     <button class="fin-cal-nav-btn" onclick="finCalNext()">›</button>
-  </div>
-  <div class="fin-cal-grid">`;
+  </div><div class="fin-cal-grid">`;
 
   DOW.forEach((d, i) => { html += `<div class="fin-cal-dow${i>=5?' wknd':''}">${d}</div>`; });
   for (let i = 0; i < firstDow; i++) html += `<div class="fin-cal-day off"></div>`;
 
   for (let day = 1; day <= daysInMon; day++) {
     const ds  = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const evs = payEvents.filter(e => e.day === day);
-    const dots = evs.map(e => `<div class="fin-cal-dot" style="background:${e.color}"></div>`).join('');
+    const evs = active.filter(r => r.day === day);
+    const dots = evs.map(r => `<div class="fin-cal-dot" style="background:${r.color}"></div>`).join('');
     html += `<div class="fin-cal-day${ds===todStr?' today':''}">
       <span class="fin-cal-dn">${day}</span>
       ${dots ? `<div class="fin-cal-dots">${dots}</div>` : ''}
     </div>`;
   }
   html += `</div>`;
-
-  if (payEvents.length === 0) {
-    html += `<p class="fin-cal-empty">Nastav den splátky nebo vkladu u dluhů a spoření.</p>`;
-  }
+  if (rec.length === 0) html += `<p class="fin-cal-empty">Přidej pravidelné platby tlačítkem + výše.</p>`;
   calEl.innerHTML = html;
-
-  /* Upcoming list — next 60 days from today */
-  const upcoming = [];
-  for (let offset = 0; offset < 60; offset++) {
-    const d = new Date(now); d.setDate(now.getDate() + offset);
-    const day = d.getDate();
-    const maxDay = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
-    payEvents.forEach(e => {
-      const effectiveDay = Math.min(e.day, maxDay);
-      if (effectiveDay === day) {
-        upcoming.push({ date: new Date(d), dateStr: d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }), ...e });
-      }
-    });
-  }
-
-  upEl.innerHTML = upcoming.slice(0, 8).map(p => `
-    <div class="fin-up-item">
-      <div class="fin-up-dot" style="background:${p.color}"></div>
-      <span class="fin-up-name">${p.name}</span>
-      <span class="fin-up-date">${p.dateStr}</span>
-      <span class="fin-up-amount" style="color:${p.color}">${fmtCzk(p.amount)}</span>
-    </div>`).join('');
 }
 
 function finCalPrev() { finCalDate.setMonth(finCalDate.getMonth()-1); renderFinCal(); }
 function finCalNext() { finCalDate.setMonth(finCalDate.getMonth()+1); renderFinCal(); }
+
+/* ── RECURRING PAYMENTS LIST ── */
+function renderRecurring() {
+  const el = $('js-fin-rec');
+  if (!el) return;
+  const rec = financeData.recurring || [];
+
+  if (rec.length === 0) { el.innerHTML = ''; return; }
+
+  const czMon = ['led','úno','bře','dub','kvě','čer','čvc','srp','zář','říj','lis','pro'];
+  const monthly = rec.filter(r => r.freq === 'monthly').sort((a,b) => a.day - b.day);
+  const yearly  = rec.filter(r => r.freq === 'yearly').sort((a,b) => (a.month||1)-(b.month||1) || a.day-b.day);
+  const mTotal  = monthly.reduce((s,r) => s + r.amount, 0);
+  const yTotal  = yearly.reduce((s,r)  => s + r.amount, 0);
+
+  function rows(list, showMonth) {
+    return list.map(r => {
+      const when = showMonth ? `${r.day}. ${czMon[(r.month||1)-1]}` : `každý ${r.day}. v měsíci`;
+      return `<div class="fin-rec-row">
+        <div class="fin-rec-bar" style="background:${r.color}"></div>
+        <div class="fin-rec-info">
+          <span class="fin-rec-name">${r.name}</span>
+          <span class="fin-rec-when">${when}</span>
+        </div>
+        <span class="fin-rec-amount" style="color:${r.color}">${fmtCzk(r.amount)}</span>
+        <button class="fin-rec-edit" onclick="openRecModal('${r.id}')">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  let html = '';
+  if (monthly.length) {
+    html += `<div class="fin-rec-group-lbl">Měsíčně <span class="fin-rec-group-sum">${fmtCzk(mTotal)} / měs.</span></div>`;
+    html += rows(monthly, false);
+  }
+  if (yearly.length) {
+    html += `<div class="fin-rec-group-lbl" style="margin-top:${monthly.length?'10px':'0'}">Ročně <span class="fin-rec-group-sum">${fmtCzk(yTotal)} / rok</span></div>`;
+    html += rows(yearly, true);
+  }
+  el.innerHTML = html;
+}
+
+/* ── RECURRING CRUD ── */
+let editingRecId    = null;
+let currentRecColor = DEBT_COLORS[0];
+
+function openRecModal(id) {
+  editingRecId = id || null;
+  const r = id ? (financeData.recurring||[]).find(x => String(x.id) === String(id)) : null;
+  $('js-rec-modal-title').textContent = r ? 'Upravit platbu' : 'Přidat platbu';
+  $('js-rec-name').value   = r ? r.name : '';
+  $('js-rec-amount').value = r ? r.amount : '';
+  $('js-rec-freq').value   = r ? r.freq : 'monthly';
+  $('js-rec-day').value    = r ? r.day : '';
+  $('js-rec-month').value  = r ? (r.month || new Date().getMonth()+1) : new Date().getMonth()+1;
+  currentRecColor = r ? r.color : DEBT_COLORS[(financeData.recurring||[]).length % DEBT_COLORS.length];
+  $('js-rec-delete-btn').style.display = r ? '' : 'none';
+  _renderRecColors();
+  toggleRecMonth();
+  $('js-rec-overlay').classList.add('open');
+  setTimeout(() => $('js-rec-name').focus(), 100);
+}
+
+function closeRecModal() { $('js-rec-overlay').classList.remove('open'); }
+
+function toggleRecMonth() {
+  $('js-rec-month-wrap').style.display = $('js-rec-freq').value === 'yearly' ? '' : 'none';
+}
+
+function _renderRecColors() {
+  $('js-rec-colors').innerHTML = DEBT_COLORS.map(c =>
+    `<button class="fin-color-swatch${c===currentRecColor?' on':''}" style="background:${c}"
+      onclick="currentRecColor='${c}';_renderRecColors()"></button>`
+  ).join('');
+}
+
+function saveRec() {
+  const name   = $('js-rec-name').value.trim();
+  const amount = parseFloat($('js-rec-amount').value) || 0;
+  const freq   = $('js-rec-freq').value;
+  const day    = Math.min(28, Math.max(1, parseInt($('js-rec-day').value) || 1));
+  const month  = freq === 'yearly' ? (parseInt($('js-rec-month').value) || 1) : null;
+  if (!name || amount <= 0) return;
+  if (!financeData.recurring) financeData.recurring = [];
+  if (editingRecId) {
+    const r = financeData.recurring.find(x => String(x.id) === String(editingRecId));
+    if (r) Object.assign(r, { name, amount, freq, day, month, color: currentRecColor });
+  } else {
+    financeData.recurring.push({ id: Date.now(), name, amount, freq, day, month, color: currentRecColor });
+  }
+  saveFinance(); renderFinCal(); renderRecurring(); closeRecModal();
+}
+
+function deleteRec() {
+  if (!editingRecId || !confirm('Opravdu smazat tuto platbu?')) return;
+  financeData.recurring = (financeData.recurring||[]).filter(r => String(r.id) !== String(editingRecId));
+  saveFinance(); renderFinCal(); renderRecurring(); closeRecModal();
+}
 
 function _debtCardHTML(d) {
   const remaining = Math.max((d.totalAmount || 0) - (d.paidAmount || 0), 0);
@@ -3763,7 +3883,6 @@ function openDebtModal(id) {
   $('js-debt-total').value   = d ? d.totalAmount : '';
   $('js-debt-paid').value    = d ? d.paidAmount : '0';
   $('js-debt-monthly').value = d && d.monthlyPayment ? d.monthlyPayment : '';
-  $('js-debt-payday').value  = d && d.payDay ? d.payDay : '';
   currentDebtColor = d ? d.color : DEBT_COLORS[financeData.debts.length % DEBT_COLORS.length];
   $('js-debt-delete-btn').style.display = d ? '' : 'none';
   _renderDebtColors();
@@ -3785,13 +3904,12 @@ function saveDebt() {
   const total   = parseFloat($('js-debt-total').value)   || 0;
   const paid    = parseFloat($('js-debt-paid').value)    || 0;
   const monthly = parseFloat($('js-debt-monthly').value) || 0;
-  const payDay  = parseInt($('js-debt-payday').value) || null;
   if (!name || total <= 0) return;
   if (editingDebtId) {
     const d = financeData.debts.find(x => String(x.id) === String(editingDebtId));
-    if (d) Object.assign(d, { name, totalAmount: total, paidAmount: paid, monthlyPayment: monthly, payDay, color: currentDebtColor });
+    if (d) Object.assign(d, { name, totalAmount: total, paidAmount: paid, monthlyPayment: monthly, color: currentDebtColor });
   } else {
-    financeData.debts.push({ id: Date.now(), name, totalAmount: total, paidAmount: paid, color: currentDebtColor, monthlyPayment: monthly, payDay, payments: [] });
+    financeData.debts.push({ id: Date.now(), name, totalAmount: total, paidAmount: paid, color: currentDebtColor, monthlyPayment: monthly, payments: [] });
   }
   saveFinance(); renderFinance(); renderFinanceSnap(); closeDebtModal();
 }
@@ -3847,8 +3965,7 @@ function openSavModal(id) {
   $('js-sav-desc').value    = g ? (g.description || '') : '';
   $('js-sav-target').value  = g ? g.targetAmount : '';
   $('js-sav-current').value = g ? g.currentAmount : '0';
-  $('js-sav-monthly').value     = g && g.monthlyDeposit ? g.monthlyDeposit : '';
-  $('js-sav-depositday').value  = g && g.depositDay ? g.depositDay : '';
+  $('js-sav-monthly').value = g && g.monthlyDeposit ? g.monthlyDeposit : '';
   currentSavColor = g ? g.color : DEBT_COLORS[financeData.savings.length % DEBT_COLORS.length];
   $('js-sav-delete-btn').style.display = g ? '' : 'none';
   _renderSavColors();
@@ -3869,15 +3986,14 @@ function saveSavGoal() {
   const name    = $('js-sav-name').value.trim();
   const target  = parseFloat($('js-sav-target').value)  || 0;
   const current = parseFloat($('js-sav-current').value) || 0;
-  const monthly    = parseFloat($('js-sav-monthly').value) || 0;
-  const depositDay = parseInt($('js-sav-depositday').value) || null;
-  const desc       = $('js-sav-desc').value.trim();
+  const monthly = parseFloat($('js-sav-monthly').value) || 0;
+  const desc    = $('js-sav-desc').value.trim();
   if (!name || target <= 0) return;
   if (editingSavId) {
     const g = financeData.savings.find(x => String(x.id) === String(editingSavId));
-    if (g) Object.assign(g, { name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, depositDay, color: currentSavColor });
+    if (g) Object.assign(g, { name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, color: currentSavColor });
   } else {
-    financeData.savings.push({ id: Date.now(), name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, depositDay, color: currentSavColor });
+    financeData.savings.push({ id: Date.now(), name, description: desc, targetAmount: target, currentAmount: current, monthlyDeposit: monthly, color: currentSavColor });
   }
   saveFinance(); renderFinance(); renderFinanceSnap(); closeSavModal();
 }
