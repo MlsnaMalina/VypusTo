@@ -1997,6 +1997,55 @@
     }
     .cyklus-empty-cta:active { opacity: .8; }
 
+    /* Irregular mode: last period card */
+    .cyklus-last-card {
+      margin: 18px 20px 0;
+      background: var(--c-men-lt); border-radius: 14px;
+      padding: 16px 18px; display: flex; align-items: center; gap: 14px;
+    }
+    .cyklus-last-icon { font-size: 32px; flex-shrink: 0; line-height: 1; }
+    .cyklus-last-label {
+      font-family: var(--f-hand); font-size: 13px; color: var(--c-men);
+      font-weight: 700; margin-bottom: 3px;
+    }
+    .cyklus-last-date {
+      font-family: var(--f-display); font-size: 18px; font-weight: 800;
+      color: var(--ink); letter-spacing: -.02em;
+    }
+    .cyklus-last-ago {
+      font-family: var(--f-mono); font-size: 12px; color: var(--ink-2); margin-top: 2px;
+    }
+
+    /* Irregular mode: pattern stats card */
+    .cyklus-pattern-card {
+      margin: 14px 20px 0;
+      background: var(--bg-off); border-radius: 14px; padding: 16px 18px;
+    }
+    .cyklus-pattern-title {
+      font-family: var(--f-hand); font-size: 15px; font-weight: 700;
+      color: var(--ink-2); margin-bottom: 12px;
+    }
+    .cyklus-pattern-row { display: flex; gap: 8px; }
+    .cyklus-pattern-item { flex: 1; text-align: center; }
+    .cyklus-pattern-val {
+      font-family: var(--f-mono); font-size: 17px; font-weight: 600; color: var(--ink);
+    }
+    .cyklus-pattern-lbl {
+      font-family: var(--f-hand); font-size: 10px; color: var(--ink-3);
+      margin-top: 2px; line-height: 1.3;
+    }
+    .cyklus-pattern-note {
+      font-size: 12px; color: var(--ink-3); line-height: 1.5;
+      margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+    }
+
+    /* Minimal mode: first / single-interval note */
+    .cyklus-first-note {
+      margin: 14px 20px 0; background: var(--bg-off); border-radius: 14px;
+      padding: 14px 18px; font-size: 13px; color: var(--ink-2); line-height: 1.5;
+    }
+    .cyklus-first-note strong { color: var(--ink); }
+
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        FINANCE VIEW
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -4696,6 +4745,19 @@ function calcAvgCycleLen() {
   return Math.round(diffs.reduce((a,b) => a+b, 0) / diffs.length);
 }
 
+/* Cycle stats: avg/min/max interval and stdDev across logged periods */
+function getCycleStats() {
+  const sorted = [...cycleData.periodStarts].sort();
+  if (sorted.length < 2) return null;
+  const diffs = [];
+  for (let i = 1; i < sorted.length; i++) diffs.push(daysBetween(sorted[i-1], sorted[i]));
+  const avg    = Math.round(diffs.reduce((a,b) => a+b,0) / diffs.length);
+  const min    = Math.min(...diffs);
+  const max    = Math.max(...diffs);
+  const stdDev = diffs.length < 2 ? 0 : Math.round(Math.sqrt(diffs.reduce((s,d) => s + (d-avg)**2, 0) / diffs.length));
+  return { avg, min, max, stdDev, count: sorted.length, diffs };
+}
+
 /* Return phase info for a given YYYY-MM-DD date */
 function cyclePhaseForDate(dateStr) {
   const sorted = [...cycleData.periodStarts].sort();
@@ -4742,13 +4804,28 @@ function renderCyclePill() {
   const pill = $('js-cycle-pill');
   const txt  = $('js-cycle-pill-txt');
   if (!pill || !txt) return;
-  const today = dStr(new Date());
-  const info  = cyclePhaseForDate(today);
-  if (!info) { pill.style.display = 'none'; return; }
-  const meta = PHASE_META[info.phase];
-  pill.style.display = 'inline-flex';
-  pill.className = `cycle-pill ${meta.cls}`;
-  txt.textContent = `${meta.icon} ${info.day}. den cyklu`;
+  const today  = dStr(new Date());
+  const sorted = [...cycleData.periodStarts].sort();
+  if (!sorted.length) { pill.style.display = 'none'; return; }
+
+  const stats     = getCycleStats();
+  const isRegular = stats && stats.diffs.length >= 2 && stats.stdDev <= 7;
+
+  if (isRegular) {
+    const info = cyclePhaseForDate(today);
+    if (!info) { pill.style.display = 'none'; return; }
+    const meta = PHASE_META[info.phase];
+    pill.style.display = 'inline-flex';
+    pill.className = `cycle-pill ${meta.cls}`;
+    txt.textContent = `${meta.icon} ${info.day}. den cyklu`;
+  } else {
+    const lastStart = sorted[sorted.length - 1];
+    const daysAgo   = daysBetween(lastStart, today);
+    const agoTxt    = daysAgo === 0 ? 'dnes' : daysAgo === 1 ? 'včera' : `před ${daysAgo} dny`;
+    pill.style.display = 'inline-flex';
+    pill.className = 'cycle-pill phase-men';
+    txt.textContent = `🩸 perioda ${agoTxt}`;
+  }
 }
 
 /* ─── RENDER CYKLUS VIEW ─── */
@@ -4772,82 +4849,133 @@ function renderCyklus() {
     return;
   }
 
-  const cycleLen  = calcAvgCycleLen();
-  const periodLen = cycleData.periodLength;
+  const stats     = getCycleStats();
+  const isRegular = stats && stats.diffs.length >= 2 && stats.stdDev <= 7;
 
-  /* Phase card */
-  const todayInfo = cyclePhaseForDate(today);
-  const meta      = todayInfo ? PHASE_META[todayInfo.phase] : null;
-  const daysLeft  = daysUntilNextPeriod();
+  /* ── History HTML (shared) ── */
+  const buildHistHTML = () => {
+    let h = `<div class="cyklus-hist-hd">Historie</div><div class="cyklus-hist-list">`;
+    [...sorted].reverse().forEach((s, i, arr) => {
+      const prev   = arr[i + 1];
+      const lenTxt = prev ? `${daysBetween(prev, s)} dní` : '';
+      h += `
+        <div class="cyklus-hist-item">
+          <div class="cyklus-hist-dot"></div>
+          <div class="cyklus-hist-date">${formatCzFull(s)}</div>
+          ${lenTxt ? `<div class="cyklus-hist-len">${lenTxt}</div>` : ''}
+          <button class="cyklus-hist-del" data-del-start="${s}" title="Smazat záznam" aria-label="Smazat ${s}">×</button>
+        </div>`;
+    });
+    return h + `</div>`;
+  };
 
-  let phaseCardHTML;
-  if (todayInfo && meta) {
-    const nextTxt = daysLeft === 0
-      ? 'Dnes začíná nový cyklus'
-      : daysLeft <= 3
-        ? `Příští perioda <strong>za ${daysLeft}&nbsp;${daysLeft === 1 ? 'den' : 'dny'}</strong> — připrav se`
-        : `Příští perioda přibližně <strong>za ${daysLeft}&nbsp;dní</strong>`;
-    phaseCardHTML = `
-      <div class="cyklus-phase-card ${meta.cls}">
-        <span class="cyklus-phase-icon" aria-hidden="true">${meta.icon}</span>
-        <div class="cyklus-phase-name">${meta.name}</div>
-        <div class="cyklus-phase-day">${todayInfo.day}. den cyklu (z&nbsp;~${cycleLen})</div>
-        <div class="cyklus-phase-next">${nextTxt}</div>
-        <svg class="cyklus-phase-doodle" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-          <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1.2" stroke-dasharray="8 4"/>
-          <circle cx="50" cy="10" r="6" fill="currentColor"/>
-        </svg>
+  if (!isRegular) {
+    /* ── IRREGULAR / MINIMAL MODE ── */
+    const lastStart = sorted[sorted.length - 1];
+    const daysAgo   = daysBetween(lastStart, today);
+    const agoTxt    = daysAgo === 0 ? 'dnes' : daysAgo === 1 ? 'včera' : `před ${daysAgo} dny`;
+
+    const lastCardHTML = `
+      <div class="cyklus-last-card">
+        <span class="cyklus-last-icon">🩸</span>
+        <div>
+          <div class="cyklus-last-label">Poslední perioda</div>
+          <div class="cyklus-last-date">${formatCzFull(lastStart)}</div>
+          <div class="cyklus-last-ago">${agoTxt}</div>
+        </div>
       </div>`;
+
+    let patternHTML = '';
+    if (stats && stats.diffs.length === 1) {
+      patternHTML = `
+        <div class="cyklus-first-note">
+          Interval mezi tvými dvěma záznamy byl <strong>${stats.diffs[0]} dní</strong>.
+          Přidej další záznamy a odhalíme vzorec.
+        </div>`;
+    } else if (stats && stats.diffs.length >= 2) {
+      const noteText = stats.stdDev > 14
+        ? 'Tvůj cyklus se hodně mění — predikce by tě spíš mátly. Zobrazuji jen záznamy, které skutečně nastaly.'
+        : 'Tvůj cyklus je trochu nepravidelný. Zobrazuji jen ověřená data, ne odhady.';
+      patternHTML = `
+        <div class="cyklus-pattern-card">
+          <div class="cyklus-pattern-title">Tvůj vzorec</div>
+          <div class="cyklus-pattern-row">
+            <div class="cyklus-pattern-item">
+              <div class="cyklus-pattern-val">${stats.avg}</div>
+              <div class="cyklus-pattern-lbl">průměrný<br>interval (dní)</div>
+            </div>
+            <div class="cyklus-pattern-item">
+              <div class="cyklus-pattern-val">${stats.min}–${stats.max}</div>
+              <div class="cyklus-pattern-lbl">rozsah<br>(dní)</div>
+            </div>
+            <div class="cyklus-pattern-item">
+              <div class="cyklus-pattern-val">${stats.count}</div>
+              <div class="cyklus-pattern-lbl">zaznamena&shy;ných<br>periód</div>
+            </div>
+          </div>
+          <div class="cyklus-pattern-note">${noteText}</div>
+        </div>`;
+    }
+
+    body.innerHTML = lastCardHTML + patternHTML + buildYearStrip(today, true) + buildHistHTML();
+
   } else {
-    phaseCardHTML = `
-      <div class="cyklus-phase-card phase-none">
-        <span class="cyklus-phase-icon" aria-hidden="true">📅</span>
-        <div class="cyklus-phase-name" style="color:var(--ink-2)">Přidej více záznamů</div>
-        <div class="cyklus-phase-day">S každou další periodu budu přesnější</div>
+    /* ── REGULAR MODE ── */
+    const cycleLen  = calcAvgCycleLen();
+    const periodLen = cycleData.periodLength;
+    const todayInfo = cyclePhaseForDate(today);
+    const meta      = todayInfo ? PHASE_META[todayInfo.phase] : null;
+    const daysLeft  = daysUntilNextPeriod();
+
+    let phaseCardHTML;
+    if (todayInfo && meta) {
+      const nextTxt = daysLeft === 0
+        ? 'Dnes začíná nový cyklus'
+        : daysLeft <= 3
+          ? `Příští perioda <strong>za ${daysLeft}&nbsp;${daysLeft === 1 ? 'den' : 'dny'}</strong> — připrav se`
+          : `Příští perioda přibližně <strong>za ${daysLeft}&nbsp;dní</strong>`;
+      phaseCardHTML = `
+        <div class="cyklus-phase-card ${meta.cls}">
+          <span class="cyklus-phase-icon" aria-hidden="true">${meta.icon}</span>
+          <div class="cyklus-phase-name">${meta.name}</div>
+          <div class="cyklus-phase-day">${todayInfo.day}. den cyklu (z&nbsp;~${cycleLen})</div>
+          <div class="cyklus-phase-next">${nextTxt}</div>
+          <svg class="cyklus-phase-doodle" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+            <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="1.2" stroke-dasharray="8 4"/>
+            <circle cx="50" cy="10" r="6" fill="currentColor"/>
+          </svg>
+        </div>`;
+    } else {
+      phaseCardHTML = `
+        <div class="cyklus-phase-card phase-none">
+          <span class="cyklus-phase-icon" aria-hidden="true">📅</span>
+          <div class="cyklus-phase-name" style="color:var(--ink-2)">Přidej více záznamů</div>
+          <div class="cyklus-phase-day">S každou další periodu budu přesnější</div>
+        </div>`;
+    }
+
+    const settingsHTML = `
+      <div class="cyklus-settings">
+        <div class="cyklus-set-item">
+          <div class="cyklus-set-lbl">Délka cyklu (dní)</div>
+          <div class="cyklus-set-row">
+            <button class="cyklus-set-btn" data-cycle-adj="-1" aria-label="Zkrátit">−</button>
+            <span class="cyklus-set-val">${cycleLen}</span>
+            <button class="cyklus-set-btn" data-cycle-adj="+1" aria-label="Prodloužit">+</button>
+          </div>
+        </div>
+        <div class="cyklus-set-item">
+          <div class="cyklus-set-lbl">Délka periody (dní)</div>
+          <div class="cyklus-set-row">
+            <button class="cyklus-set-btn" data-period-adj="-1" aria-label="Zkrátit">−</button>
+            <span class="cyklus-set-val">${periodLen}</span>
+            <button class="cyklus-set-btn" data-period-adj="+1" aria-label="Prodloužit">+</button>
+          </div>
+        </div>
       </div>`;
+
+    body.innerHTML = phaseCardHTML + settingsHTML + buildYearStrip(today, false) + buildHistHTML();
   }
-
-  /* Settings row */
-  const settingsHTML = `
-    <div class="cyklus-settings">
-      <div class="cyklus-set-item">
-        <div class="cyklus-set-lbl">Délka cyklu (dní)</div>
-        <div class="cyklus-set-row">
-          <button class="cyklus-set-btn" data-cycle-adj="-1" aria-label="Zkrátit">−</button>
-          <span class="cyklus-set-val">${cycleLen}</span>
-          <button class="cyklus-set-btn" data-cycle-adj="+1" aria-label="Prodloužit">+</button>
-        </div>
-      </div>
-      <div class="cyklus-set-item">
-        <div class="cyklus-set-lbl">Délka periody (dní)</div>
-        <div class="cyklus-set-row">
-          <button class="cyklus-set-btn" data-period-adj="-1" aria-label="Zkrátit">−</button>
-          <span class="cyklus-set-val">${periodLen}</span>
-          <button class="cyklus-set-btn" data-period-adj="+1" aria-label="Prodloužit">+</button>
-        </div>
-      </div>
-    </div>`;
-
-  /* Year strip */
-  const stripHTML = buildYearStrip(today);
-
-  /* History */
-  let histHTML = `<div class="cyklus-hist-hd">Historie</div><div class="cyklus-hist-list">`;
-  const sortedDesc = [...sorted].reverse();
-  sortedDesc.forEach((s, i) => {
-    const prev   = sortedDesc[i + 1];
-    const lenTxt = prev ? `${daysBetween(prev, s)} dní` : '';
-    histHTML += `
-      <div class="cyklus-hist-item">
-        <div class="cyklus-hist-dot"></div>
-        <div class="cyklus-hist-date">${formatCzFull(s)}</div>
-        ${lenTxt ? `<div class="cyklus-hist-len">${lenTxt}</div>` : ''}
-        <button class="cyklus-hist-del" data-del-start="${s}" title="Smazat záznam" aria-label="Smazat ${s}">×</button>
-      </div>`;
-  });
-  histHTML += `</div>`;
-
-  body.innerHTML = phaseCardHTML + settingsHTML + stripHTML + histHTML;
 
   /* Wire adjusters */
   body.querySelectorAll('[data-cycle-adj]').forEach(btn => {
@@ -4872,10 +5000,11 @@ function renderCyklus() {
   });
 }
 
-function buildYearStrip(today) {
+function buildYearStrip(today, dotsOnly) {
   const now  = new Date();
   const year = now.getFullYear();
   const CZ_MON = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+  const periodSet = new Set(cycleData.periodStarts);
   let rows = '';
   for (let m = 0; m < 12; m++) {
     const daysInMonth = new Date(year, m + 1, 0).getDate();
@@ -4884,8 +5013,13 @@ function buildYearStrip(today) {
       const ds = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isToday  = ds === today;
       const isFuture = ds > today;
-      const info = cyclePhaseForDate(ds);
-      const phaseCls = info ? `phase-${info.phase}` : '';
+      let phaseCls = '';
+      if (dotsOnly) {
+        phaseCls = periodSet.has(ds) ? 'phase-men' : '';
+      } else {
+        const info = cyclePhaseForDate(ds);
+        phaseCls = info ? `phase-${info.phase}` : '';
+      }
       cells += `<div class="cyklus-strip-cell ${phaseCls}${isToday?' is-today':''}${isFuture?' is-future':''}" title="${ds}"></div>`;
     }
     rows += `
@@ -4894,16 +5028,21 @@ function buildYearStrip(today) {
         <div class="cyklus-strip-days">${cells}</div>
       </div>`;
   }
-  return `
-    <div class="cyklus-strip-wrap">
-      <div class="cyklus-strip-hd">${year} — cyklus v roce</div>
-      ${rows}
-      <div class="cyklus-legend">
+  const legend = dotsOnly
+    ? `<div class="cyklus-legend">
+        <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:var(--c-men)"></div>Zaznamenaná perioda</div>
+      </div>`
+    : `<div class="cyklus-legend">
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:var(--c-men)"></div>Perioda</div>
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(200,136,58,.5)"></div>Folikulární</div>
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(74,151,104,.6)"></div>Ovulace</div>
         <div class="cyklus-leg-item"><div class="cyklus-leg-dot" style="background:rgba(128,99,194,.35)"></div>Luteální</div>
-      </div>
+      </div>`;
+  return `
+    <div class="cyklus-strip-wrap">
+      <div class="cyklus-strip-hd">${year}${dotsOnly ? ' — zaznamenaná data' : ' — cyklus v roce'}</div>
+      ${rows}
+      ${legend}
     </div>`;
 }
 
