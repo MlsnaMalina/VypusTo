@@ -2852,6 +2852,65 @@
 .cyklus-hist-edit:hover { color: #b93066; }
 @media (hover: none) { .cyklus-hist-edit { opacity: .4; } }
 
+/* ── Event-only extra fields ── */
+.ev-extra-row { display: none; }
+
+/* ── Recurring months selector ── */
+.rec-months-wrap { display: none; }
+.rec-months-lbl { font-family: var(--f-body); font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.rec-months-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.rec-month-pill {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 30px; border-radius: 6px;
+  border: 1.5px solid var(--border); background: var(--bg-off);
+  font-family: var(--f-body); font-size: 12px; color: var(--ink-2);
+  cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+  user-select: none;
+}
+.rec-month-pill input { display: none; }
+.rec-month-pill.on {
+  border-color: var(--primary); color: var(--primary);
+  background: var(--primary-lt); font-weight: 600;
+}
+
+/* ── Holidays in Narozeniny ── */
+.hols-section { margin: 0 20px 24px; }
+.hols-section-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-faint);
+}
+.hols-section-title { font-family: var(--f-body); font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.hols-toggle-row {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--f-body); font-size: 12px; color: var(--ink-3); cursor: pointer;
+}
+.hols-toggle-row input[type=checkbox] { display: none; }
+.hols-toggle-track {
+  width: 30px; height: 17px; border-radius: 9px; background: var(--border);
+  position: relative; transition: background .2s; flex-shrink: 0;
+}
+.hols-toggle-track::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 13px; height: 13px; border-radius: 50%; background: #fff;
+  transition: transform .2s;
+}
+.hols-toggle-row.on .hols-toggle-track { background: var(--primary); }
+.hols-toggle-row.on .hols-toggle-track::after { transform: translateX(13px); }
+.hols-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.hols-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 8px;
+  background: var(--bg-off); border: 1px solid var(--border-faint);
+}
+.hols-item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; background: #b93066; }
+.hols-item-body {}
+.hols-item-name { font-family: var(--f-body); font-size: 12px; color: var(--ink); font-weight: 500; line-height: 1.3; }
+.hols-item-date { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-top: 1px; }
+.hols-item-pagan .hols-item-dot { background: #7A6E8A; }
+.hols-item-pagan .hols-item-name { color: var(--ink-2); }
+
 /* ── Mobile overrides (< 720px) ── */
 @media (max-width: 719px) {
 
@@ -2866,6 +2925,9 @@
   /* Calendar focus strip — show only 2 cards (today + tomorrow) */
   .cal-focus-grid { grid-template-columns: 1.65fr 1fr; }
   .cal-focus-grid .focus-card:last-child { display: none; }
+
+  /* Holidays grid — single column on narrow screens */
+  .hols-grid { grid-template-columns: 1fr; }
 }
 
   </style>
@@ -3373,6 +3435,34 @@
       </div>
     </div>
 
+    <!-- End date — events only (multi-day) -->
+    <div class="sheet-fld ev-extra-row" id="js-ev-date-to-row">
+      <div class="sheet-fld-lbl">DO DАТА <span style="font-size:10px;opacity:.55;font-weight:400;text-transform:none">(vícedenní událost)</span></div>
+      <div class="sheet-inp-wrap">
+        <input type="text" class="sheet-fld-in" id="js-ev-date-to"
+          placeholder="dd.mm.rrrr" autocomplete="off"/>
+        <input type="date" class="sheet-inp-native" id="js-ev-date-to-picker" tabindex="-1"/>
+        <button type="button" class="sheet-inp-ico-btn" id="js-ev-date-to-cal-btn" aria-label="Otevřít kalendář">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Location — events only -->
+    <div class="sheet-fld ev-extra-row" id="js-ev-location-row">
+      <div class="sheet-fld-lbl">MÍSTO</div>
+      <div class="sheet-inp-wrap">
+        <input type="text" class="sheet-fld-in" id="js-ev-location"
+          placeholder="např. Praha, Home Office…" autocomplete="off" spellcheck="false"/>
+        <span style="font-size:15px;opacity:.35;padding-right:4px;line-height:1;user-select:none">📍</span>
+      </div>
+    </div>
+
     <!-- Recurrence (tasks only) -->
     <div id="js-rec-section" class="sheet-fld">
       <div class="sheet-fld-lbl">OPAKOVÁNÍ</div>
@@ -3783,6 +3873,25 @@
       <div class="rec-field">
         <label class="rec-field-lbl" for="js-rec-start">Od kdy?</label>
         <input type="date" class="rec-input" id="js-rec-start"/>
+      </div>
+    </div>
+
+    <!-- Month filter -->
+    <div class="rec-field rec-months-wrap" id="js-rec-months-wrap">
+      <div class="rec-months-lbl">V KTERÝCH MĚSÍCÍCH?</div>
+      <div class="rec-months-grid" id="js-rec-months-grid">
+        <label class="rec-month-pill" data-m="1"><input type="checkbox" value="1"/>Led</label>
+        <label class="rec-month-pill" data-m="2"><input type="checkbox" value="2"/>Úno</label>
+        <label class="rec-month-pill" data-m="3"><input type="checkbox" value="3"/>Bře</label>
+        <label class="rec-month-pill" data-m="4"><input type="checkbox" value="4"/>Dub</label>
+        <label class="rec-month-pill" data-m="5"><input type="checkbox" value="5"/>Kvě</label>
+        <label class="rec-month-pill" data-m="6"><input type="checkbox" value="6"/>Čvn</label>
+        <label class="rec-month-pill" data-m="7"><input type="checkbox" value="7"/>Čvc</label>
+        <label class="rec-month-pill" data-m="8"><input type="checkbox" value="8"/>Srp</label>
+        <label class="rec-month-pill" data-m="9"><input type="checkbox" value="9"/>Zář</label>
+        <label class="rec-month-pill" data-m="10"><input type="checkbox" value="10"/>Říj</label>
+        <label class="rec-month-pill" data-m="11"><input type="checkbox" value="11"/>Lis</label>
+        <label class="rec-month-pill" data-m="12"><input type="checkbox" value="12"/>Pro</label>
       </div>
     </div>
 
@@ -4820,6 +4929,7 @@ const S = {
   opakCat:    'all',
   calShowRec: true,
   calShowFin: true,
+  showKoloRoku: false,
   form:       { title:'', tag:null, date:'today', rec:'none', color:null, type:'task' },
   noteForm:   { title:'', body:'', tag:null },
   activeNoteId: null,
@@ -4968,6 +5078,8 @@ function occursOnDate(ev, dateStr) {
   const date  = parseLocalDate(dateStr);
   const start = parseLocalDate(ev.startDate);
   if (date < start) return false;
+  // Month filter: if months array is set, only occur in those months
+  if (ev.months && ev.months.length && !ev.months.includes(date.getMonth() + 1)) return false;
   const diffDays = Math.round((date - start) / 86400000);
   switch (ev.interval.type) {
     case 'daily':     return true;
@@ -5183,6 +5295,11 @@ function openRecModal(id = null) {
     document.querySelectorAll('.rec-type-btn').forEach(b => b.classList.toggle('on', b.dataset.rtype === (r.type || 'task')));
     $('js-rec-delete').style.display = '';
     $('js-rec-colors').innerHTML = colorSwatchesHTML(r.color || null, 'rec');
+    document.querySelectorAll('#js-rec-months-grid .rec-month-pill').forEach(p => {
+      const on = !!(r.months && r.months.includes(Number(p.dataset.m)));
+      p.classList.toggle('on', on);
+      p.querySelector('input').checked = on;
+    });
   } else {
     $('js-rec-sheet-title').textContent = 'Nový záznam';
     $('js-rec-title').value    = '';
@@ -5199,6 +5316,10 @@ function openRecModal(id = null) {
     document.querySelectorAll('.rec-type-btn').forEach((b, i) => b.classList.toggle('on', i === 0));
     $('js-rec-delete').style.display = 'none';
     $('js-rec-colors').innerHTML = colorSwatchesHTML(null, 'rec');
+    document.querySelectorAll('#js-rec-months-grid .rec-month-pill').forEach(p => {
+      p.classList.remove('on');
+      p.querySelector('input').checked = false;
+    });
   }
   updateRecCatColors();
   updateRecIntervalUI();
@@ -5224,6 +5345,8 @@ function updateRecCatColors() {
 function updateRecIntervalUI() {
   const v = $('js-rec-interval').value;
   $('js-rec-custom-wrap').style.display = v === 'custom' ? '' : 'none';
+  const showMonths = ['weekly','biweekly','monthly','quarterly'].includes(v);
+  $('js-rec-months-wrap').style.display = showMonths ? '' : 'none';
 }
 
 function saveRecurringEvent() {
@@ -5238,12 +5361,16 @@ function saveRecurringEvent() {
 
   const parseTime = v => { const t = v.trim(); return t.match(/^\d{1,2}:\d{2}$/) ? t.padStart(5,'0') : null; };
 
+  const selMonths = Array.from(document.querySelectorAll('#js-rec-months-grid .rec-month-pill.on'))
+    .map(p => Number(p.dataset.m));
+
   const rec = {
     id:                 editingRecId !== null ? editingRecId : Date.now(),
     title,
     type:               recType,
     category:           cat,
     interval,
+    months:             selMonths.length ? selMonths : null,
     startDate:          $('js-rec-start').value || dStr(new Date()),
     lastDone:           $('js-rec-lastdone').value || null,
     description:        $('js-rec-notes').value.trim(),
@@ -5296,7 +5423,10 @@ function toggleRecPush(id) {
 /* ── Get calendar events for a given date string 'YYYY-MM-DD' ── */
 function getCalEventsForDate(dateStr) {
   const toMin = s => { if (!s) return 9999; const [h,m] = s.split(':').map(Number); return h*60+m; };
-  return calEvents.filter(e => e.date === dateStr).sort((a,b) => toMin(a.time) - toMin(b.time));
+  return calEvents.filter(e => {
+    if (e.dateTo) return e.date <= dateStr && dateStr <= e.dateTo;
+    return e.date === dateStr;
+  }).sort((a,b) => toMin(a.time) - toMin(b.time));
 }
 
 /* ═══════════════════════════════════════════════
@@ -6151,14 +6281,48 @@ const NAMEDAYS = {
   '12-1':'Iva','12-2':'Blanka','12-3':'Dominika','12-4':'Barbora','12-5':'Jitka','12-6':'Mikuláš','12-7':'Ambrož','12-8':'Marta','12-9':'Vratislav','12-10':'Julie','12-11':'Dana','12-12':'Simona','12-13':'Lucie','12-14':'Lýdie','12-15':'Radana','12-16':'Albína','12-17':'Daniel','12-18':'Miloslav','12-19':'Ester','12-20':'Dagmar','12-21':'Natálie','12-22':'Šimon','12-23':'Vlasta','12-24':'Štědrý den','12-25':'Boží hod','12-26':'Štěpán','12-27':'Žaneta','12-28':'Bohumila','12-29':'Judita','12-30':'David','12-31':'Silvestr',
 };
 
-/* Czech public holidays — key 'M-D' → name (fixed dates; Easter 2026 hardcoded) */
-const PUBLIC_HOLIDAYS = {
-  '1-1':'Nový rok','5-1':'Svátek práce','5-8':'Den vítězství',
-  '7-5':'Cyril a Metoděj','7-6':'Jan Hus','9-28':'Den české státnosti',
-  '10-28':'Vznik Československa','11-17':'Den boje za svobodu',
-  '12-24':'Štědrý den','12-25':'1. svátek vánoční','12-26':'2. svátek vánoční',
-  '4-3':'Velký pátek 2026','4-6':'Velikonoční pondělí 2026',
-};
+/* Dynamic Easter calculation (Anonymous Gregorian algorithm) */
+function easterDate(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day   = ((h + l - 7 * m + 114) % 31) + 1;
+  return { month, day }; // Easter Sunday
+}
+
+function buildPublicHolidays(year) {
+  const { month: em, day: ed } = easterDate(year);
+  const gf = new Date(year, em - 1, ed - 2); // Good Friday
+  const eM = new Date(year, em - 1, ed + 1); // Easter Monday
+  const fmt = d => `${d.getMonth() + 1}-${d.getDate()}`;
+  return {
+    '1-1':'Nový rok', '5-1':'Svátek práce', '5-8':'Den vítězství',
+    '7-5':'Cyril a Metoděj', '7-6':'Jan Hus', '9-28':'Den české státnosti',
+    '10-28':'Vznik Československa', '11-17':'Den boje za svobodu',
+    '12-24':'Štědrý den', '12-25':'1. svátek vánoční', '12-26':'2. svátek vánoční',
+    [fmt(gf)]: 'Velký pátek',
+    [fmt(eM)]: 'Velikonoční pondělí',
+  };
+}
+const PUBLIC_HOLIDAYS = buildPublicHolidays(new Date().getFullYear());
+
+/* Wheel of the Year — Celtic/Pagan seasonal calendar */
+const KOLO_ROKU = [
+  { name:'Imbolc',      month:2,  day:1  },
+  { name:'Ostara',      month:3,  day:20 },
+  { name:'Beltane',     month:5,  day:1  },
+  { name:'Litha',       month:6,  day:21 },
+  { name:'Lughnasadh',  month:8,  day:1  },
+  { name:'Mabon',       month:9,  day:22 },
+  { name:'Samhain',     month:10, day:31 },
+  { name:'Yule',        month:12, day:21 },
+];
 
 function getDayItems(dateStr) {
   const now    = new Date();
@@ -6218,8 +6382,13 @@ function renderMesic() {
     if (!taskList.length) return '';
 
     if (role === 'today') {
-      // Show each task as dot + title — there aren't many day-specific tasks
-      const lines = taskList.slice(0, 6).map(t => {
+      // Show done tasks only if completed today; show all pending tasks
+      const todStr = dStr(new Date());
+      const visible = taskList.filter(t =>
+        !t.done || (t.completedAt && dStr(t.completedAt) === todStr)
+      );
+      if (!visible.length) return '';
+      const lines = visible.slice(0, 6).map(t => {
         const col = CAT[t.tag]?.color || '#999';
         const dotStyle = t.done
           ? `border:1.5px solid ${col};background:transparent`
@@ -6232,13 +6401,15 @@ function renderMesic() {
       return `<div class="fc-tasks">${lines}</div>`;
     }
 
-    // Side cards: compact category-grouped dots
+    // Side cards (tomorrow/dayafter): only pending tasks, colored dots only (no text)
+    const pending = taskList.filter(t => !t.done);
+    if (!pending.length) return '';
     const cats = ['prace','rodina','domacnost','ostatni'];
     const rows = cats.map(cat => {
-      const catTasks = taskList.filter(t => t.tag === cat);
+      const catTasks = pending.filter(t => t.tag === cat);
       if (!catTasks.length) return '';
-      const dots = catTasks.slice(0, 5).map(t =>
-        `<span class="tdot${t.done ? ' tdot-ring' : ''}" style="${t.done ? `border-color:${CAT[cat].color}` : `background:${CAT[cat].color}`}"></span>`
+      const dots = catTasks.slice(0, 5).map(() =>
+        `<span class="tdot" style="background:${CAT[cat].color}"></span>`
       ).join('');
       return `<div class="fc-cat-row"><div class="fc-cat-dots">${dots}</div></div>`;
     }).filter(Boolean).join('');
@@ -6759,8 +6930,9 @@ function _setModalType(type) {
   // time column for events; date takes full width for tasks
   $('js-ev-time-row').style.display  = isEv ? '' : 'none';
   $('js-rec-section').style.display  = isEv ? 'none' : '';
-  // hide task-only elements for events
+  // hide task-only elements for events; show event-only elements
   document.querySelectorAll('.js-task-only').forEach(el => { el.style.display = isEv ? 'none' : ''; });
+  document.querySelectorAll('.ev-extra-row').forEach(el => { el.style.display = isEv ? '' : 'none'; });
   // update label + placeholder
   const lbl = $('js-task-lbl');
   if (lbl) lbl.firstChild.textContent = isEv ? 'NÁZEV UDÁLOSTI' : 'CO JE TŘEBA UDĚLAT?';
@@ -6809,7 +6981,9 @@ function openModal(presetDate, presetType, editId, editType) {
     const [ey, em, ed_] = ev.date.split('-').map(Number);
     prefillEvDate = `${ed_}.${em}.${ey}`;
     prefillEvTime = ev.time   || '';
-    S.form._prefillTimeTo = ev.timeTo || '';
+    S.form._prefillTimeTo   = ev.timeTo   || '';
+    S.form._prefillDateTo   = ev.dateTo   || '';
+    S.form._prefillLocation = ev.location || '';
   }
 
   // Handle YYYY-MM-DD presetDate (specific calendar day)
@@ -6824,6 +6998,10 @@ function openModal(presetDate, presetType, editId, editType) {
   $('js-ev-date').value    = prefillEvDate;
   $('js-ev-time').value    = prefillEvTime;
   $('js-ev-time-to').value = S.form._prefillTimeTo || '';
+  // Prefill date-to and location (event editing)
+  const dtoPre = S.form._prefillDateTo || '';
+  $('js-ev-date-to').value = dtoPre ? (() => { const [dy,dm,dd] = dtoPre.split('-').map(Number); return `${dd}.${dm}.${dy}`; })() : '';
+  $('js-ev-location').value = S.form._prefillLocation || '';
   $('js-save').disabled = !prefillTitle;
   document.querySelectorAll('.s-tag').forEach(b => b.classList.toggle('on', !!S.form.tag && b.dataset.tag === S.form.tag));
   document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === S.form.date));
@@ -6876,14 +7054,29 @@ function saveTask() {
     const dateStr = _parseEvDate(S.form.date, $('js-ev-date').value);
     const timeVal   = _parseTime($('js-ev-time').value);
     const timeToVal = _parseTime($('js-ev-time-to').value);
+    // Parse optional end-date
+    const parseDateTo = () => {
+      const raw = $('js-ev-date-to').value.trim();
+      if (!raw) return null;
+      const m = raw.match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+      if (!m) return null;
+      const dd = parseInt(m[1]), mo = parseInt(m[2]);
+      const yr = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+      if (dd < 1 || dd > 31 || mo < 1 || mo > 12) return null;
+      return `${yr}-${String(mo).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    };
+    const dateToVal  = parseDateTo();
+    const locationVal = $('js-ev-location').value.trim() || null;
     if (S.form.editEvId) {
       const idx = calEvents.findIndex(x => x.id === S.form.editEvId);
       if (idx >= 0) calEvents[idx] = { ...calEvents[idx],
         title: S.form.title.trim(), tag: S.form.tag || calEvents[idx].tag,
-        date: dateStr, time: timeVal, timeTo: timeToVal };
+        date: dateStr, time: timeVal, timeTo: timeToVal,
+        dateTo: dateToVal, location: locationVal };
     } else {
       calEvents.unshift({ id: Date.now(), title: S.form.title.trim(),
-        tag: S.form.tag || 'ostatni', date: dateStr, time: timeVal, timeTo: timeToVal });
+        tag: S.form.tag || 'ostatni', date: dateStr, time: timeVal, timeTo: timeToVal,
+        dateTo: dateToVal, location: locationVal });
     }
     saveCalEvents();
   } else {
@@ -7146,7 +7339,64 @@ function renderNarozeniny() {
     </div>`;
   }
   html += renderBdayList();
+
+  /* ── Czech holidays section ── */
+  const czMons = ['Leden','Únor','Březen','Duben','Květen','Červen',
+                  'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+  const curY = todY;
+  // Build sorted holiday list for this year
+  const holItems = Object.entries(buildPublicHolidays(curY))
+    .map(([key, name]) => {
+      const [mo, dd] = key.split('-').map(Number);
+      return { name, month: mo, day: dd };
+    })
+    .sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
+
+  const holGrid = holItems.map(h =>
+    `<div class="hols-item">
+      <div class="hols-item-dot"></div>
+      <div class="hols-item-body">
+        <div class="hols-item-name">${h.name}</div>
+        <div class="hols-item-date">${h.day}. ${czMons[h.month-1].slice(0,3).toLowerCase()}.</div>
+      </div>
+    </div>`
+  ).join('');
+
+  const koloItems = KOLO_ROKU.map(k =>
+    `<div class="hols-item hols-item-pagan">
+      <div class="hols-item-dot"></div>
+      <div class="hols-item-body">
+        <div class="hols-item-name">${k.name}</div>
+        <div class="hols-item-date">${k.day}. ${czMons[k.month-1].slice(0,3).toLowerCase()}.</div>
+      </div>
+    </div>`
+  ).join('');
+
+  const koloOnCls = S.showKoloRoku ? ' on' : '';
+  html += `<div class="hols-section">
+    <div class="hols-section-hdr">
+      <span class="hols-section-title">📅 Státní svátky ${curY}</span>
+      <label class="hols-toggle-row${koloOnCls}" id="js-hols-kolo-toggle" title="Zobrazit Kolo roku">
+        <input type="checkbox" id="js-hols-kolo-cb"${S.showKoloRoku ? ' checked' : ''}/>
+        <span class="hols-toggle-track"></span>
+        <span style="font-size:12px">Kolo roku</span>
+      </label>
+    </div>
+    <div class="hols-grid">${holGrid}</div>
+    ${S.showKoloRoku ? `<div class="hols-grid" style="margin-top:8px">${koloItems}</div>` : ''}
+  </div>`;
+
   $('js-narozeniny-body').innerHTML = html;
+
+  // Wire Kolo roku toggle (re-attach after innerHTML replace)
+  const koloToggle = $('js-hols-kolo-toggle');
+  if (koloToggle) {
+    koloToggle.addEventListener('click', e => {
+      e.preventDefault();
+      S.showKoloRoku = !S.showKoloRoku;
+      renderNarozeniny();
+    });
+  }
 }
 
 /* ─── RENDER POZNÁMKY ─── */
@@ -7643,6 +7893,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (val) $('js-ev-time-to').value = val;
   });
 
+  /* ── End-date picker ── */
+  $('js-ev-date-to-cal-btn').addEventListener('click', () => {
+    const picker = $('js-ev-date-to-picker');
+    const curText = $('js-ev-date-to').value.trim();
+    if (curText) {
+      const iso = parseCzDate(curText);
+      if (iso) picker.value = iso;
+    } else {
+      // Pre-fill with day after start date
+      const startIso = parseCzDate($('js-ev-date').value.trim());
+      if (startIso) {
+        const d = new Date(startIso); d.setDate(d.getDate() + 1);
+        picker.value = dStr(d);
+      }
+    }
+    try { picker.showPicker(); } catch(e) { picker.click(); }
+  });
+  $('js-ev-date-to-picker').addEventListener('change', () => {
+    const val = $('js-ev-date-to-picker').value;
+    if (val) { const [y, m, d] = val.split('-'); $('js-ev-date-to').value = `${d}.${m}.${y}`; }
+  });
+
   document.addEventListener('click', e => {
     const cb = e.target.closest('.task-cb');
     if (cb) {
@@ -7996,6 +8268,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   $('js-rec-interval').addEventListener('change', updateRecIntervalUI);
   $('js-rec-title').addEventListener('keydown', e => { if (e.key === 'Escape') closeRecModal(); });
+
+  document.querySelectorAll('#js-rec-months-grid .rec-month-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      pill.classList.toggle('on');
+      pill.querySelector('input').checked = pill.classList.contains('on');
+    });
+  });
 
   document.querySelectorAll('.rec-cat-btn').forEach(btn => {
     btn.addEventListener('click', () => {
