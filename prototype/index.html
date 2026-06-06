@@ -2371,6 +2371,313 @@
     .note-pin-icon { display: flex; align-items: center; flex-shrink: 0; margin-top: 1px;
       opacity: .55; color: var(--primary); }
 
+    /* ════════════════════════════════════════════════════
+       REDESIGN OVERRIDE — implementováno dle handoff doc
+       ════════════════════════════════════════════════════ */
+
+    /* § 1 — Nová paleta */
+    :root {
+      --c-prace:    #2C81FF; --c-prace-bg:  #E8F2FF; --c-prace-bd:  #AFD2FF;
+      --c-rodina:   #FF3D7F; --c-rodina-bg: #FFE9F1; --c-rodina-bd: #FFB0CD;
+      --c-dom:      #15C26B; --c-dom-bg:    #E4FAF0; --c-dom-bd:    #A7E8CC;
+      --c-ost:      #8C52FF; --c-ost-bg:    #F1EAFF; --c-ost-bd:    #D2BFFF;
+      --bg:         #ffffff;
+      --bg-off:     #f9f9f9;
+    }
+
+    /* § 2 — Fonty: vypnout rukopis app-wide */
+    :root {
+      --f-hand:   'Space Grotesk', sans-serif !important;
+      --f-doodle: 'Space Grotesk', sans-serif !important;
+    }
+
+    /* § 3 — Odstranit dekorativní elementy */
+    .sec-wave,
+    .ukoly-asym-wave,
+    .ukoly-cat-wave,
+    .bday-sec-wave  { display: none !important; }
+    .empty-icon     { display: none !important; }
+    .note-doodle    { display: none !important; }
+    .task-dot       { display: none !important; }
+
+    /* § 5 — Sekce labely */
+    .sec-lbl {
+      font-family: var(--f-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    /* § 6 — Event karty */
+    .ev-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    .ev-card[data-tag="prace"]     { border-left-color: #2C81FF; }
+    .ev-card[data-tag="rodina"]    { border-left-color: #FF3D7F; }
+    .ev-card[data-tag="domacnost"] { border-left-color: #15C26B; }
+    .ev-card[data-tag="ostatni"]   { border-left-color: #8C52FF; }
+
+    /* § 7 — Task items */
+    :is(#v-dnes, #v-ukoly, #v-mesic) .task-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      margin: 0 0 4px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border) !important;
+    }
+    :is(#v-dnes, #v-ukoly) .task-stack {
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="prace"]     { border-left: 3px solid #2C81FF !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="rodina"]    { border-left: 3px solid #FF3D7F !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="domacnost"] { border-left: 3px solid #15C26B !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="ostatni"]   { border-left: 3px solid #8C52FF !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="prace"]     .task-cb { border-color: #2C81FF !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="rodina"]    .task-cb { border-color: #FF3D7F !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="domacnost"] .task-cb { border-color: #15C26B !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="ostatni"]   .task-cb { border-color: #8C52FF !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="prace"].is-done     .task-cb { background: #2C81FF !important; border-color: #2C81FF !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="rodina"].is-done    .task-cb { background: #FF3D7F !important; border-color: #FF3D7F !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="domacnost"].is-done .task-cb { background: #15C26B !important; border-color: #15C26B !important; }
+    :is(#v-dnes, #v-ukoly) .task-item[data-tag="ostatni"].is-done   .task-cb { background: #8C52FF !important; border-color: #8C52FF !important; }
+    .task-cb { width: 18px !important; height: 18px !important; margin-top: 2px !important; }
+    .task-badge {
+      font-size: 11px !important;
+      padding: 1px 7px !important;
+      font-family: var(--f-body) !important;
+      font-weight: 600 !important;
+    }
+    .task-badge[data-tag="prace"]     { color: #2C81FF !important; background: #E8F2FF !important; }
+    .task-badge[data-tag="rodina"]    { color: #FF3D7F !important; background: #FFE9F1 !important; }
+    .task-badge[data-tag="domacnost"] { color: #15C26B !important; background: #E4FAF0 !important; }
+    .task-badge[data-tag="ostatni"]   { color: #8C52FF !important; background: #F1EAFF !important; }
+
+    /* § 8 — Desktop Úkoly 2 sloupce */
+    @media (min-width: 720px) {
+      .ukoly-asym-left .task-stack {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4px !important;
+        padding: 0 !important;
+      }
+      .ukoly-asym-left .done-list .task-stack,
+      .ukoly-asym-done .task-stack {
+        display: flex !important;
+        grid-template-columns: unset !important;
+      }
+    }
+    .ukoly-cat-panel[data-tag="prace"]     .ukoly-cat-lbl { color: #2C81FF !important; }
+    .ukoly-cat-panel[data-tag="rodina"]    .ukoly-cat-lbl { color: #FF3D7F !important; }
+    .ukoly-cat-panel[data-tag="domacnost"] .ukoly-cat-lbl { color: #15C26B !important; }
+    .ukoly-cat-panel[data-tag="ostatni"]   .ukoly-cat-lbl { color: #8C52FF !important; }
+    .ukoly-cat-panel[data-tag="prace"]     .ukoly-cat-cb.done { background: #2C81FF; border-color: #2C81FF; }
+    .ukoly-cat-panel[data-tag="rodina"]    .ukoly-cat-cb.done { background: #FF3D7F; border-color: #FF3D7F; }
+    .ukoly-cat-panel[data-tag="domacnost"] .ukoly-cat-cb.done { background: #15C26B; border-color: #15C26B; }
+    .ukoly-cat-panel[data-tag="ostatni"]   .ukoly-cat-cb.done { background: #8C52FF; border-color: #8C52FF; }
+
+    /* § 9 — Mobile filtry */
+    .fp[data-f="prace"].on     { border-color: #2C81FF; color: #2C81FF; background: #E8F2FF; }
+    .fp[data-f="rodina"].on    { border-color: #FF3D7F; color: #FF3D7F; background: #FFE9F1; }
+    .fp[data-f="domacnost"].on { border-color: #15C26B; color: #15C26B; background: #E4FAF0; }
+    .fp[data-f="ostatni"].on   { border-color: #8C52FF; color: #8C52FF; background: #F1EAFF; }
+
+    /* § 11 — Poznámky */
+    .note-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      border-left-width: 3px;
+      padding: 10px 12px 10px 13px;
+    }
+    .note-card[data-tag="prace"]     { border-left-color: #2C81FF; }
+    .note-card[data-tag="rodina"]    { border-left-color: #FF3D7F; }
+    .note-card[data-tag="domacnost"] { border-left-color: #15C26B; }
+    .note-card[data-tag="ostatni"]   { border-left-color: #8C52FF; }
+    .note-badge[data-tag="prace"]     { color: #2C81FF; background: #E8F2FF; }
+    .note-badge[data-tag="rodina"]    { color: #FF3D7F; background: #FFE9F1; }
+    .note-badge[data-tag="domacnost"] { color: #15C26B; background: #E4FAF0; }
+    .note-badge[data-tag="ostatni"]   { color: #8C52FF; background: #F1EAFF; }
+    .note-title { font-family: var(--f-body); font-weight: 600; font-size: 15px; }
+    .s-ntag[data-tag="prace"].on     { color: #2C81FF; background: #E8F2FF; border-color: #2C81FF; }
+    .s-ntag[data-tag="rodina"].on    { color: #FF3D7F; background: #FFE9F1; border-color: #FF3D7F; }
+    .s-ntag[data-tag="domacnost"].on { color: #15C26B; background: #E4FAF0; border-color: #15C26B; }
+    .s-ntag[data-tag="ostatni"].on   { color: #8C52FF; background: #F1EAFF; border-color: #8C52FF; }
+
+    /* § 12 — Narozeniny */
+    .bday-tile {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .bday-tile.today-tile {
+      border-color: #FFB0CD;
+      background: #FFE9F1;
+    }
+    .bday-illus-wrap { border: 2px solid #FFB0CD; background: #FFE9F1; }
+    .bday-tile[data-type="birthday"]    .bday-illus-wrap { background: #FFE9F1; border-color: #FFB0CD; }
+    .bday-tile[data-type="nameday"]     .bday-illus-wrap { background: #E8F2FF; border-color: #AFD2FF; }
+    .bday-tile[data-type="anniversary"] .bday-illus-wrap { background: #F1EAFF; border-color: #D2BFFF; }
+    .bday-tile-name { font-family: var(--f-body); font-weight: 600; font-size: 13px; }
+    .bday-sec-lbl {
+      font-family: var(--f-body); font-size: 11px; font-weight: 600;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3);
+    }
+    .bday-contacts-title { font-family: var(--f-body); font-weight: 600; font-size: 14px; color: var(--ink-2); }
+    .bday-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #FFE9F1; border: 1.5px solid #FFB0CD;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--f-body); font-weight: 700; font-size: 12px;
+      color: #FF3D7F; flex-shrink: 0;
+    }
+    .bday-icon { display: none; }
+    .bday-banner.visible {
+      background: #fff;
+      border: 1px solid #FFB0CD;
+      border-radius: 8px;
+      margin: 0 24px 8px;
+    }
+
+    /* § 13 — Měsíc focus strip */
+    .cal-focus-wrap { padding: 8px 12px 4px; }
+    .cal-focus-grid { display: grid; grid-template-columns: 1.65fr 1fr 1fr; gap: 8px; }
+    .focus-card {
+      position: relative;
+      padding: 8px 10px 14px;
+      display: flex; flex-direction: column;
+      border-radius: 10px; border: 1px solid rgba(0,0,0,.09);
+    }
+    .focus-card.fc-today {
+      padding: 10px 12px 18px;
+      border-color: rgba(185,48,102,.4);
+      background: transparent;
+    }
+    .focus-card.fc-side { opacity: .75; }
+    .fc-num {
+      font-family: var(--f-display); font-weight: 800;
+      letter-spacing: -.04em; line-height: .85;
+      color: var(--ink); font-size: 30px; margin: 4px 0 6px;
+    }
+    .fc-today .fc-num { font-size: 36px; margin: 4px 0 6px; }
+    .fc-side  .fc-num { font-size: 24px; color: var(--ink-3); }
+    .cal-fc-ev[data-tag="prace"]     .cal-fc-ev-dash { background: #2C81FF; }
+    .cal-fc-ev[data-tag="rodina"]    .cal-fc-ev-dash { background: #FF3D7F; }
+    .cal-fc-ev[data-tag="domacnost"] .cal-fc-ev-dash { background: #15C26B; }
+    .cal-fc-ev[data-tag="ostatni"]   .cal-fc-ev-dash { background: #8C52FF; }
+    .cal-fc-task[data-tag="prace"]     .cal-fc-task-dot { background: #2C81FF; border-color: #2C81FF; }
+    .cal-fc-task[data-tag="rodina"]    .cal-fc-task-dot { background: #FF3D7F; border-color: #FF3D7F; }
+    .cal-fc-task[data-tag="domacnost"] .cal-fc-task-dot { background: #15C26B; border-color: #15C26B; }
+    .cal-fc-task[data-tag="ostatni"]   .cal-fc-task-dot { background: #8C52FF; border-color: #8C52FF; }
+    .cal-fc-bday { color: #FF3D7F; }
+    .cal-fc-nd   { color: #2C81FF; }
+    .cal-fc.is-today .cal-fc-num { background: #b93066; color: #fff; }
+    .cal-fc-ev-dash { border-radius: 3px; }
+
+    /* § 14 — Sidebar desktop */
+    @media (min-width: 720px) {
+      .sidebar {
+        background: #f5f4f7;
+        border-right: 1px solid #ebe9ef;
+        width: 220px; min-width: 220px;
+      }
+      .sb-head { padding: 26px 20px 16px; border-bottom: 1px solid #ebe9ef; }
+      .sb-logo {
+        font-family: var(--f-display); font-size: 18px; font-weight: 800;
+        color: #111; letter-spacing: -.02em; gap: 9px;
+      }
+      .sb-tagline { display: none; }
+      .sb-info-widget {
+        margin: 10px 14px 4px; padding: 10px 12px;
+        background: #fff; border: 1px solid #ebe9ef; border-radius: 10px;
+      }
+      .sb-widget-date {
+        font-family: var(--f-display); font-size: 30px; font-weight: 800;
+        color: #111; line-height: 1; letter-spacing: -.03em;
+      }
+      .sb-widget-day {
+        font-family: var(--f-mono); font-size: 9px; font-weight: 600;
+        color: #aaa; letter-spacing: .08em; margin-top: 2px;
+      }
+      .sb-widget-divider { height: 1px; background: #ebe9ef; margin: 8px 0; }
+      .sb-widget-row {
+        display: flex; align-items: center; gap: 6px;
+        font-family: var(--f-body); font-size: 11px; color: #888; margin-bottom: 4px;
+      }
+      .sb-widget-row:last-child { margin-bottom: 0; }
+      .sb-widget-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+      .sb-widget-val {
+        color: #111; font-weight: 600; margin-left: auto;
+        font-family: var(--f-mono); font-size: 11px;
+      }
+      .sb-widget-val--text {
+        font-family: var(--f-body); font-size: 10px;
+        max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .sb-widget {
+        margin: 4px 14px 4px; padding: 10px 10px 8px;
+        background: #fff; border: 1px solid #ebe9ef; border-radius: 10px;
+      }
+      .sb-cal-dow-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 3px; }
+      .sb-cal-dow {
+        font-family: var(--f-mono); font-size: 8.5px; font-weight: 600;
+        color: #bbb; text-align: center; letter-spacing: .04em; padding: 2px 0;
+      }
+      .sb-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px 0; }
+      .sb-cal-cell {
+        display: flex; flex-direction: column; align-items: center;
+        padding: 2px 1px; min-height: 26px;
+      }
+      .sb-cal-empty { pointer-events: none; }
+      .sb-cal-num {
+        font-family: var(--f-body); font-size: 10.5px; font-weight: 500; color: #555;
+        line-height: 1; width: 20px; height: 20px;
+        display: flex; align-items: center; justify-content: center; border-radius: 50%;
+      }
+      .sb-cal-today .sb-cal-num {
+        background: transparent; color: #b93066; font-weight: 700; border: 1.5px solid #b93066;
+      }
+      .sb-cal-indicators {
+        display: flex; gap: 1.5px; align-items: center; margin-top: 2px;
+        flex-wrap: wrap; justify-content: center; max-width: 22px;
+      }
+      .sb-cal-dash {
+        display: inline-block; width: 8px; height: 2px; border-radius: 1px; flex-shrink: 0;
+      }
+      .sb-cal-dot {
+        display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+        border: 1.5px solid; background: transparent; flex-shrink: 0;
+      }
+      .sb-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+      .sb-item {
+        display: flex; align-items: center; gap: 11px;
+        padding: 8px 14px; margin: 1px 10px; width: calc(100% - 20px);
+        font-family: var(--f-body); font-size: 13.5px; font-weight: 500;
+        color: #666; border-radius: 8px; transition: color .14s, background .14s;
+      }
+      .sb-item:hover { color: #111; background: rgba(0,0,0,.05); }
+      .sb-item.on { color: #b93066; background: rgba(185,48,102,.08); font-weight: 600; }
+      .sb-item.on .sb-icon { color: #b93066; }
+      .sb-icon { width: 16px; height: 16px; flex-shrink: 0; }
+      .sb-user { padding: 10px 16px; border-top: 1px solid #ebe9ef; gap: 8px; }
+      .sb-user-avatar {
+        background: rgba(185,48,102,.1); color: #b93066;
+        font-family: var(--f-body); font-weight: 700; font-size: 12px;
+      }
+      .sb-user-email { color: #aaa; font-size: 11px; }
+      .sb-logout { color: #bbb; }
+      .sb-logout:hover { background: rgba(0,0,0,.06); color: #555; }
+    }
+
   </style>
 </head>
 <body>
@@ -2419,13 +2726,22 @@
   <aside class="sidebar">
     <div class="sb-head">
       <div class="sb-logo">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-          <path d="M10 2C7 4 5 7.5 5 11c0 2.8 2 5 5 5.5 5-.5 5-3.5 5-5.5C15 7.5 13 4 10 2z" stroke="#b93066" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M7.5 11.5l2 2 3-3.5" stroke="#b93066" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="22" height="22" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="115" fill="#b93066"/>
+          <text x="256" y="330" text-anchor="middle"
+            font-family="'Syne',sans-serif" font-weight="800" font-size="280"
+            fill="#fff" letter-spacing="-6" opacity=".18">to</text>
+          <line x1="64" y1="262" x2="448" y2="262"
+            stroke="#fff" stroke-width="52" stroke-linecap="round"/>
+          <clipPath id="sb-top-half">
+            <rect x="0" y="0" width="512" height="238"/>
+          </clipPath>
+          <text x="256" y="330" text-anchor="middle"
+            font-family="'Syne',sans-serif" font-weight="800" font-size="280"
+            fill="#fff" letter-spacing="-6" clip-path="url(#sb-top-half)">to</text>
         </svg>
         VypusTo
       </div>
-      <div class="sb-tagline">Pohlídá vše. Je krásná.</div>
     </div>
     <nav class="sb-nav">
       <button class="sb-item on" data-v="dnes">
@@ -2502,7 +2818,7 @@
       </div>
 
       <div class="bday-banner" id="js-bday">
-        <span class="bday-icon">🎂</span>
+        <span class="bday-avatar" id="js-bday-ini"></span>
         <span class="bday-name" id="js-bday-txt"></span>
       </div>
 
@@ -3368,14 +3684,14 @@ function handleAuthSubmit() {
 
 /* ─── DATA ─── */
 const CAT = {
-  prace:     { label:'Práce',     color:'#1C3557' },
-  rodina:    { label:'Rodina',    color:'#C4614A' },
-  domacnost: { label:'Domácnost', color:'#4A7C59' },
-  ostatni:   { label:'Ostatní',   color:'#7A6E8A' },
+  prace:     { label:'Práce',     color:'#2C81FF' },
+  rodina:    { label:'Rodina',    color:'#FF3D7F' },
+  domacnost: { label:'Domácnost', color:'#15C26B' },
+  ostatni:   { label:'Ostatní',   color:'#8C52FF' },
 };
 
 /* ─── SETTINGS ─── */
-const DEFAULT_COLORS = { prace:'#1C3557', rodina:'#C4614A', domacnost:'#4A7C59', ostatni:'#7A6E8A' };
+const DEFAULT_COLORS = { prace:'#2C81FF', rodina:'#FF3D7F', domacnost:'#15C26B', ostatni:'#8C52FF' };
 const STORE_SETTINGS = 'vypusto-settings-v2';
 let settings = { colors: { ...DEFAULT_COLORS } };
 
@@ -4342,12 +4658,12 @@ function taskHTML(t) {
   const dlbl = t.date === 'tomorrow' ? 'zítra' : '';
   const doneAt = t.done && t.completedAt ? formatCompletedAt(t.completedAt) : '';
   const col  = taskEffectiveColor(t);
-  const dotStyle  = t.color ? `style="background:${col}"` : `data-tag="${t.tag}"`;
-  const badgeStyle = t.color ? `style="color:${col};background:${col}1a"` : `data-tag="${t.tag}"`;
+  const badgeStyle = t.color ? `style="color:${col};background:${col}22"` : `data-tag="${t.tag}"`;
+  const cbDoneStyle = t.done && t.color ? `style="background:${col};border-color:${col}"` : '';
+  const cbStyle = !t.done && t.color ? `style="border-color:${col}"` : '';
   return `
 <div class="task-item${t.done?' is-done':''}" data-id="${t.id}" data-tag="${t.tag}">
-  <div class="task-dot" ${dotStyle}></div>
-  <div class="task-cb" data-id="${t.id}">${CHECK_SVG}</div>
+  <div class="task-cb" data-id="${t.id}" ${t.done ? cbDoneStyle : cbStyle}>${CHECK_SVG}</div>
   <div class="task-body">
     <div class="task-tw"><span class="task-title">${t.title}</span></div>
     <div class="task-meta">
@@ -5469,8 +5785,12 @@ function renderDnes(animate = false) {
   // Birthday banner
   const bday = birthdays.find(b => b.month === targetD.getMonth()+1 && b.day === targetD.getDate());
   const bd = $('js-bday');
-  if (bday) { $('js-bday-txt').textContent = `${isTom?'Zítra':'Dnes'} slaví ${bday.firstName}`; bd.classList.add('visible'); }
-  else       { bd.classList.remove('visible'); }
+  if (bday) {
+    $('js-bday-txt').textContent = `${isTom?'Zítra':'Dnes'} slaví ${bday.firstName}`;
+    const ini = $('js-bday-ini');
+    if (ini) ini.textContent = (bday.firstName||'').trim().charAt(0).toUpperCase();
+    bd.classList.add('visible');
+  } else { bd.classList.remove('visible'); }
 
   // Events (from calEvents)
   const dayEvs = getCalEventsForDate(targetStr);
@@ -6010,9 +6330,9 @@ function renderUkolyDesktop(animate) {
       </div>`
     ).join('');
 
-    return `<div class="ukoly-cat-panel">
+    return `<div class="ukoly-cat-panel" data-tag="${cat}">
       <div class="ukoly-cat-head">
-        <span class="ukoly-cat-lbl" style="color:${CAT[cat].color}">${CAT[cat].label}</span>
+        <span class="ukoly-cat-lbl">${CAT[cat].label}</span>
         <span class="ukoly-cat-cnt">${catActive.length}${total > 0 ? `/${total}` : ''}</span>
       </div>
       <svg class="ukoly-cat-wave" viewBox="0 0 55 3" fill="none" aria-hidden="true" preserveAspectRatio="none">
@@ -6469,8 +6789,8 @@ function renderNarozeniny() {
     const ageLbl = ev.type === 'anniversary' && ev.yearStart
       ? `<div class="bday-tile-age" title="${age} let">${heartStr(ev.yearStart)}</div>`
       : (age ? `<div class="bday-tile-age">${age} let</div>` : '');
-    return `<div class="bday-tile${extraCls}">
-      <div class="bday-illus-wrap" style="background:${isToday ? 'rgba(185,48,102,.1)' : col.bg}">
+    return `<div class="bday-tile${extraCls}" data-type="${ev.type}">
+      <div class="bday-illus-wrap">
         ${bdayIllus(ev.type, illusCol)}
       </div>
       <div class="bday-tile-name">${ev.firstName}</div>
@@ -6568,7 +6888,7 @@ function noteHTML(n) {
     <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
     <path d="M95 95 C63 95.8,33 94.4,8 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
   </svg>` : '';
-  return `<div class="note-card${n.pinned ? ' is-pinned' : ''}" data-nid="${n.id}" style="border-left-color:${color}">
+  return `<div class="note-card${n.pinned ? ' is-pinned' : ''}" data-nid="${n.id}" data-tag="${tag}" style="border-left-color:${color}">
     ${doodle}
     <div class="note-card-top">
       <div class="note-title">${n.title}</div>
@@ -6827,12 +7147,91 @@ function saveBday() {
   renderNarozeniny();
 }
 
+/* ─── SIDEBAR WIDGET ─── */
+function renderSidebarWidget() {
+  const sbHead = document.querySelector('.sb-head');
+  if (!sbHead) return;
+  document.querySelectorAll('.sb-widget, .sb-info-widget').forEach(el => el.remove());
+  const now  = new Date();
+  const todY = now.getFullYear(), todM = now.getMonth(), todD = now.getDate();
+  const dayNames = ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'];
+  const dayName  = dayNames[now.getDay()].toUpperCase();
+  const todayTasks = tasks.filter(t => !t.done && t.date === 'today').length;
+  const taskCount  = todayTasks > 0 ? todayTasks : tasks.filter(t => !t.done).length;
+  function daysUntilCel(m, d) {
+    const t = new Date(todY, m-1, d), base = new Date(todY, todM, todD);
+    if (t < base) t.setFullYear(todY + 1);
+    return Math.round((t - base) / 86400000);
+  }
+  let nextCel = null;
+  birthdays.forEach(b => {
+    const d = daysUntilCel(b.month, b.day);
+    if (!nextCel || d < nextCel.days) nextCel = { name: b.firstName, days: d };
+  });
+  const celebStr = nextCel
+    ? (nextCel.days === 0 ? `${nextCel.name} dnes` : `${nextCel.name} za ${nextCel.days} d`) : '—';
+  const infoWidget = document.createElement('div');
+  infoWidget.className = 'sb-info-widget';
+  infoWidget.innerHTML = `
+    <div class="sb-widget-date">${todD}</div>
+    <div class="sb-widget-day">${dayName}</div>
+    <div class="sb-widget-divider"></div>
+    <div class="sb-widget-row">
+      <span class="sb-widget-dot" style="background:#FF3D7F"></span>
+      Úkoly dnes
+      <span class="sb-widget-val">${taskCount}</span>
+    </div>
+    <div class="sb-widget-row">
+      <span class="sb-widget-dot" style="background:#b93066"></span>
+      Oslava
+      <span class="sb-widget-val sb-widget-val--text">${celebStr}</span>
+    </div>`;
+  sbHead.insertAdjacentElement('afterend', infoWidget);
+  const CAT_COLORS = { prace:'#2C81FF', rodina:'#FF3D7F', domacnost:'#15C26B', ostatni:'#8C52FF' };
+  const firstDay = new Date(todY, todM, 1);
+  const lastDay  = new Date(todY, todM + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7;
+  function ds(y, m, d) {
+    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  let cells = '';
+  for (let i = 0; i < startDow; i++) cells += `<div class="sb-cal-cell sb-cal-empty"></div>`;
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = ds(todY, todM, d);
+    const isToday = d === todD;
+    const dayEvs = (typeof calEvents !== 'undefined' ? calEvents : []).filter(e => e.date === dateStr);
+    const dayTasks = tasks.filter(t => !t.done && (
+      (dateStr === ds(todY, todM, todD)   && t.date === 'today') ||
+      (dateStr === ds(todY, todM, todD+1) && t.date === 'tomorrow') ||
+      t.date === dateStr
+    ));
+    const allEvs   = dayEvs.slice(0, 3);
+    const allTasks = dayTasks.slice(0, 3);
+    const dashes = allEvs.map(e =>
+      `<span class="sb-cal-dash" style="background:${CAT_COLORS[e.tag]||'#b93066'}"></span>`
+    ).join('');
+    const dots = allTasks.map(t =>
+      `<span class="sb-cal-dot" style="border-color:${t.color||CAT_COLORS[t.tag]||'#b93066'}"></span>`
+    ).join('');
+    cells += `<div class="sb-cal-cell${isToday?' sb-cal-today':''}">
+      <span class="sb-cal-num">${d}</span>
+      ${(allEvs.length||allTasks.length) ? `<div class="sb-cal-indicators">${dashes}${dots}</div>` : ''}
+    </div>`;
+  }
+  const dow = ['P','Ú','S','Č','P','S','N'].map(l => `<div class="sb-cal-dow">${l}</div>`).join('');
+  const calWidget = document.createElement('div');
+  calWidget.className = 'sb-widget';
+  calWidget.innerHTML = `<div class="sb-cal-dow-row">${dow}</div><div class="sb-cal-grid">${cells}</div>`;
+  infoWidget.insertAdjacentElement('afterend', calWidget);
+}
+
 /* ─── INIT ─── */
 function initAppUI() {
   initDate();
   applySettingsColors();
   renderDnes(true);
   renderCyclePill();
+  renderSidebarWidget();
   /* check for ended events after a short delay so the UI settles first */
   setTimeout(checkEndedEvents, 1800);
 }
