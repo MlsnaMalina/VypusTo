@@ -2852,6 +2852,22 @@
 .cyklus-hist-edit:hover { color: #b93066; }
 @media (hover: none) { .cyklus-hist-edit { opacity: .4; } }
 
+/* ── Mobile overrides (< 720px) ── */
+@media (max-width: 719px) {
+
+  /* Cyklus heatmap — smaller cells to fit ~390px screens */
+  .ckl-strip-wrap { padding: 12px 10px; }
+  .ckl-strip-cell { width: 8px; height: 11px; border-radius: 2px; }
+  .ckl-strip-days { gap: 2px; }
+  .ckl-strip-mlbl { width: 20px; font-size: 8px; }
+  .ckl-strip-row  { gap: 6px; }
+  .ckl-leg-dot    { width: 8px; height: 11px; }
+
+  /* Calendar focus strip — show only 2 cards (today + tomorrow) */
+  .cal-focus-grid { grid-template-columns: 1.65fr 1fr; }
+  .cal-focus-grid .focus-card:last-child { display: none; }
+}
+
   </style>
 </head>
 <body>
