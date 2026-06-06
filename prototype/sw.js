@@ -1,15 +1,14 @@
-const CACHE = 'vypusto-v5';
+const CACHE = 'vypusto-v6';
 const PRECACHE = [
-  '/prototype/',
-  '/prototype/index.html',
-  '/prototype/manifest.json',
-  '/prototype/icon.svg',
-  '/prototype/icon-maskable.svg',
-  '/prototype/icon-192.png',
-  '/prototype/icon-512.png',
-  '/prototype/icon-maskable-192.png',
-  '/prototype/icon-maskable-512.png',
-  '/prototype/apple-touch-icon.png',
+  '/',
+  '/manifest.json',
+  '/icon.svg',
+  '/icon-maskable.svg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-maskable-192.png',
+  '/icon-maskable-512.png',
+  '/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', e => {
@@ -43,7 +42,7 @@ self.addEventListener('fetch', e => {
   const isHTML = e.request.destination === 'document'
               || url.endsWith('.html')
               || url.endsWith('/')
-              || url === self.location.origin + '/prototype';
+              || url === self.location.origin + '/';
 
   if (isHTML) {
     e.respondWith(
@@ -53,7 +52,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => caches.match(e.request))
+      }).catch(() => caches.match('/'))
     );
     return;
   }
