@@ -1695,7 +1695,6 @@
       font-family: var(--f-hand); font-size: 26px; font-weight: 700; color: var(--primary);
       margin-bottom: 4px;
     }
-    .auth-tagline { font-family: var(--f-hand); font-size: 14px; color: var(--ink-3); margin-bottom: 30px; }
     .auth-title { font-family: var(--f-display); font-size: 21px; font-weight: 800; color: var(--ink); margin-bottom: 20px; }
     .auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
     .auth-field label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
@@ -1723,6 +1722,7 @@
       cursor: pointer; font-size: 14px; font-family: var(--f-body); padding: 2px 4px;
     }
     .auth-privacy { margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-3); line-height: 1.55; }
+    .auth-copyright { margin-top: 16px; text-align: center; font-size: 11px; color: var(--ink-3); opacity: .55; }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        SIDEBAR USER FOOTER
@@ -2837,13 +2837,22 @@
 <div id="auth-screen" class="hidden">
   <div class="auth-card">
     <div class="auth-logo">
-      <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
-        <path d="M10 2C7 4 5 7.5 5 11c0 2.8 2 5 5 5.5 5-.5 5-3.5 5-5.5C15 7.5 13 4 10 2z" stroke="#b93066" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M7.5 11.5l2 2 3-3.5" stroke="#b93066" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg width="28" height="28" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <rect width="512" height="512" rx="115" fill="#b93066"/>
+        <text x="256" y="330" text-anchor="middle"
+          font-family="'Syne',sans-serif" font-weight="800" font-size="280"
+          fill="#fff" letter-spacing="-6" opacity=".18">to</text>
+        <line x1="64" y1="262" x2="448" y2="262"
+          stroke="#fff" stroke-width="52" stroke-linecap="round"/>
+        <clipPath id="auth-top-half">
+          <rect x="0" y="0" width="512" height="238"/>
+        </clipPath>
+        <text x="256" y="330" text-anchor="middle"
+          font-family="'Syne',sans-serif" font-weight="800" font-size="280"
+          fill="#fff" letter-spacing="-6" clip-path="url(#auth-top-half)">to</text>
       </svg>
       VypusTo
     </div>
-    <div class="auth-tagline">Pohlídá vše. Je krásná.</div>
     <div class="auth-title" id="js-auth-title">Přihlaste se</div>
     <div class="auth-field">
       <label for="auth-email">E-mail</label>
@@ -2862,6 +2871,7 @@
     <div class="auth-privacy">
       Vaše data jsou šifrována a synchronizována<br>napříč všemi vašimi zařízeními.
     </div>
+    <div class="auth-copyright">© Kateřina Mlsnová 2026</div>
   </div>
 </div>
 
