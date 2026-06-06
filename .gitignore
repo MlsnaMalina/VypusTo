@@ -3,3 +3,8 @@
 
 # Impeccable design skill internal data
 .impeccable/
+
+# Node dev dependencies (icon generation)
+node_modules/
+package-lock.json
+package.json
