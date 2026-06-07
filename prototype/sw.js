@@ -1,4 +1,4 @@
-const CACHE = 'vypusto-v10';
+const CACHE = 'vypusto-v11';
 const PRECACHE = [
   '/',
   '/manifest.json',

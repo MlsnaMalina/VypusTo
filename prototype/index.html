@@ -891,6 +891,9 @@
     .dnes-day-btn.tomorrow-btn { font-size: 13px; padding: 7px 16px; font-weight: 700; }
 
     /* ── Event item in "Kde musím být" — with delete ── */
+    .ev-rec-ico {
+      flex-shrink: 0; display: flex; align-items: center; color: var(--ink-3); opacity: .55;
+    }
     .ev-card-del {
       width: 22px; height: 22px; border: none; background: transparent;
       color: var(--ink-3); font-size: 14px; cursor: pointer; border-radius: 50%;
@@ -6564,14 +6567,37 @@ function renderDnes(animate = false) {
     bd.classList.add('visible');
   } else { bd.classList.remove('visible'); }
 
-  // Events (from calEvents)
+  // Events: calEvents + recurring events that occur on this day
   const dayEvs = getCalEventsForDate(targetStr);
-  $('js-ev-cnt').textContent = `${dayEvs.length}`;
-  $('js-events').innerHTML = dayEvs.length
-    ? dayEvs.map(e => {
+  const dayRecEvs = recurringEvents
+    .filter(r => occursOnDate(r, targetStr))
+    .map(r => ({
+      id:     r.id,
+      title:  r.title,
+      time:   r.timeFrom || '',
+      timeTo: r.timeTo   || null,
+      tag:    r.category === 'osobni' ? 'rodina' : (r.category || 'ostatni'),
+      color:  r.color    || null,
+      _isRec: true,
+    }));
+  const allEvs = [...dayEvs, ...dayRecEvs].sort((a, b) => {
+    const toMin = s => { if (!s) return 9999; const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+    return toMin(a.time) - toMin(b.time);
+  });
+
+  $('js-ev-cnt').textContent = `${allEvs.length}`;
+  $('js-events').innerHTML = allEvs.length
+    ? allEvs.map(e => {
         const tDisp = e.time ? (e.timeTo ? `${e.time}–${e.timeTo}` : e.time) : '—';
-        return `
-        <div class="ev-card" style="border-left-color:${e.color || CAT[e.tag]?.color||'#999'}">
+        const col   = e.color || CAT[e.tag]?.color || '#999';
+        if (e._isRec) {
+          return `<div class="ev-card" style="border-left-color:${col};opacity:.92">
+            <span class="ev-time">${tDisp}</span>
+            <span class="ev-title">${e.title}</span>
+            <span class="ev-rec-ico" title="Opakující se">${RECUR_SVG}</span>
+          </div>`;
+        }
+        return `<div class="ev-card" style="border-left-color:${col}">
           <span class="ev-time">${tDisp}</span>
           <span class="ev-title">${e.title}</span>
           <button class="ev-card-del" data-evid="${e.id}" title="Smazat událost">×</button>
