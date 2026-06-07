@@ -5704,7 +5704,7 @@ function updateRecIntervalUI() {
   const v = $('js-rec-interval').value;
   $('js-rec-custom-wrap').style.display = v === 'custom' ? '' : 'none';
   const showMonths = ['weekly','biweekly','monthly','quarterly'].includes(v);
-  $('js-rec-months-wrap').style.display = showMonths ? '' : 'none';
+  $('js-rec-months-wrap').style.display = showMonths ? 'block' : 'none';
 }
 
 function saveRecurringEvent() {
@@ -7291,7 +7291,7 @@ function _setModalType(type) {
   $('js-rec-section').style.display  = isEv ? 'none' : '';
   // hide task-only elements for events; show event-only elements
   document.querySelectorAll('.js-task-only').forEach(el => { el.style.display = isEv ? 'none' : ''; });
-  document.querySelectorAll('.ev-extra-row').forEach(el => { el.style.display = isEv ? '' : 'none'; });
+  document.querySelectorAll('.ev-extra-row').forEach(el => { el.style.display = isEv ? 'block' : 'none'; });
   // update label + placeholder
   const lbl = $('js-task-lbl');
   if (lbl) lbl.firstChild.textContent = isEv ? 'NÁZEV UDÁLOSTI' : 'CO JE TŘEBA UDĚLAT?';
