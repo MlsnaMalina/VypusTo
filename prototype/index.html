@@ -1579,6 +1579,69 @@
     .note-overlay.open .sheet { transform: translateY(0); }
     @media (min-width: 720px) { .note-overlay .sheet { left: auto; right: 28px; bottom: 28px; border-radius: 16px; max-width: 400px; max-height: 80dvh; } }
 
+    /* ── Note type toggle (create modal) ── */
+    .note-type-toggle { display: flex; gap: 6px; margin: 6px 0 6px; }
+    .note-type-btn { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg-off); font-size: 13px; font-family: var(--f-body); color: var(--ink-2); cursor: pointer; transition: all .15s; }
+    .note-type-btn.on { border-color: var(--primary); background: var(--primary-lt); color: var(--primary); font-weight: 600; }
+
+    /* ── Note create checklist editor ── */
+    .nc-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; min-height: 4px; }
+    .nc-item-row { display: flex; align-items: center; gap: 6px; background: var(--bg-off); border-radius: 8px; padding: 3px 4px 3px 10px; }
+    .nc-item-inp { flex: 1; font-family: var(--f-body); font-size: 14px; border: none; outline: none; background: transparent; color: var(--ink); padding: 6px 2px; }
+    .nc-item-del { color: var(--ink-3); font-size: 16px; cursor: pointer; padding: 4px 7px; flex-shrink: 0; background: none; border: none; opacity: .5; line-height: 1; }
+    .nc-item-del:hover { opacity: 1; color: #c0392b; }
+    .nc-add-item-btn { display: flex; align-items: center; gap: 6px; font-family: var(--f-body); font-size: 13px; color: var(--primary); background: none; border: none; cursor: pointer; padding: 4px 0 10px; }
+
+    /* ── Note detail sheet ── */
+    .nd-sheet-header { display: flex; align-items: flex-start; gap: 10px; padding: 16px 0 6px; }
+    .nd-title-view { font-family: var(--f-hand); font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.25; flex: 1; word-break: break-word; }
+    .nd-title-input { flex: 1; font-family: var(--f-hand); font-size: 20px; font-weight: 700; border: none; border-bottom: 2px solid var(--primary); outline: none; padding: 4px 0; background: transparent; color: var(--ink); min-width: 0; width: 100%; }
+    .nd-toolbar { display: flex; gap: 6px; flex-shrink: 0; padding-top: 2px; }
+    .nd-tool-btn { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: var(--bg-off); border: 1px solid var(--border); cursor: pointer; color: var(--ink-2); transition: all .15s; font-size: 15px; line-height: 1; }
+    .nd-tool-btn:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+    .nd-tool-btn.nd-active { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+    .nd-tool-btn.nd-danger:hover { background: #fff0f0; color: #c0392b; border-color: #fca5a5; }
+    .nd-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .nd-tag-badge { font-family: var(--f-hand); font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+    .nd-tag-badge[data-tag="prace"]     { color: var(--c-prace);  background: var(--c-prace-bg); }
+    .nd-tag-badge[data-tag="rodina"]    { color: var(--c-rodina); background: var(--c-rodina-bg); }
+    .nd-tag-badge[data-tag="domacnost"] { color: var(--c-dom);    background: var(--c-dom-bg); }
+    .nd-tag-badge[data-tag="ostatni"]   { color: var(--c-ost);    background: var(--c-ost-bg); }
+    .nd-date { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+    .nd-type-toggle { display: flex; gap: 6px; margin: 0 0 12px; }
+    .nd-type-btn { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg-off); font-size: 13px; font-family: var(--f-body); color: var(--ink-2); cursor: pointer; transition: all .15s; }
+    .nd-type-btn.on { border-color: var(--primary); background: var(--primary-lt); color: var(--primary); font-weight: 600; }
+    .nd-body-view { font-family: var(--f-body); font-size: 14px; color: var(--ink); line-height: 1.7; white-space: pre-wrap; word-break: break-word; min-height: 24px; padding-bottom: 8px; }
+    .nd-body-edit { width: 100%; min-height: 110px; font-family: var(--f-body); font-size: 14px; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; resize: vertical; outline: none; color: var(--ink); background: var(--bg); box-sizing: border-box; }
+    .nd-body-edit:focus { border-color: var(--primary); }
+    /* Checklist — view */
+    .nd-checklist { display: flex; flex-direction: column; padding-bottom: 4px; }
+    .nd-check-item { display: flex; align-items: center; gap: 11px; padding: 9px 4px; border-bottom: 1px solid rgba(0,0,0,.06); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .nd-check-item:last-child { border-bottom: none; }
+    .nd-check-cb { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .nd-check-cb.done { border-color: var(--primary); background: var(--primary); }
+    .nd-check-text { font-family: var(--f-body); font-size: 14px; color: var(--ink); line-height: 1.4; }
+    .nd-check-text.done { text-decoration: line-through; color: var(--ink-3); }
+    /* Checklist — edit */
+    .nd-edit-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; min-height: 4px; }
+    .nd-edit-item-row { display: flex; align-items: center; gap: 6px; background: var(--bg-off); border-radius: 8px; padding: 3px 4px 3px 10px; }
+    .nd-edit-item-inp { flex: 1; font-family: var(--f-body); font-size: 14px; border: none; outline: none; background: transparent; color: var(--ink); padding: 6px 2px; }
+    .nd-edit-item-del { color: var(--ink-3); font-size: 16px; cursor: pointer; padding: 4px 7px; flex-shrink: 0; background: none; border: none; opacity: .5; }
+    .nd-edit-item-del:hover { opacity: 1; color: #c0392b; }
+    .nd-add-item-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--primary); background: none; border: none; cursor: pointer; padding: 4px 0 10px; font-family: var(--f-body); }
+    /* Detail footer */
+    .nd-footer { display: flex; gap: 8px; padding: 14px 0 0; border-top: 1px solid rgba(0,0,0,.07); margin-top: 14px; }
+    .nd-save-btn { flex: 1; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-family: var(--f-body); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .nd-cancel-btn { padding: 12px 16px; background: var(--bg-off); color: var(--ink-2); border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--f-body); font-size: 14px; cursor: pointer; }
+    /* Note card checklist mini-preview */
+    .note-cl-preview { display: flex; flex-direction: column; gap: 2px; margin-top: 5px; }
+    .nclp-row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-2); }
+    .nclp-cb { width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid currentColor; flex-shrink: 0; opacity: .6; }
+    .nclp-cb.done { background: currentColor; }
+    .nclp-text { line-height: 1.3; }
+    .nclp-text.done { text-decoration: line-through; opacity: .5; }
+    .nclp-more { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        REMEMBER POPUP
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -3627,7 +3690,18 @@
     <div class="sheet-pill"></div>
     <div class="sheet-title">Nová poznámka</div>
     <input type="text" class="sheet-input" id="js-note-title" placeholder="Název" autocomplete="off" spellcheck="false"/>
+    <div class="note-type-toggle">
+      <button class="note-type-btn on" id="js-note-type-text">📝 Text</button>
+      <button class="note-type-btn" id="js-note-type-list">☑ Seznam</button>
+    </div>
     <textarea class="sheet-input note-textarea" id="js-note-body" placeholder="Obsah poznámky…" spellcheck="false"></textarea>
+    <div id="js-note-cl-area" style="display:none">
+      <div class="nc-items" id="js-nc-items"></div>
+      <button class="nc-add-item-btn" id="js-nc-add-item" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Přidat položku
+      </button>
+    </div>
     <div class="sheet-sec">Kategorie</div>
     <div class="sheet-tags" id="js-note-tags">
       <button class="s-ntag" data-tag="prace">Práce</button>
@@ -3639,20 +3713,64 @@
   </div>
 </div>
 
-<!-- NOTE ACTION SHEET -->
-<div class="note-overlay" id="js-note-action-overlay">
+<!-- NOTE DETAIL / EDIT SHEET -->
+<div class="note-overlay" id="js-note-detail-overlay">
   <div class="sheet">
     <div class="sheet-pill"></div>
-    <div class="note-action-name" id="js-note-action-name"></div>
-    <div class="note-action-btns">
-      <button class="note-action-btn" id="js-note-pin-btn">
-        <span id="js-note-pin-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-2a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15Z"/></svg></span>
-        <span id="js-note-pin-lbl">Připnout</span>
+    <!-- header: title + toolbar -->
+    <div class="nd-sheet-header">
+      <div class="nd-title-view" id="js-nd-title-view"></div>
+      <input type="text" class="nd-title-input" id="js-nd-title-input" style="display:none" autocomplete="off" spellcheck="false" placeholder="Název poznámky"/>
+      <div class="nd-toolbar">
+        <button class="nd-tool-btn" id="js-nd-edit-btn" title="Upravit">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="nd-tool-btn" id="js-nd-pin-btn" title="Připnout">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-2a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15Z"/></svg>
+        </button>
+        <button class="nd-tool-btn nd-danger" id="js-nd-delete-btn" title="Smazat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- meta: tag + date -->
+    <div class="nd-meta">
+      <span class="nd-tag-badge" id="js-nd-tag-badge" data-tag="ostatni"></span>
+      <span class="nd-date" id="js-nd-date"></span>
+    </div>
+    <!-- type toggle (edit mode only) -->
+    <div class="nd-type-toggle" id="js-nd-type-toggle" style="display:none">
+      <button class="nd-type-btn" id="js-nd-type-text" type="button">📝 Text</button>
+      <button class="nd-type-btn" id="js-nd-type-checklist" type="button">☑ Seznam</button>
+    </div>
+    <!-- text body (view) -->
+    <div class="nd-body-view" id="js-nd-body-view"></div>
+    <!-- text body (edit) -->
+    <textarea class="nd-body-edit" id="js-nd-body-edit" style="display:none" placeholder="Obsah poznámky…" spellcheck="false"></textarea>
+    <!-- checklist (view) -->
+    <div class="nd-checklist" id="js-nd-cl-view" style="display:none"></div>
+    <!-- checklist (edit) -->
+    <div id="js-nd-cl-edit" style="display:none">
+      <div class="nd-edit-items" id="js-nd-edit-items"></div>
+      <button class="nd-add-item-row" id="js-nd-add-item" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Přidat položku
       </button>
-      <button class="note-action-btn danger" id="js-note-delete-btn">
-        <span>🗑</span>
-        <span>Smazat poznámku</span>
-      </button>
+    </div>
+    <!-- category (edit only) -->
+    <div id="js-nd-cat-wrap" style="display:none">
+      <div class="sheet-sec" style="margin-top:10px">Kategorie</div>
+      <div class="sheet-tags" id="js-nd-tags">
+        <button class="s-ntag" data-ndtag="prace" data-tag="prace">Práce</button>
+        <button class="s-ntag" data-ndtag="rodina" data-tag="rodina">Rodina</button>
+        <button class="s-ntag" data-ndtag="domacnost" data-tag="domacnost">Domácnost</button>
+        <button class="s-ntag" data-ndtag="ostatni" data-tag="ostatni">Ostatní</button>
+      </div>
+    </div>
+    <!-- footer (edit only) -->
+    <div class="nd-footer" id="js-nd-footer" style="display:none">
+      <button class="nd-cancel-btn" id="js-nd-cancel-btn" type="button">Zrušit</button>
+      <button class="nd-save-btn" id="js-nd-save-btn" type="button">Uložit změny</button>
     </div>
   </div>
 </div>
@@ -7662,13 +7780,30 @@ function noteHTML(n) {
     <path d="M95 5 C95.8 30,96.4 60,95 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
     <path d="M95 95 C63 95.8,33 94.4,8 95" stroke="${color}" stroke-width="0.55" stroke-linecap="round" opacity=".4"/>
   </svg>` : '';
+
+  /* Content preview — text or checklist */
+  let contentHTML = '';
+  if (n.type === 'checklist' && n.items && n.items.length) {
+    const preview = n.items.slice(0, 3);
+    const more    = n.items.length - preview.length;
+    contentHTML = `<div class="note-cl-preview">
+      ${preview.map(it => `<div class="nclp-row">
+        <span class="nclp-cb${it.done ? ' done' : ''}"></span>
+        <span class="nclp-text${it.done ? ' done' : ''}">${it.text}</span>
+      </div>`).join('')}
+      ${more > 0 ? `<div class="nclp-more">+${more} dalších</div>` : ''}
+    </div>`;
+  } else if (n.body) {
+    contentHTML = `<div class="note-body">${n.body}</div>`;
+  }
+
   return `<div class="note-card${n.pinned ? ' is-pinned' : ''}" data-nid="${n.id}" data-tag="${tag}" style="border-left-color:${color}">
     ${doodle}
     <div class="note-card-top">
       <div class="note-title">${n.title}</div>
       ${n.pinned ? `<span class="note-pin-icon">${PIN_SVG}</span>` : ''}
     </div>
-    ${n.body ? `<div class="note-body">${n.body}</div>` : ''}
+    ${contentHTML}
     <div class="note-foot">
       <span class="note-badge" data-tag="${tag}">${cat.label}</span>
       <span class="note-date">${noteDate(n.createdAt)}</span>
@@ -7709,47 +7844,329 @@ function renderPoznamky() {
   body.innerHTML = html;
 
   body.querySelectorAll('.note-card').forEach(card => {
-    card.addEventListener('click', () => openNoteAction(Number(card.dataset.nid)));
+    card.addEventListener('click', () => openNoteDetail(Number(card.dataset.nid)));
   });
 }
 
-/* ─── NOTE MODAL ─── */
+/* ─── NOTE MODAL (create) ─── */
+let noteCreateType = 'text';   /* 'text' | 'checklist' */
+let noteCreateItems = [];      /* working items for checklist create */
+
 function openNoteModal() {
   S.noteForm = { title:'', body:'', tag:null };
+  noteCreateType = 'text';
+  noteCreateItems = [];
   $('js-note-title').value = '';
   $('js-note-body').value  = '';
+  $('js-note-body').style.display = '';
+  $('js-note-cl-area').style.display = 'none';
+  $('js-nc-items').innerHTML = '';
   $('js-note-save').disabled = true;
-  document.querySelectorAll('.s-ntag').forEach(b => b.classList.remove('on'));
+  $('js-note-type-text').classList.add('on');
+  $('js-note-type-list').classList.remove('on');
+  document.querySelectorAll('#js-note-tags .s-ntag').forEach(b => b.classList.remove('on'));
   $('js-note-overlay').classList.add('open');
   setTimeout(() => $('js-note-title').focus(), 320);
 }
 
 function closeNoteModal() { $('js-note-overlay').classList.remove('open'); }
 
+function _switchNoteCreateType(type) {
+  noteCreateType = type;
+  $('js-note-type-text').classList.toggle('on', type === 'text');
+  $('js-note-type-list').classList.toggle('on', type === 'checklist');
+  $('js-note-body').style.display    = type === 'text' ? '' : 'none';
+  $('js-note-cl-area').style.display = type === 'checklist' ? '' : 'none';
+  if (type === 'checklist' && !noteCreateItems.length) {
+    noteCreateItems = [{ id: Date.now(), text: '', done: false }];
+    _renderNoteCreateItems();
+    setTimeout(() => {
+      const first = $('js-nc-items').querySelector('.nc-item-inp');
+      if (first) first.focus();
+    }, 50);
+  }
+}
+
+function _renderNoteCreateItems() {
+  $('js-nc-items').innerHTML = noteCreateItems.map((item, i) =>
+    `<div class="nc-item-row" data-ci="${i}">
+      <input class="nc-item-inp" type="text" value="${item.text.replace(/"/g,'&quot;')}"
+        placeholder="Položka seznamu…" autocomplete="off" spellcheck="false" data-ci="${i}"/>
+      <button class="nc-item-del" data-ci="${i}" type="button">✕</button>
+    </div>`
+  ).join('');
+  $('js-nc-items').querySelectorAll('.nc-item-inp').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const i = Number(inp.dataset.ci);
+      if (noteCreateItems[i] !== undefined) noteCreateItems[i].text = inp.value;
+      $('js-note-save').disabled = !$('js-note-title').value.trim();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); _ncAddItem(); }
+    });
+  });
+  $('js-nc-items').querySelectorAll('.nc-item-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.ci);
+      noteCreateItems.splice(i, 1);
+      _renderNoteCreateItems();
+    });
+  });
+}
+
+function _ncAddItem() {
+  /* sync current text before pushing new item */
+  $('js-nc-items').querySelectorAll('.nc-item-inp').forEach(inp => {
+    const i = Number(inp.dataset.ci);
+    if (noteCreateItems[i] !== undefined) noteCreateItems[i].text = inp.value;
+  });
+  noteCreateItems.push({ id: Date.now(), text: '', done: false });
+  _renderNoteCreateItems();
+  const inputs = $('js-nc-items').querySelectorAll('.nc-item-inp');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
 function saveNote() {
-  /* Read directly from inputs as the source of truth */
   const title = ($('js-note-title').value || S.noteForm.title || '').trim();
-  const body  = ($('js-note-body').value  || S.noteForm.body  || '').trim();
-  const tag   = S.noteForm.tag || 'ostatni';
   if (!title) return;
-  const newNote = { id: Date.now(), title, body, tag, pinned: false, createdAt: dStr(new Date()) };
+  const tag = S.noteForm.tag || 'ostatni';
+
+  let newNote;
+  if (noteCreateType === 'checklist') {
+    /* sync any un-blurred inputs */
+    $('js-nc-items').querySelectorAll('.nc-item-inp').forEach(inp => {
+      const i = Number(inp.dataset.ci);
+      if (noteCreateItems[i] !== undefined) noteCreateItems[i].text = inp.value;
+    });
+    const items = noteCreateItems.filter(it => it.text.trim()).map(it => ({ ...it, id: Date.now() + Math.random() }));
+    newNote = { id: Date.now(), title, body: '', tag, pinned: false, createdAt: dStr(new Date()), type: 'checklist', items };
+  } else {
+    const body = ($('js-note-body').value || S.noteForm.body || '').trim();
+    newNote = { id: Date.now(), title, body, tag, pinned: false, createdAt: dStr(new Date()), type: 'text', items: [] };
+  }
   notes.unshift(newNote);
   saveNotes();
   closeNoteModal();
-  setView('poznamky');   /* force view + re-render in one shot */
+  setView('poznamky');
 }
 
-function openNoteAction(id) {
+/* ─── NOTE DETAIL SHEET ─── */
+let noteDetailEditing = false;
+let noteDetailType    = 'text';
+let noteDetailBackup  = null;  /* snapshot for cancel */
+
+function openNoteDetail(id) {
   S.activeNoteId = id;
+  noteDetailEditing = false;
   const n = notes.find(x => x.id === id);
   if (!n) return;
-  $('js-note-action-name').textContent = n.title;
-  $('js-note-pin-icon').innerHTML = PIN_SVG;
-  $('js-note-pin-lbl').textContent = n.pinned ? 'Odepnout' : 'Připnout';
-  $('js-note-action-overlay').classList.add('open');
+  noteDetailType = n.type || 'text';
+  _renderNoteDetail();
+  $('js-note-detail-overlay').classList.add('open');
 }
 
-function closeNoteAction() { $('js-note-action-overlay').classList.remove('open'); }
+function closeNoteDetail() { $('js-note-detail-overlay').classList.remove('open'); }
+
+function _renderNoteDetail() {
+  const n = notes.find(x => x.id === S.activeNoteId);
+  if (!n) return;
+  const isEdit = noteDetailEditing;
+  const isList = noteDetailType === 'checklist';
+
+  /* Title */
+  $('js-nd-title-view').textContent = n.title;
+  $('js-nd-title-view').style.display  = isEdit ? 'none' : '';
+  $('js-nd-title-input').style.display = isEdit ? '' : 'none';
+  if (isEdit) $('js-nd-title-input').value = n.title;
+
+  /* Meta */
+  const validTags = ['prace','rodina','domacnost','ostatni'];
+  const tag = validTags.includes(n.tag) ? n.tag : 'ostatni';
+  const badge = $('js-nd-tag-badge');
+  badge.dataset.tag = tag;
+  badge.textContent = (CAT[tag] || CAT.ostatni).label;
+  $('js-nd-date').textContent = n.createdAt
+    ? (() => { const [y,m,d] = n.createdAt.split('-'); return `${d}. ${m}. ${y}`; })()
+    : '';
+
+  /* Edit toolbar state */
+  $('js-nd-edit-btn').classList.toggle('nd-active', isEdit);
+  $('js-nd-pin-btn').classList.toggle('nd-active', !!n.pinned);
+  $('js-nd-pin-btn').title = n.pinned ? 'Odepnout' : 'Připnout';
+
+  /* Type toggle */
+  $('js-nd-type-toggle').style.display = isEdit ? '' : 'none';
+  $('js-nd-type-text').classList.toggle('on', !isList);
+  $('js-nd-type-checklist').classList.toggle('on', isList);
+
+  /* Content panels */
+  $('js-nd-body-view').style.display = (!isEdit && !isList) ? '' : 'none';
+  $('js-nd-body-view').textContent   = n.body || '';
+
+  $('js-nd-body-edit').style.display = (isEdit && !isList) ? '' : 'none';
+  if (isEdit && !isList) $('js-nd-body-edit').value = n.body || '';
+
+  $('js-nd-cl-view').style.display = (!isEdit && isList) ? '' : 'none';
+  if (!isEdit && isList) _renderNdChecklistView(n.items || []);
+
+  $('js-nd-cl-edit').style.display = (isEdit && isList) ? '' : 'none';
+  if (isEdit && isList) _renderNdChecklistEdit(n.items || []);
+
+  /* Category */
+  $('js-nd-cat-wrap').style.display = isEdit ? '' : 'none';
+  document.querySelectorAll('#js-nd-tags .s-ntag').forEach(b =>
+    b.classList.toggle('on', b.dataset.ndtag === tag)
+  );
+
+  /* Footer */
+  $('js-nd-footer').style.display = isEdit ? '' : 'none';
+}
+
+function _renderNdChecklistView(items) {
+  if (!items.length) {
+    $('js-nd-cl-view').innerHTML = '<div style="color:var(--ink-3);font-family:var(--f-body);font-size:13px;padding:8px 0">Prázdný seznam — uprav poznámku a přidej položky.</div>';
+    return;
+  }
+  $('js-nd-cl-view').innerHTML = items.map((item, i) =>
+    `<div class="nd-check-item" data-ndi="${i}">
+      <div class="nd-check-cb${item.done ? ' done' : ''}" data-ndi="${i}">
+        ${item.done ? '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>' : ''}
+      </div>
+      <span class="nd-check-text${item.done ? ' done' : ''}">${item.text}</span>
+    </div>`
+  ).join('');
+  $('js-nd-cl-view').querySelectorAll('.nd-check-cb').forEach(cb => {
+    cb.addEventListener('click', e => {
+      e.stopPropagation();
+      const n = notes.find(x => x.id === S.activeNoteId);
+      if (!n || !n.items) return;
+      const idx = Number(cb.dataset.ndi);
+      n.items[idx].done = !n.items[idx].done;
+      saveNotes();
+      _renderNdChecklistView(n.items);
+      renderPoznamky();
+    });
+  });
+}
+
+function _renderNdChecklistEdit(items) {
+  $('js-nd-edit-items').innerHTML = items.map((item, i) =>
+    `<div class="nd-edit-item-row" data-nei="${i}">
+      <input class="nd-edit-item-inp" type="text" value="${item.text.replace(/"/g,'&quot;')}"
+        placeholder="Položka seznamu…" autocomplete="off" spellcheck="false" data-nei="${i}"/>
+      <button class="nd-edit-item-del" data-nei="${i}" type="button">✕</button>
+    </div>`
+  ).join('');
+  $('js-nd-edit-items').querySelectorAll('.nd-edit-item-inp').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); _ndAddEditItem(); }
+    });
+  });
+  $('js-nd-edit-items').querySelectorAll('.nd-edit-item-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n = notes.find(x => x.id === S.activeNoteId);
+      if (!n) return;
+      _ndSyncEditItems(n);
+      n.items.splice(Number(btn.dataset.nei), 1);
+      _renderNdChecklistEdit(n.items);
+    });
+  });
+}
+
+function _ndSyncEditItems(n) {
+  if (!n) return;
+  const inputs = $('js-nd-edit-items').querySelectorAll('.nd-edit-item-inp');
+  inputs.forEach((inp, i) => {
+    if (n.items[i] !== undefined) n.items[i].text = inp.value;
+  });
+}
+
+function _ndAddEditItem() {
+  const n = notes.find(x => x.id === S.activeNoteId);
+  if (!n) return;
+  if (!n.items) n.items = [];
+  _ndSyncEditItems(n);
+  n.items.push({ id: Date.now(), text: '', done: false });
+  _renderNdChecklistEdit(n.items);
+  const inputs = $('js-nd-edit-items').querySelectorAll('.nd-edit-item-inp');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function _ndSwitchType(type) {
+  if (noteDetailType === type) return;
+  const n = notes.find(x => x.id === S.activeNoteId);
+  if (!n) return;
+  if (type === 'checklist') {
+    /* convert body text → items */
+    const body = $('js-nd-body-edit').value.trim();
+    const lines = body ? body.split('\n').filter(l => l.trim()) : [];
+    n.items = lines.length
+      ? lines.map(t => ({ id: Date.now() + Math.random(), text: t.trim(), done: false }))
+      : [{ id: Date.now(), text: '', done: false }];
+    n.body = '';
+  } else {
+    /* convert items → body text */
+    _ndSyncEditItems(n);
+    n.body = (n.items || []).map(it => it.text).filter(Boolean).join('\n');
+    n.items = [];
+  }
+  noteDetailType = type;
+  _renderNoteDetail();
+  if (type === 'checklist') {
+    const inputs = $('js-nd-edit-items').querySelectorAll('.nd-edit-item-inp');
+    if (inputs.length) inputs[0].focus();
+  } else {
+    $('js-nd-body-edit').focus();
+  }
+}
+
+function enterNoteEdit() {
+  const n = notes.find(x => x.id === S.activeNoteId);
+  if (!n) return;
+  noteDetailBackup = JSON.parse(JSON.stringify(n));  /* deep copy for cancel */
+  noteDetailType = n.type || 'text';
+  if (!n.items) n.items = [];
+  noteDetailEditing = true;
+  _renderNoteDetail();
+  setTimeout(() => $('js-nd-title-input').focus(), 50);
+}
+
+function cancelNoteEdit() {
+  /* restore backup */
+  if (noteDetailBackup) {
+    const idx = notes.findIndex(x => x.id === S.activeNoteId);
+    if (idx !== -1) notes[idx] = noteDetailBackup;
+    noteDetailBackup = null;
+  }
+  noteDetailEditing = false;
+  const n = notes.find(x => x.id === S.activeNoteId);
+  if (n) noteDetailType = n.type || 'text';
+  _renderNoteDetail();
+}
+
+function saveNoteEdit() {
+  const n = notes.find(x => x.id === S.activeNoteId);
+  if (!n) return;
+  const title = $('js-nd-title-input').value.trim();
+  if (!title) { $('js-nd-title-input').focus(); return; }
+  n.title = title;
+  const selTag = document.querySelector('#js-nd-tags .s-ntag.on');
+  if (selTag) n.tag = selTag.dataset.ndtag;
+  n.type = noteDetailType;
+  if (noteDetailType === 'checklist') {
+    _ndSyncEditItems(n);
+    n.items = (n.items || []).filter(it => it.text.trim());
+    n.body  = '';
+  } else {
+    n.body  = $('js-nd-body-edit').value.trim();
+    n.items = [];
+  }
+  noteDetailBackup  = null;
+  noteDetailEditing = false;
+  saveNotes();
+  _renderNoteDetail();
+  renderPoznamky();
+}
 
 /* ─── BIRTHDAY MODAL ─── */
 function _czMonthShortGlobal(m) {
@@ -8417,35 +8834,67 @@ document.addEventListener('DOMContentLoaded', () => {
   noteBodyInp.addEventListener('input',  noteValidate);
   noteTitleInp.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeNoteModal();
-    if (e.key === 'Enter' && noteTitleInp.value.trim()) { e.preventDefault(); $('js-note-body').focus(); }
+    if (e.key === 'Enter' && noteTitleInp.value.trim()) {
+      e.preventDefault();
+      noteCreateType === 'checklist' ? _ncAddItem() : $('js-note-body').focus();
+    }
   });
 
-  document.querySelectorAll('.s-ntag').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.s-ntag').forEach(x => x.classList.remove('on'));
+  /* Note create — type toggle */
+  $('js-note-type-text').addEventListener('click', () => _switchNoteCreateType('text'));
+  $('js-note-type-list').addEventListener('click', () => _switchNoteCreateType('checklist'));
+
+  /* Note create — add checklist item */
+  $('js-nc-add-item').addEventListener('click', _ncAddItem);
+
+  /* Note create — category tags (scoped to #js-note-tags) */
+  document.querySelectorAll('#js-note-tags .s-ntag').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#js-note-tags .s-ntag').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); S.noteForm.tag = b.dataset.tag;
   }));
 
   $('js-note-save').addEventListener('click', saveNote);
 
-  $('js-note-action-overlay').addEventListener('click', e => {
-    if (e.target === $('js-note-action-overlay')) closeNoteAction();
+  /* ── Note detail sheet ── */
+  $('js-note-detail-overlay').addEventListener('click', e => {
+    if (e.target === $('js-note-detail-overlay')) closeNoteDetail();
   });
 
-  $('js-note-pin-btn').addEventListener('click', () => {
+  $('js-nd-edit-btn').addEventListener('click', () => {
+    if (noteDetailEditing) cancelNoteEdit(); else enterNoteEdit();
+  });
+
+  $('js-nd-pin-btn').addEventListener('click', () => {
     const n = notes.find(x => x.id === S.activeNoteId);
     if (!n) return;
     n.pinned = !n.pinned;
     saveNotes();
-    closeNoteAction();
+    $('js-nd-pin-btn').classList.toggle('nd-active', n.pinned);
+    $('js-nd-pin-btn').title = n.pinned ? 'Odepnout' : 'Připnout';
     renderPoznamky();
   });
 
-  $('js-note-delete-btn').addEventListener('click', () => {
+  $('js-nd-delete-btn').addEventListener('click', () => {
+    if (!confirm('Smazat tuto poznámku?')) return;
     notes = notes.filter(x => x.id !== S.activeNoteId);
     saveNotes();
-    closeNoteAction();
+    closeNoteDetail();
     renderPoznamky();
   });
+
+  $('js-nd-type-text').addEventListener('click',      () => _ndSwitchType('text'));
+  $('js-nd-type-checklist').addEventListener('click', () => _ndSwitchType('checklist'));
+
+  $('js-nd-add-item').addEventListener('click', _ndAddEditItem);
+
+  /* Detail category tags */
+  document.querySelectorAll('#js-nd-tags .s-ntag').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#js-nd-tags .s-ntag').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  }));
+
+  $('js-nd-cancel-btn').addEventListener('click', cancelNoteEdit);
+  $('js-nd-save-btn').addEventListener('click',   saveNoteEdit);
 
   /* ── Remember popup ── */
   $('js-remember-yes').addEventListener('click', openRememberForm);
