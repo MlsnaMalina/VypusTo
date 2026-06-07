@@ -1695,9 +1695,9 @@
     #auth-screen.hidden { display: none; }
     .auth-card { width: 100%; max-width: 380px; }
     .auth-logo {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: var(--f-hand); font-size: 26px; font-weight: 700; color: var(--primary);
-      margin-bottom: 4px;
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: var(--f-hand); font-size: 32px; font-weight: 700; color: var(--primary);
+      margin-bottom: 6px;
     }
     .auth-title { font-family: var(--f-display); font-size: 21px; font-weight: 800; color: var(--ink); margin-bottom: 20px; }
     .auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
@@ -1727,6 +1727,9 @@
     }
     .auth-privacy { margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-3); line-height: 1.55; }
     .auth-copyright { margin-top: 16px; text-align: center; font-size: 11px; color: var(--ink-3); opacity: .55; }
+    .auth-website { margin-top: 6px; text-align: center; font-size: 12px; }
+    .auth-website a { color: var(--primary); text-decoration: none; opacity: .75; font-family: var(--f-body); }
+    .auth-website a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 2px; }
 
     /* Forgot password */
     .auth-forgot { text-align: right; margin-top: -4px; margin-bottom: 6px; }
@@ -3003,7 +3006,7 @@
 <div id="auth-screen" class="hidden">
   <div class="auth-card">
     <div class="auth-logo">
-      <svg width="28" height="28" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <svg width="52" height="52" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
         <rect width="512" height="512" rx="115" fill="#b93066"/>
         <text x="256" y="330" text-anchor="middle"
           font-family="'Syne',sans-serif" font-weight="800" font-size="280"
@@ -3049,6 +3052,7 @@
       Vaše data jsou šifrována a synchronizována<br>napříč všemi vašimi zařízeními.
     </div>
     <div class="auth-copyright">© Kateřina Mlsnová 2026</div>
+    <div class="auth-website"><a href="https://www.katerinamlsnova.cz" target="_blank" rel="noopener">www.katerinamlsnova.cz</a></div>
   </div>
 </div>
 
