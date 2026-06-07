@@ -4115,6 +4115,23 @@ function DEMO_DATA() {
   const in3   = new Date(now); in3.setDate(now.getDate() + 3);
   const in8   = new Date(now); in8.setDate(now.getDate() + 8);
   const in15  = new Date(now); in15.setDate(now.getDate() + 15);
+
+  // Cycle records: 3 periods ~28 days apart, each 5 days long
+  const pOff = (days) => { const d = new Date(now); d.setDate(now.getDate() - days); return d; };
+  const pEnd = (start, len) => { const e = new Date(start); e.setDate(start.getDate() + len - 1); return dStr(e); };
+  const p1s = pOff(84); const p1sk = dStr(p1s);
+  const p2s = pOff(56); const p2sk = dStr(p2s);
+  const p3s = pOff(28); const p3sk = dStr(p3s);
+  const demoCycle = {
+    periodStarts: [p1sk, p2sk, p3sk],
+    periodEnds:   { [p1sk]: pEnd(p1s, 5), [p2sk]: pEnd(p2s, 6), [p3sk]: pEnd(p3s, 4) },
+    periodIntensities: { [p1sk]: 'střední', [p2sk]: 'silná', [p3sk]: 'lehká' },
+    cycleLength: 28, periodLength: 5,
+  };
+
+  // Starting date for monthly_weekday: 6 months ago (safely in the past)
+  const mwStart = new Date(now); mwStart.setMonth(mwStart.getMonth() - 6); mwStart.setDate(1);
+
   return {
     tasks: [
       { id:1, title:'Dokončit prezentaci pro klienta', tag:'prace',     done:false, date:'today',    rec:'none' },
@@ -4142,10 +4159,24 @@ function DEMO_DATA() {
       { id:33, title:'Narozeninová oslava',    tag:'rodina', date:dStr(in3),  dateTo:null,       time:'18:00', timeTo:null,    location:'Kavárna Na Příkopě' },
     ],
     recurringEvents: [
-      { id:40, title:'Kroužek jógy',   type:'task', category:'domacnost', interval:{type:'weekly'},  months:null, startDate:today, lastDone:null, description:'Cvičební sál, 2. patro', pushToMain:true,  estimatedMinutes:60, color:'#15C26B', timeFrom:'18:00', timeTo:'19:00' },
-      { id:41, title:'Platba nájmu',   type:'task', category:'domacnost', interval:{type:'monthly'}, months:null, startDate:today, lastDone:null, description:'IBAN: CZ01 0100 …',        pushToMain:true,  estimatedMinutes:null, color:null, timeFrom:null, timeTo:null },
-      { id:42, title:'Vitamíny ráno',  type:'task', category:'ostatni',   interval:{type:'daily'},   months:null, startDate:today, lastDone:null, description:'',                          pushToMain:false, estimatedMinutes:null, color:null, timeFrom:null, timeTo:null },
+      { id:40, title:'Kroužek jógy',    type:'task', category:'domacnost', interval:{type:'weekly'},                        months:null, startDate:today,        lastDone:null, description:'Cvičební sál, 2. patro', pushToMain:true,  estimatedMinutes:60,   color:'#15C26B', timeFrom:'18:00', timeTo:'19:00' },
+      { id:41, title:'Platba nájmu',    type:'task', category:'domacnost', interval:{type:'monthly'},                       months:null, startDate:today,        lastDone:null, description:'IBAN: CZ01 0100 …',       pushToMain:true,  estimatedMinutes:null, color:null,       timeFrom:null,    timeTo:null    },
+      { id:42, title:'Vitamíny ráno',   type:'task', category:'ostatni',   interval:{type:'daily'},                         months:null, startDate:today,        lastDone:null, description:'',                        pushToMain:false, estimatedMinutes:null, color:null,       timeFrom:null,    timeTo:null    },
+      { id:43, title:'Vyčistit myčku',  type:'task', category:'domacnost', interval:{type:'monthly_weekday',weekday:3,nth:1}, months:null, startDate:dStr(mwStart), lastDone:null, description:'Tableta do myčky + čistič filtru', pushToMain:true, estimatedMinutes:15, color:'#2E7D8C', timeFrom:null, timeTo:null },
     ],
+    cycle: demoCycle,
+    finance: {
+      debts: [
+        { id:50, name:'Půjčka na auto',  totalAmount:120000, paidAmount:45000,  color:'#1C3557', monthlyPayment:3500, payments:[] },
+        { id:51, name:'Kreditní karta',  totalAmount:18500,  paidAmount:12000,  color:'#C4614A', monthlyPayment:1500, payments:[] },
+      ],
+      savings: [
+        { id:60, name:'Dovolená v Japonsku', description:'Šetřím na výlet snů',    targetAmount:80000, currentAmount:22000, monthlyDeposit:3000, color:'#b93066' },
+        { id:61, name:'Nový notebook',       description:'MacBook Pro',             targetAmount:35000, currentAmount:8500,  monthlyDeposit:1500, color:'#4A7C59' },
+        { id:62, name:'Nouzový fond',        description:'3 měsíce životních výdajů', targetAmount:60000, currentAmount:41000, monthlyDeposit:2000, color:'#7A6E8A' },
+      ],
+      recurring: [],
+    },
   };
 }
 
@@ -4158,6 +4189,8 @@ function enterDemoMode() {
   birthdays       = d.birthdays;
   calEvents       = d.calEvents;
   recurringEvents = d.recurringEvents;
+  cycleData       = d.cycle;
+  financeData     = d.finance;
   document.getElementById('auth-loading').classList.add('hidden');
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('js-sb-email').textContent  = 'Demo';
@@ -4523,6 +4556,7 @@ function _saveFinanceLocal() {
 }
 
 function saveFinance() {
+  if (isDemoMode) return;
   _saveFinanceLocal();
   if (currentUser) {
     userDataRef('finance').set({ debts: financeData.debts, savings: financeData.savings, recurring: financeData.recurring }).catch(console.warn);
@@ -5274,6 +5308,17 @@ function occursOnDate(ev, dateStr) {
     }
     case 'yearly': return date.getDate() === start.getDate() && date.getMonth() === start.getMonth();
     case 'custom':    return diffDays % (ev.interval.every || 1) === 0;
+    case 'monthly_weekday': {
+      const { weekday, nth } = ev.interval;
+      // Is this date the nth occurrence of `weekday` in its month?
+      const cur = new Date(date.getFullYear(), date.getMonth(), 1);
+      let count = 0;
+      while (cur.getMonth() === date.getMonth()) {
+        if (cur.getDay() === weekday) { count++; if (count === nth) return cur.getDate() === date.getDate(); }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return false;
+    }
   }
   return false;
 }
@@ -5287,6 +5332,13 @@ function advanceRecDate(d, ev) {
     case 'quarterly': d.setMonth(d.getMonth() + 3); break;
     case 'yearly':    d.setFullYear(d.getFullYear() + 1); break;
     case 'custom':    d.setDate(d.getDate() + (ev.interval.every || 1)); break;
+    case 'monthly_weekday': {
+      const { weekday, nth } = ev.interval;
+      d.setDate(1); d.setMonth(d.getMonth() + 1);
+      let count = 0;
+      while (true) { if (d.getDay() === weekday) { count++; if (count === nth) break; } d.setDate(d.getDate() + 1); }
+      break;
+    }
   }
 }
 
@@ -5301,6 +5353,12 @@ function getNextOccurrence(ev) {
 }
 
 function intervalLabel(ev) {
+  if (ev.interval.type === 'monthly_weekday') {
+    const dayNames = ['neděli','pondělí','úterý','středu','čtvrtek','pátek','sobotu'];
+    const nth = ev.interval.nth || 1;
+    const ordinal = ['první','druhou','třetí','čtvrtou'][nth - 1] || `${nth}.`;
+    return `Každou ${ordinal} ${dayNames[ev.interval.weekday] || 'středu'} v měsíci`;
+  }
   const map = { daily:'Každý den', weekly:'Každý týden', biweekly:'Každé 2 týdny',
                 monthly:'Každý měsíc', quarterly:'Každé 3 měsíce', yearly:'Každý rok',
                 custom:`Každých ${ev.interval.every || '?'} dní` };
@@ -5618,6 +5676,7 @@ let editingCyklusStart   = null;   // start date of record being edited
 let currentCyklusIntensity = 'střední'; // active intensity in modal
 
 function saveCycle() {
+  if (isDemoMode) return;
   localStorage.setItem('vypusto-cycle-v2', JSON.stringify(cycleData));
   if (currentUser) {
     db.collection('users').doc(currentUser.uid).collection('data').doc('cycle')
