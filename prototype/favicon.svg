@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="115" fill="#b93066"/>
+  <text x="256" y="336" text-anchor="middle"
+    font-family="'Syne',ui-sans-serif,system-ui,sans-serif"
+    font-weight="800" font-size="288" fill="#ffffff"
+    letter-spacing="-6" opacity="0.18">to</text>
+  <line x1="60" y1="262" x2="452" y2="262"
+    stroke="#ffffff" stroke-width="52" stroke-linecap="round"/>
+  <clipPath id="top">
+    <rect x="0" y="0" width="512" height="236"/>
+  </clipPath>
+  <text x="256" y="336" text-anchor="middle"
+    font-family="'Syne',ui-sans-serif,system-ui,sans-serif"
+    font-weight="800" font-size="288" fill="#ffffff"
+    letter-spacing="-6" clip-path="url(#top)">to</text>
+</svg>

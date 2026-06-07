@@ -1,7 +1,9 @@
-const CACHE = 'vypusto-v7';
+const CACHE = 'vypusto-v8';
 const PRECACHE = [
   '/',
   '/manifest.json',
+  '/favicon.svg',
+  '/favicon-32.png',
   '/icon.svg',
   '/icon-maskable.svg',
   '/icon-192.png',
