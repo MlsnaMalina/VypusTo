@@ -1728,6 +1728,65 @@
     .auth-privacy { margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-3); line-height: 1.55; }
     .auth-copyright { margin-top: 16px; text-align: center; font-size: 11px; color: var(--ink-3); opacity: .55; }
 
+    /* Forgot password */
+    .auth-forgot { text-align: right; margin-top: -4px; margin-bottom: 6px; }
+    .auth-forgot-btn {
+      background: none; border: none; color: var(--ink-3); font-size: 12px;
+      cursor: pointer; font-family: var(--f-body); padding: 2px 0;
+      text-decoration: underline; text-underline-offset: 2px;
+    }
+    .auth-forgot-btn:hover { color: var(--primary); }
+    .auth-reset-msg {
+      font-size: 12px; border-radius: 8px; padding: 8px 12px; margin-top: 8px; display: none;
+    }
+    .auth-reset-msg.ok  { display: block; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .auth-reset-msg.err { display: block; background: #fff0f0; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    /* Demo separator + button */
+    .auth-demo-sep {
+      display: flex; align-items: center; gap: 12px; margin: 20px 0 14px;
+    }
+    .auth-demo-sep::before, .auth-demo-sep::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .auth-demo-sep span {
+      font-size: 11px; color: var(--ink-3); white-space: nowrap;
+      font-family: var(--f-body); letter-spacing: .03em;
+    }
+    .auth-btn-demo {
+      width: 100%; padding: 11px; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--bg-off);
+      color: var(--ink-2); font-family: var(--f-body);
+      transition: border-color .15s, color .15s, background .15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .auth-btn-demo:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+
+    /* Demo mode — sidebar badge */
+    .sb-demo-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px;
+      background: #7A6E8A; color: #fff;
+      font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      font-family: var(--f-body); vertical-align: middle; margin-left: 4px;
+    }
+    /* Demo mode — top strip */
+    #demo-strip {
+      display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 600;
+      background: #7A6E8A; color: #fff;
+      font-family: var(--f-body); font-size: 12px; font-weight: 600;
+      padding: 6px 16px; text-align: center; letter-spacing: .02em;
+    }
+    #demo-strip.visible { display: block; }
+    #demo-strip button {
+      background: rgba(255,255,255,.2); border: none; color: #fff;
+      font-family: var(--f-body); font-size: 11px; font-weight: 600;
+      padding: 2px 10px; border-radius: 4px; cursor: pointer; margin-left: 12px;
+    }
+    body.demo-active { padding-top: 32px; }
+    body.demo-active #auth-loading,
+    body.demo-active #auth-screen { top: 32px; }
+
     /* PWA install banner */
     #pwa-banner {
       display: none;
@@ -2969,17 +3028,34 @@
       <label for="auth-password">Heslo</label>
       <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
     </div>
+    <div class="auth-forgot" id="js-auth-forgot-wrap">
+      <button class="auth-forgot-btn" id="js-auth-forgot-btn">Zapomněli jste heslo?</button>
+    </div>
+    <div class="auth-reset-msg" id="js-auth-reset-msg"></div>
     <button class="auth-btn auth-btn-primary" id="js-auth-submit">Přihlásit se</button>
     <div class="auth-error" id="js-auth-error"></div>
     <div class="auth-toggle">
       <span id="js-auth-toggle-text">Nemáte účet?</span>
       <button id="js-auth-toggle-btn">Registrovat se</button>
     </div>
+
+    <div class="auth-demo-sep"><span>nebo</span></div>
+    <button class="auth-btn-demo" id="js-auth-demo">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Prohlédnout demo aplikace
+    </button>
+
     <div class="auth-privacy">
       Vaše data jsou šifrována a synchronizována<br>napříč všemi vašimi zařízeními.
     </div>
     <div class="auth-copyright">© Kateřina Mlsnová 2026</div>
   </div>
+</div>
+
+<!-- Demo mode strip -->
+<div id="demo-strip">
+  👁 Demo režim — data se neukládají
+  <button id="js-demo-exit">Přihlásit se →</button>
 </div>
 
 <div id="app">
@@ -4001,6 +4077,102 @@ function handleAuthSubmit() {
   });
 }
 
+/* ─── FORGOT PASSWORD ─── */
+function handleForgotPassword() {
+  const email   = document.getElementById('auth-email').value.trim();
+  const msgEl   = document.getElementById('js-auth-reset-msg');
+  msgEl.className = 'auth-reset-msg';
+  if (!email) {
+    msgEl.textContent = 'Nejprve zadejte svůj e-mail výše.';
+    msgEl.classList.add('err');
+    document.getElementById('auth-email').focus();
+    return;
+  }
+  auth.sendPasswordResetEmail(email).then(() => {
+    msgEl.textContent = `Odkaz pro reset hesla byl odeslán na ${email}.`;
+    msgEl.classList.add('ok');
+  }).catch(e => {
+    const msgs = {
+      'auth/invalid-email':  'Neplatný formát e-mailu.',
+      'auth/user-not-found': 'Účet s tímto e-mailem neexistuje.',
+    };
+    msgEl.textContent = msgs[e.code] || 'Odeslání se nezdařilo. Zkuste to znovu.';
+    msgEl.classList.add('err');
+  });
+}
+
+/* ─── DEMO MODE ─── */
+let isDemoMode = false;
+
+function DEMO_DATA() {
+  const now   = new Date();
+  const today = dStr(now);
+  const tom   = new Date(now); tom.setDate(now.getDate() + 1);
+  const in3   = new Date(now); in3.setDate(now.getDate() + 3);
+  const in8   = new Date(now); in8.setDate(now.getDate() + 8);
+  const in15  = new Date(now); in15.setDate(now.getDate() + 15);
+  return {
+    tasks: [
+      { id:1, title:'Dokončit prezentaci pro klienta', tag:'prace',     done:false, date:'today',    rec:'none' },
+      { id:2, title:'Odeslat fakturu č. 2026/04',     tag:'prace',     done:false, date:'tomorrow', rec:'none' },
+      { id:3, title:'Koupit narozeninový dort',        tag:'rodina',    done:false, date:'today',    rec:'none' },
+      { id:4, title:'Zavolat instalatérovi',           tag:'domacnost', done:false, date:'tomorrow', rec:'none' },
+      { id:5, title:'Odeslat smlouvu',                 tag:'prace',     done:true,  date:'today',    rec:'none', completedAt: new Date() },
+      { id:6, title:'Přečíst knihu měsíce',            tag:'ostatni',   done:false, date:null,       rec:'none' },
+    ],
+    notes: [
+      { id:10, title:'WiFi heslo',       body:'VypusTo_2024#',                                         tag:'rodina',    createdAt:today, pinned:true  },
+      { id:11, title:'Nákupní seznam',   body:'Mléko, vejce, chleba, sýr, zelenina',                   tag:'domacnost', createdAt:today, pinned:false },
+      { id:12, title:'Kontakt — opravář',body:'Pan Novák · 602 123 456 · novak.opravy@email.cz',       tag:'domacnost', createdAt:today, pinned:false },
+      { id:13, title:'Cíle na rok 2026', body:'Více sportu · španělština · výlet do Japonska',          tag:'ostatni',   createdAt:today, pinned:false },
+    ],
+    birthdays: [
+      { id:20, firstName:'Markéta', lastName:'Nováková',   day:now.getDate(), month:now.getMonth()+1, yearBorn:1988, namedayOverride:null, anniversaries:[] },
+      { id:21, firstName:'Tomáš',   lastName:'Veselý',     day:28, month:7,  yearBorn:1975, namedayOverride:null, anniversaries:[] },
+      { id:22, firstName:'Jana',    lastName:'Procházková', day:15, month:3,  yearBorn:1982, namedayOverride:null, anniversaries:[] },
+    ],
+    calEvents: [
+      { id:30, title:'Dovolená v Itálii',     tag:'rodina', date:dStr(in8),  dateTo:dStr(in15), time:null,    timeTo:null,    location:'Řím, Itálie' },
+      { id:31, title:'Zubař',                 tag:'rodina', date:today,      dateTo:null,       time:'14:00', timeTo:'14:30', location:'MUDr. Novák, Praha 2' },
+      { id:32, title:'Firemní meeting',        tag:'prace',  date:dStr(tom),  dateTo:null,       time:'09:00', timeTo:'10:30', location:null },
+      { id:33, title:'Narozeninová oslava',    tag:'rodina', date:dStr(in3),  dateTo:null,       time:'18:00', timeTo:null,    location:'Kavárna Na Příkopě' },
+    ],
+    recurringEvents: [
+      { id:40, title:'Kroužek jógy',   type:'task', category:'domacnost', interval:{type:'weekly'},  months:null, startDate:today, lastDone:null, description:'Cvičební sál, 2. patro', pushToMain:true,  estimatedMinutes:60, color:'#15C26B', timeFrom:'18:00', timeTo:'19:00' },
+      { id:41, title:'Platba nájmu',   type:'task', category:'domacnost', interval:{type:'monthly'}, months:null, startDate:today, lastDone:null, description:'IBAN: CZ01 0100 …',        pushToMain:true,  estimatedMinutes:null, color:null, timeFrom:null, timeTo:null },
+      { id:42, title:'Vitamíny ráno',  type:'task', category:'ostatni',   interval:{type:'daily'},   months:null, startDate:today, lastDone:null, description:'',                          pushToMain:false, estimatedMinutes:null, color:null, timeFrom:null, timeTo:null },
+    ],
+  };
+}
+
+function enterDemoMode() {
+  isDemoMode = true;
+  currentUser = null;
+  const d = DEMO_DATA();
+  tasks           = d.tasks;
+  notes           = d.notes;
+  birthdays       = d.birthdays;
+  calEvents       = d.calEvents;
+  recurringEvents = d.recurringEvents;
+  document.getElementById('auth-loading').classList.add('hidden');
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('js-sb-email').textContent  = 'Demo';
+  document.getElementById('js-sb-avatar').textContent = '▶';
+  document.getElementById('js-sb-avatar').style.cssText = 'background:#7A6E8A;color:#fff';
+  document.getElementById('demo-strip').classList.add('visible');
+  document.body.classList.add('demo-active');
+  initAppUI();
+}
+
+function exitDemoMode() {
+  isDemoMode = false;
+  currentUser = null;
+  tasks = []; notes = []; birthdays = []; calEvents = []; recurringEvents = [];
+  document.getElementById('demo-strip').classList.remove('visible');
+  document.body.classList.remove('demo-active');
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+
 /* ─── DATA ─── */
 const CAT = {
   prace:     { label:'Práce',     color:'#2C81FF' },
@@ -4288,6 +4460,7 @@ function _loadEventsLocal() {
 
 /* public save functions — write local cache + Firestore */
 function saveTasks() {
+  if (isDemoMode) return;
   _saveTasksLocal();
   if (currentUser) {
     const items = tasks.map(t => ({ ...t, completedAt: t.completedAt instanceof Date ? t.completedAt.toISOString() : (t.completedAt || null) }));
@@ -4295,18 +4468,22 @@ function saveTasks() {
   }
 }
 function saveBdays() {
+  if (isDemoMode) return;
   _saveBdaysLocal();
   if (currentUser) userDataRef('birthdays').set({ items: birthdays }).catch(console.warn);
 }
 function saveNotes() {
+  if (isDemoMode) return;
   _saveNotesLocal();
   if (currentUser) userDataRef('notes').set({ items: notes }).catch(console.warn);
 }
 function saveRec() {
+  if (isDemoMode) return;
   _saveRecLocal();
   if (currentUser) userDataRef('recurring').set({ items: recurringEvents }).catch(console.warn);
 }
 function saveCalEvents() {
+  if (isDemoMode) return;
   _saveEventsLocal();
   if (currentUser) userDataRef('calEvents').set({ items: calEvents }).catch(console.warn);
 }
@@ -7772,14 +7949,25 @@ function initAppUI() {
 document.addEventListener('DOMContentLoaded', () => {
   /* ── Auth UI wiring ── */
   document.getElementById('js-auth-submit').addEventListener('click', handleAuthSubmit);
-  document.getElementById('js-auth-toggle-btn').addEventListener('click', toggleAuthMode);
+  document.getElementById('js-auth-toggle-btn').addEventListener('click', () => {
+    toggleAuthMode();
+    // Show/hide forgot password link — only in login mode
+    const isLogin = authMode === 'login';
+    document.getElementById('js-auth-forgot-wrap').style.display = isLogin ? '' : 'none';
+    document.getElementById('js-auth-reset-msg').className = 'auth-reset-msg';
+  });
   document.getElementById('auth-password').addEventListener('keydown', e => {
     if (e.key === 'Enter') handleAuthSubmit();
   });
   document.getElementById('auth-email').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('auth-password').focus();
   });
-  document.getElementById('js-logout').addEventListener('click', () => auth.signOut());
+  document.getElementById('js-auth-forgot-btn').addEventListener('click', handleForgotPassword);
+  document.getElementById('js-auth-demo').addEventListener('click', enterDemoMode);
+  document.getElementById('js-demo-exit').addEventListener('click', exitDemoMode);
+  document.getElementById('js-logout').addEventListener('click', () => {
+    if (isDemoMode) exitDemoMode(); else auth.signOut();
+  });
 
   /* ── Firebase auth state ── */
   auth.onAuthStateChanged(async user => {
