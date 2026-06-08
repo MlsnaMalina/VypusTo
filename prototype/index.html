@@ -26,6 +26,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 
   <style>
     /* ── RESET ── */
@@ -7458,13 +7459,17 @@ function checkNotifications() {
   if (changed) localStorage.setItem(NOTIF_STORE, JSON.stringify(fired));
 }
 
+/* VAPID public key — paste your key from:
+   Firebase Console → Project settings → Cloud Messaging → Web Push certificates */
+const FCM_VAPID_KEY = 'YOUR_VAPID_KEY_HERE';
+
 async function requestNotifPermission() {
   if (!('Notification' in window)) return;
   const result = await Notification.requestPermission();
   renderNotifSettings();
   if (result === 'granted') {
     showInAppNotif('Upozornění povolena ✓', 'Budete dostávat připomenutí před událostmi.');
-    checkNotifications();
+    _startNotifEngine();
   }
 }
 
@@ -7483,11 +7488,11 @@ function renderNotifSettings() {
                   : isBlocked ? 'Upozornění jsou zablokována v prohlížeči'
                   : 'Upozornění nejsou povolena';
   const btnHTML   = (!isGranted && !isBlocked)
-    ? `<button class="nastav-notif-btn" id="js-notif-allow-btn">Povolit</button>` : '';
+    ? `<button class="nastav-notif-btn" id="js-notif-allow-btn">Povolit upozornění</button>` : '';
   const infoTxt   = isBlocked
     ? 'Odblokujte upozornění v nastavení prohlížeče nebo systému.'
     : isGranted
-    ? 'Připomenutí budou zobrazena jako systémová upozornění.'
+    ? 'Připomenutí přicházejí přes server — fungují i při zavřené aplikaci.'
     : 'Po povolení dostanete připomenutí 1 den, 1 hodinu, 15 minut a 1 minutu před událostí.';
 
   block.innerHTML = `
@@ -7502,11 +7507,53 @@ function renderNotifSettings() {
   if (btn) btn.addEventListener('click', requestNotifPermission);
 }
 
+/* Register FCM service worker + get push token + save to Firestore.
+   Returns true if FCM is fully operational (server push active). */
+async function _initFCM() {
+  if (isDemoMode || !currentUser) return false;
+  if (!('serviceWorker' in navigator)) return false;
+  if (FCM_VAPID_KEY === 'YOUR_VAPID_KEY_HERE') {
+    console.info('[FCM] VAPID key not set — falling back to local polling');
+    return false;
+  }
+  try {
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const msg   = firebase.messaging();
+    const token = await msg.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (!token) return false;
+
+    /* Persist token so the server cron can look it up */
+    await userDataRef('fcm-token').set({ token, updatedAt: new Date().toISOString() });
+
+    /* Handle messages when app is in the foreground */
+    msg.onMessage(payload => {
+      const title = (payload.notification?.title || '').replace(/^VypusTo\s*[—-]\s*/, '');
+      const body  = payload.notification?.body || '';
+      showInAppNotif(title, body);
+    });
+
+    return true;
+  } catch (e) {
+    console.warn('[FCM] init failed:', e.message);
+    return false;
+  }
+}
+
+/* Start the notification engine.
+   Tries FCM server push first; falls back to local 60-second polling. */
+async function _startNotifEngine() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const fcmOk = await _initFCM();
+  if (!fcmOk) {
+    /* Local fallback — works while the browser tab is open */
+    checkNotifications();
+    setInterval(checkNotifications, 60_000);
+  }
+}
+
 function initNotifications() {
   renderNotifSettings();
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  checkNotifications();
-  setInterval(checkNotifications, 60_000);
+  _startNotifEngine();
 }
 
 /* ─── MODAL ─── */

@@ -1,6 +1,13 @@
 {
   "rewrites": [
     { "source": "/",        "destination": "/prototype/index.html" },
-    { "source": "/:path+",  "destination": "/prototype/:path+" }
+    { "source": "/:path+",  "destination": "/prototype/:path+",
+      "missing": [{ "type": "header", "key": "x-matched-path" }] }
+  ],
+  "crons": [
+    {
+      "path": "/api/send-reminders",
+      "schedule": "*/5 * * * *"
+    }
   ]
 }
