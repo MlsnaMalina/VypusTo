@@ -3608,11 +3608,6 @@
             </svg>
           </button>
         </div>
-        <div class="sheet-quick-dates" id="js-date-btns">
-          <button class="s-date on" data-d="today">Dnes</button>
-          <button class="s-date" data-d="tomorrow">Zítra</button>
-          <button class="s-date js-task-only" data-d="none">Bez data</button>
-        </div>
       </div>
       <div class="sheet-fld sheet-fld-time" id="js-ev-time-row" style="display:none">
         <div class="sheet-fld-lbl">ČAS</div>
@@ -6680,9 +6675,14 @@ function renderDnes(animate = false) {
          <button class="empty-cta" onclick="openModal('${targetStr}','event')">+ Přidat událost</button>
        </div>`;
 
-  // Tasks
-  const taskDate = isTom ? 'tomorrow' : 'today';
-  const todayTasks = tasks.filter(t => t.date === taskDate);
+  // Tasks — match both legacy literals and ISO dates
+  const _dnesNow = new Date();
+  const _dnesTom = new Date(_dnesNow); _dnesTom.setDate(_dnesNow.getDate() + 1);
+  const _dnesTodStr = dStr(_dnesNow);
+  const _dnesTomStr = dStr(_dnesTom);
+  const todayTasks = tasks.filter(t => isTom
+    ? (t.date === 'tomorrow' || t.date === _dnesTomStr)
+    : (t.date === 'today'    || t.date === _dnesTodStr));
   const active = todayTasks.filter(t => !t.done);
   const done   = todayTasks.filter(t =>  t.done);
 
@@ -6789,10 +6789,10 @@ function getDayItems(dateStr) {
   let evs = [], taskList = [];
   if (dateStr === todStr) {
     evs = getCalEventsForDate(todStr);
-    taskList = tasks.filter(t => t.date === 'today');
+    taskList = tasks.filter(t => t.date === 'today' || t.date === todStr);
   } else if (dateStr === tomStr) {
     evs = getCalEventsForDate(tomStr);
-    taskList = tasks.filter(t => t.date === 'tomorrow');
+    taskList = tasks.filter(t => t.date === 'tomorrow' || t.date === tomStr);
   } else {
     evs = [...(calExtra[dateStr] || []), ...getCalEventsForDate(dateStr)];
     taskList = tasks.filter(t => t.date === dateStr);
@@ -7150,9 +7150,14 @@ function renderUkolyMobile(animate) {
     return;
   }
 
-  const today    = active.filter(t => t.date === 'today');
-  const tomorrow = active.filter(t => t.date === 'tomorrow');
-  const nodate   = active.filter(t => !t.date || (t.date !== 'today' && t.date !== 'tomorrow'));
+  const _ukTodStr = dStr(new Date());
+  const _ukTomD = new Date(); _ukTomD.setDate(_ukTomD.getDate() + 1);
+  const _ukTomStr = dStr(_ukTomD);
+  const _ukIsToday    = t => t.date === 'today'    || t.date === _ukTodStr;
+  const _ukIsTomorrow = t => t.date === 'tomorrow' || t.date === _ukTomStr;
+  const today    = active.filter(_ukIsToday);
+  const tomorrow = active.filter(_ukIsTomorrow);
+  const nodate   = active.filter(t => !t.date || (!_ukIsToday(t) && !_ukIsTomorrow(t)));
   const grp = (lbl, list) => list.length
     ? `<div class="grp-lbl">${lbl}</div><div class="task-stack">${list.map(taskHTML).join('')}</div>`
     : '';
@@ -7603,17 +7608,23 @@ function openModal(presetDate, presetType, editId, editType) {
     S.form.editTaskId = editId;
     S.form.title = t.title;
     S.form.tag   = t.tag;
-    // Normalize YYYY-MM-DD to 'today'/'tomorrow' so the correct pill is highlighted
-    const _td2 = dStr(new Date());
-    const _tm2 = (() => { const d = new Date(); d.setDate(d.getDate()+1); return dStr(d); })();
+    // Resolve legacy literals to ISO dates
+    const _now2 = new Date();
+    const _tom2 = new Date(_now2); _tom2.setDate(_now2.getDate() + 1);
     let _rawDate = t.date || 'none';
-    if (_rawDate === _td2) _rawDate = 'today';
-    else if (_rawDate === _tm2) _rawDate = 'tomorrow';
+    if (_rawDate === 'today')    _rawDate = dStr(_now2);
+    else if (_rawDate === 'tomorrow') _rawDate = dStr(_tom2);
     S.form.date  = _rawDate;
     S.form.rec   = t.rec || 'none';
     S.form.color = t.color || null;
     S.form.type  = 'task';
     prefillTitle = t.title;
+    // Prefill date input so user sees the current date
+    if (/^\d{4}-\d{2}-\d{2}$/.test(_rawDate)) {
+      const [_py, _pm, _pd] = _rawDate.split('-').map(Number);
+      prefillEvDate = `${_pd}.${_pm}.${_py}`;
+      S.form.date = '__custom__';
+    }
   } else if (editId && editType === 'event') {
     const ev = calEvents.find(x => x.id === editId);
     if (!ev) return;
@@ -7698,10 +7709,24 @@ function _parseTime(v) {
 }
 
 function _resolveTaskDate() {
-  if (S.form.date === 'none') return null;
-  if (S.form.date === '__custom__') return _parseEvDate('__custom__', $('js-ev-date').value);
+  // User-typed / calendar-picker value takes priority
+  const inputVal = $('js-ev-date').value.trim();
+  if (inputVal) {
+    const m = inputVal.match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
+    if (m) {
+      const day = parseInt(m[1]), mon = parseInt(m[2]);
+      const yr  = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+      if (day >= 1 && day <= 31 && mon >= 1 && mon <= 12)
+        return `${yr}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+  }
+  // Fallback to S.form.date — resolve literals to ISO
+  const now = new Date();
+  const tom = new Date(now); tom.setDate(now.getDate() + 1);
+  if (S.form.date === 'today')    return dStr(now);
+  if (S.form.date === 'tomorrow') return dStr(tom);
   if (/^\d{4}-\d{2}-\d{2}$/.test(S.form.date)) return S.form.date;
-  return S.form.date; // 'today' | 'tomorrow'
+  return null;
 }
 
 function saveTask() {
