@@ -1582,6 +1582,51 @@
     .note-overlay.open .sheet { transform: translateY(0); }
     @media (min-width: 720px) { .note-overlay .sheet { left: auto; right: 28px; bottom: 28px; border-radius: 16px; max-width: 400px; max-height: 80dvh; } }
 
+    /* ── Event reminder pills ── */
+    .ev-reminder-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ev-rem-pill {
+      padding: 5px 13px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: var(--bg-off); font-family: var(--f-body); font-size: 12px; font-weight: 500;
+      color: var(--ink-2); cursor: pointer; transition: all .14s;
+    }
+    .ev-rem-pill.on {
+      border-color: var(--primary); background: var(--primary-lt);
+      color: var(--primary); font-weight: 600;
+    }
+
+    /* ── In-app notification popup ── */
+    .notif-popup {
+      position: fixed;
+      top: calc(var(--safe-t, env(safe-area-inset-top, 0px)) + 12px);
+      left: 50%; transform: translateX(-50%) translateY(-200%);
+      max-width: 390px; width: calc(100% - 32px);
+      background: var(--bg); border-radius: 14px;
+      box-shadow: 0 6px 30px rgba(0,0,0,.16), 0 2px 6px rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.07);
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 12px 12px 16px; z-index: 900;
+      transition: transform .36s cubic-bezier(.34,1.56,.64,1);
+    }
+    .notif-popup.show { transform: translateX(-50%) translateY(0); }
+    .notif-popup-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+    .notif-popup-body { flex: 1; min-width: 0; }
+    .notif-popup-title { font-family: var(--f-hand); font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-popup-sub { font-family: var(--f-body); font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+    .notif-popup-close { width: 26px; height: 26px; border: none; background: var(--bg-off); color: var(--ink-3); cursor: pointer; font-size: 13px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all .12s; }
+    .notif-popup-close:hover { background: var(--primary-lt); color: var(--primary); }
+
+    /* ── Notification settings block ── */
+    .nastav-notif-block { margin-bottom: 28px; }
+    .nastav-notif-status { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg-off); border-radius: 10px; margin-bottom: 8px; }
+    .nastav-notif-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .nastav-notif-dot.ok  { background: #22c55e; }
+    .nastav-notif-dot.off { background: #ccc; }
+    .nastav-notif-dot.err { background: #f87171; }
+    .nastav-notif-lbl { flex: 1; font-family: var(--f-body); font-size: 14px; color: var(--ink-2); }
+    .nastav-notif-btn { padding: 8px 16px; border-radius: 8px; background: var(--primary); color: #fff; border: none; font-family: var(--f-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .14s; }
+    .nastav-notif-btn:hover { opacity: .85; }
+    .nastav-notif-info { font-family: var(--f-body); font-size: 12px; color: var(--ink-3); line-height: 1.55; padding: 0 2px; }
+
     /* ── Note type toggle (create modal) ── */
     .note-type-toggle { display: flex; gap: 6px; margin: 6px 0 6px; }
     .note-type-btn { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg-off); font-size: 13px; font-family: var(--f-body); color: var(--ink-2); cursor: pointer; transition: all .15s; }
@@ -3377,7 +3422,22 @@
         </div>
         <button class="nastav-save-btn" id="js-ns-save">Uložit barvy</button>
         <button class="nastav-reset-btn" id="js-ns-reset">Obnovit výchozí barvy</button>
+
+        <div class="nastav-section-lbl" style="margin-top:28px">Upozornění</div>
+        <div class="nastav-notif-block" id="js-notif-settings-block">
+          <!-- rendered dynamically by renderNotifSettings() -->
+        </div>
       </div>
+    </div>
+
+    <!-- IN-APP NOTIFICATION POPUP -->
+    <div id="js-notif-popup" class="notif-popup" role="alert">
+      <div class="notif-popup-icon">🔔</div>
+      <div class="notif-popup-body">
+        <div class="notif-popup-title" id="js-notif-title"></div>
+        <div class="notif-popup-sub"   id="js-notif-sub"></div>
+      </div>
+      <button class="notif-popup-close" id="js-notif-close" aria-label="Zavřít">✕</button>
     </div>
 
     <!-- ─── NAROZENINY ─── -->
@@ -3607,6 +3667,17 @@
         <input type="text" class="sheet-fld-in" id="js-ev-location"
           placeholder="např. Praha, Home Office…" autocomplete="off" spellcheck="false"/>
         <span style="font-size:15px;opacity:.35;padding-right:4px;line-height:1;user-select:none">📍</span>
+      </div>
+    </div>
+
+    <!-- Reminders — events only -->
+    <div class="sheet-fld ev-extra-row" id="js-ev-reminders-row">
+      <div class="sheet-fld-lbl">UPOZORNĚNÍ</div>
+      <div class="ev-reminder-pills" id="js-ev-reminder-pills">
+        <button class="ev-rem-pill" type="button" data-rem="1d">1 den předem</button>
+        <button class="ev-rem-pill" type="button" data-rem="1h">1 hodinu</button>
+        <button class="ev-rem-pill" type="button" data-rem="15m">15 minut</button>
+        <button class="ev-rem-pill" type="button" data-rem="all">⚡ Vše</button>
       </div>
     </div>
 
@@ -7306,6 +7377,138 @@ function setFilter(f) {
   renderUkoly();
 }
 
+/* ─── NOTIFICATIONS ─── */
+const NOTIF_STORE = 'vypusto-fired-notifs-v1';
+const NOTIF_OFFSETS = { '1d': 86400000, '1h': 3600000, '15m': 900000, '1m': 60000 };
+let _notifPopupTimer = null;
+
+function showInAppNotif(title, sub) {
+  $('js-notif-title').textContent = title;
+  $('js-notif-sub').textContent   = sub;
+  const p = $('js-notif-popup');
+  p.classList.add('show');
+  clearTimeout(_notifPopupTimer);
+  _notifPopupTimer = setTimeout(() => p.classList.remove('show'), 6000);
+}
+
+function fireNotification(ev, rtype) {
+  const labels = {
+    '1d':  '📅 Událost zítra',
+    '1h':  '⏰ Za hodinu',
+    '15m': '⚡ Za 15 minut',
+    '1m':  '🔔 Začíná za minutu!',
+  };
+  const timeStr = ev.time ? ` · ${ev.time}` : '';
+  const locStr  = ev.location ? ` · ${ev.location}` : '';
+  const sub = (labels[rtype] || '') + timeStr + locStr;
+
+  showInAppNotif(ev.title, sub);
+
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const opts = {
+      body:     sub,
+      icon:     '/icon-192.png',
+      badge:    '/favicon-32.png',
+      tag:      `vypusto-ev-${ev.id}-${rtype}`,
+      renotify: true,
+      data:     { url: '/' },
+    };
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.ready
+        .then(reg => reg.showNotification('VypusTo — ' + ev.title, opts))
+        .catch(() => new Notification('VypusTo — ' + ev.title, opts));
+    } else {
+      new Notification('VypusTo — ' + ev.title, opts);
+    }
+  }
+}
+
+function checkNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const now  = Date.now();
+  const fired = JSON.parse(localStorage.getItem(NOTIF_STORE) || '{}');
+  let changed  = false;
+
+  for (const ev of calEvents) {
+    if (!ev.reminders?.length || !ev.date) continue;
+    const [ey, em, ed] = ev.date.split('-').map(Number);
+    const [eh, emin]   = (ev.time || '09:00').split(':').map(Number);
+    const evMs = new Date(ey, em - 1, ed, eh, emin, 0, 0).getTime();
+    if (isNaN(evMs)) continue;
+
+    /* add auto '1m' whenever any reminder exists */
+    const rtypes = [...new Set([...ev.reminders, '1m'])];
+
+    for (const rtype of rtypes) {
+      const key = `${ev.id}-${rtype}`;
+      if (fired[key]) continue;
+
+      const targetMs = evMs - (NOTIF_OFFSETS[rtype] || 0);
+      const diff     = now - targetMs;          // ms past the target moment
+
+      /* fire in a window of [-30s … +90s] around the target */
+      if (diff >= -30000 && diff < 90000) {
+        fireNotification(ev, rtype);
+        fired[key] = dStr(new Date());
+        changed = true;
+      }
+    }
+  }
+
+  if (changed) localStorage.setItem(NOTIF_STORE, JSON.stringify(fired));
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  const result = await Notification.requestPermission();
+  renderNotifSettings();
+  if (result === 'granted') {
+    showInAppNotif('Upozornění povolena ✓', 'Budete dostávat připomenutí před událostmi.');
+    checkNotifications();
+  }
+}
+
+function renderNotifSettings() {
+  const block = $('js-notif-settings-block');
+  if (!block) return;
+  if (!('Notification' in window)) {
+    block.innerHTML = '<div class="nastav-notif-info">Tento prohlížeč nepodporuje upozornění.</div>';
+    return;
+  }
+  const perm      = Notification.permission;
+  const isGranted = perm === 'granted';
+  const isBlocked = perm === 'denied';
+  const dotClass  = isGranted ? 'ok' : isBlocked ? 'err' : 'off';
+  const statusTxt = isGranted ? 'Upozornění jsou povolena ✓'
+                  : isBlocked ? 'Upozornění jsou zablokována v prohlížeči'
+                  : 'Upozornění nejsou povolena';
+  const btnHTML   = (!isGranted && !isBlocked)
+    ? `<button class="nastav-notif-btn" id="js-notif-allow-btn">Povolit</button>` : '';
+  const infoTxt   = isBlocked
+    ? 'Odblokujte upozornění v nastavení prohlížeče nebo systému.'
+    : isGranted
+    ? 'Připomenutí budou zobrazena jako systémová upozornění.'
+    : 'Po povolení dostanete připomenutí 1 den, 1 hodinu, 15 minut a 1 minutu před událostí.';
+
+  block.innerHTML = `
+    <div class="nastav-notif-status">
+      <div class="nastav-notif-dot ${dotClass}"></div>
+      <span class="nastav-notif-lbl">${statusTxt}</span>
+      ${btnHTML}
+    </div>
+    <div class="nastav-notif-info">${infoTxt}</div>`;
+
+  const btn = $('js-notif-allow-btn');
+  if (btn) btn.addEventListener('click', requestNotifPermission);
+}
+
+function initNotifications() {
+  renderNotifSettings();
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  checkNotifications();
+  setInterval(checkNotifications, 60_000);
+}
+
 /* ─── MODAL ─── */
 function _setModalType(type) {
   S.form.type = type;
@@ -7362,6 +7565,7 @@ function openModal(presetDate, presetType, editId, editType) {
     S.form.date  = '__custom__';
     S.form.color = ev.color || null;
     S.form.type  = 'event';
+    S.form._prefillReminders = ev.reminders || [];
     prefillTitle = ev.title;
     const [ey, em, ed_] = ev.date.split('-').map(Number);
     prefillEvDate = `${ed_}.${em}.${ey}`;
@@ -7387,6 +7591,15 @@ function openModal(presetDate, presetType, editId, editType) {
   const dtoPre = S.form._prefillDateTo || '';
   $('js-ev-date-to').value = dtoPre ? (() => { const [dy,dm,dd] = dtoPre.split('-').map(Number); return `${dd}.${dm}.${dy}`; })() : '';
   $('js-ev-location').value = S.form._prefillLocation || '';
+  // Prefill reminder pills
+  const prefRems = S.form._prefillReminders || [];
+  document.querySelectorAll('.ev-rem-pill').forEach(b => {
+    if (b.dataset.rem === 'all') {
+      b.classList.toggle('on', prefRems.includes('1d') && prefRems.includes('1h') && prefRems.includes('15m'));
+    } else {
+      b.classList.toggle('on', prefRems.includes(b.dataset.rem));
+    }
+  });
   $('js-save').disabled = !prefillTitle;
   document.querySelectorAll('.s-tag').forEach(b => b.classList.toggle('on', !!S.form.tag && b.dataset.tag === S.form.tag));
   document.querySelectorAll('.s-date').forEach(b => b.classList.toggle('on', b.dataset.d === S.form.date));
@@ -7452,16 +7665,18 @@ function saveTask() {
     };
     const dateToVal  = parseDateTo();
     const locationVal = $('js-ev-location').value.trim() || null;
+    const remindersVal = [...document.querySelectorAll('.ev-rem-pill.on')]
+      .map(b => b.dataset.rem).filter(r => r !== 'all');
     if (S.form.editEvId) {
       const idx = calEvents.findIndex(x => x.id === S.form.editEvId);
       if (idx >= 0) calEvents[idx] = { ...calEvents[idx],
         title: S.form.title.trim(), tag: S.form.tag || calEvents[idx].tag,
         date: dateStr, time: timeVal, timeTo: timeToVal,
-        dateTo: dateToVal, location: locationVal };
+        dateTo: dateToVal, location: locationVal, reminders: remindersVal };
     } else {
       calEvents.unshift({ id: Date.now(), title: S.form.title.trim(),
         tag: S.form.tag || 'ostatni', date: dateStr, time: timeVal, timeTo: timeToVal,
-        dateTo: dateToVal, location: locationVal });
+        dateTo: dateToVal, location: locationVal, reminders: remindersVal });
     }
     saveCalEvents();
   } else {
@@ -8451,6 +8666,8 @@ function initAppUI() {
   renderSidebarWidget();
   /* check for ended events after a short delay so the UI settles first */
   setTimeout(checkEndedEvents, 1800);
+  /* start notification scheduler */
+  setTimeout(initNotifications, 2000);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8921,6 +9138,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('js-nd-cancel-btn').addEventListener('click', cancelNoteEdit);
   $('js-nd-save-btn').addEventListener('click',   saveNoteEdit);
+
+  /* ── Reminder pills ── */
+  document.querySelectorAll('.ev-rem-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const rem = pill.dataset.rem;
+      if (rem === 'all') {
+        const ind = [...document.querySelectorAll('.ev-rem-pill:not([data-rem="all"])')];
+        const allOn = ind.every(p => p.classList.contains('on'));
+        ind.forEach(p => p.classList.toggle('on', !allOn));
+        pill.classList.toggle('on', !allOn);
+      } else {
+        pill.classList.toggle('on');
+        const ind = [...document.querySelectorAll('.ev-rem-pill:not([data-rem="all"])')];
+        const allOn = ind.every(p => p.classList.contains('on'));
+        document.querySelector('.ev-rem-pill[data-rem="all"]').classList.toggle('on', allOn);
+      }
+    });
+  });
+
+  /* ── In-app notification popup close ── */
+  $('js-notif-close').addEventListener('click', () => {
+    $('js-notif-popup').classList.remove('show');
+    clearTimeout(_notifPopupTimer);
+  });
 
   /* ── Remember popup ── */
   $('js-remember-yes').addEventListener('click', openRememberForm);
