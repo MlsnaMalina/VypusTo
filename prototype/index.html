@@ -7195,9 +7195,14 @@ function renderUkolyDesktop(animate) {
   };
 
   /* left column — Dnes / Zítra / Bez data sections */
-  const todayTasks    = active.filter(t => t.date === 'today');
-  const tomorrowTasks = active.filter(t => t.date === 'tomorrow');
-  const nodateTasks   = active.filter(t => !t.date || (t.date !== 'today' && t.date !== 'tomorrow'));
+  const _todayStr = dStr(new Date());
+  const _tomD = new Date(); _tomD.setDate(_tomD.getDate() + 1);
+  const _tomStr = dStr(_tomD);
+  const _isToday = t => t.date === 'today' || t.date === _todayStr;
+  const _isTomorrow = t => t.date === 'tomorrow' || t.date === _tomStr;
+  const todayTasks    = active.filter(_isToday);
+  const tomorrowTasks = active.filter(_isTomorrow);
+  const nodateTasks   = active.filter(t => !t.date || (!_isToday(t) && !_isTomorrow(t)));
 
   function leftSection(key, label, color, taskList) {
     if (!taskList.length) return '';
@@ -7598,7 +7603,13 @@ function openModal(presetDate, presetType, editId, editType) {
     S.form.editTaskId = editId;
     S.form.title = t.title;
     S.form.tag   = t.tag;
-    S.form.date  = t.date || 'none';
+    // Normalize YYYY-MM-DD to 'today'/'tomorrow' so the correct pill is highlighted
+    const _td2 = dStr(new Date());
+    const _tm2 = (() => { const d = new Date(); d.setDate(d.getDate()+1); return dStr(d); })();
+    let _rawDate = t.date || 'none';
+    if (_rawDate === _td2) _rawDate = 'today';
+    else if (_rawDate === _tm2) _rawDate = 'tomorrow';
+    S.form.date  = _rawDate;
     S.form.rec   = t.rec || 'none';
     S.form.color = t.color || null;
     S.form.type  = 'task';
