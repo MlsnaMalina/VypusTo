@@ -688,6 +688,18 @@
     .done-list  { display: flex; flex-direction: column; }
     .done-list.hidden { display: none; }
 
+    /* Dnes — done tasks inline separator */
+    .dnes-done-sep {
+      display: flex; align-items: center; gap: 8px;
+      padding: 16px 0 4px; margin-top: 2px;
+    }
+    .dnes-done-sep-line { flex: 1; height: 1px; background: var(--border); opacity: .6; }
+    .dnes-done-sep-lbl  {
+      font-size: 11px; font-weight: 600; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--ink-3);
+      white-space: nowrap;
+    }
+
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        EMPTY STATE
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -6686,7 +6698,7 @@ function renderDnes(animate = false) {
   const active = todayTasks.filter(t => !t.done);
   const done   = todayTasks.filter(t =>  t.done);
 
-  $('js-today-cnt').textContent = active.length ? `${active.length} zbývá` : 'vše hotovo ✓';
+  $('js-today-cnt').textContent = active.length ? `${active.length} zbývá` : done.length ? 'vše hotovo ✓' : '';
 
   const activeEl = $('js-today-active');
   if (active.length) {
@@ -6704,16 +6716,17 @@ function renderDnes(animate = false) {
 
   const wrap = $('js-today-done-wrap');
   if (done.length) {
+    const lbl = done.length === 1 ? '1 hotovo' : `${done.length} hotovo`;
     wrap.innerHTML = `
-      <div class="done-toggle${S.showDone?'':' closed'}" id="js-dtog">
-        <span class="done-lbl">Splněno (${done.length})</span>
-        <span class="done-arrow">▼</span>
+      <div class="dnes-done-sep">
+        <div class="dnes-done-sep-line"></div>
+        <span class="dnes-done-sep-lbl">${lbl} ✓</span>
+        <div class="dnes-done-sep-line"></div>
       </div>
-      <div class="done-list${S.showDone?'':' hidden'}" id="js-dlist">
+      <div class="task-stack">
         ${done.map(taskHTML).join('')}
       </div>`;
     reattachScratch(wrap, done);
-    $('js-dtog').addEventListener('click', () => { S.showDone = !S.showDone; renderDnes(); });
   } else {
     wrap.innerHTML = '';
   }
