@@ -31,11 +31,12 @@ const LABELS = {
   '1m':  '🔔 Začíná za minutu!',
 };
 
-/* Fire window: [-30 s … +3630 s] around the target moment.
-   Cron fires every hour (3600 s); window covers one full interval with margin.
-   fired[key] deduplication prevents double-sends. */
-const WINDOW_EARLY_S = 30;
-const WINDOW_LATE_S  = 3630;
+/* Fire window: [-120 s … +90000 s] around the target moment.
+   Cron fires once per day (Vercel Hobby plan limit); window covers a full
+   24-hour interval with margin so no reminder is missed.
+   fired[key] deduplication (stored in Firestore) prevents double-sends. */
+const WINDOW_EARLY_S = 120;
+const WINDOW_LATE_S  = 90000; // ~25 hours
 
 const APP_URL  = 'https://vypus-to.vercel.app';
 const ICON_URL = `${APP_URL}/icon-192.png`;
