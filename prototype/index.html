@@ -7716,7 +7716,7 @@ function _parseTime(v) {
 }
 
 function _resolveTaskDate() {
-  // User-typed / calendar-picker value takes priority
+  // User-typed value takes priority
   const inputVal = $('js-ev-date').value.trim();
   if (inputVal) {
     const m = inputVal.match(/^(\d{1,2})\.(\d{1,2})\.?(\d{4})?\.?$/);
@@ -7727,6 +7727,9 @@ function _resolveTaskDate() {
         return `${yr}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     }
   }
+  // Native picker value as fallback (mobile: change event may fire after save tap)
+  const pickerVal = $('js-ev-date-picker').value; // YYYY-MM-DD or ''
+  if (pickerVal) return pickerVal;
   // Fallback to S.form.date — resolve literals to ISO
   const now = new Date();
   const tom = new Date(now); tom.setDate(now.getDate() + 1);
@@ -7790,6 +7793,10 @@ function saveTask() {
   closeModal();
   rerender();
   if (reopenSheet) openDaySheet(reopenSheet);
+  // Show feedback when saving from a view that doesn't auto-refresh
+  if (!['dnes','ukoly','mesic'].includes(S.view)) {
+    showInAppNotif('Uloženo ✓', S.form.type === 'event' ? 'Událost uložena.' : 'Úkol uložen.');
+  }
 }
 
 /* ─── NAROZENINY HELPERS (global) ─── */
