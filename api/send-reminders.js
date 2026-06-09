@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
         if (!token) { skipped++; return; }
 
         /* Read calendar events */
-        const evSnap = await userRef.collection('data').doc('events').get();
+        const evSnap = await userRef.collection('data').doc('calEvents').get();
         if (!evSnap.exists) { skipped++; return; }
         const events = evSnap.data()?.items || [];
 
@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
         let firedChanged = false;
 
         for (const ev of events) {
-          if (!ev.reminders?.length || !ev.date) continue;
+          if (!ev.date) continue;
 
           /* Parse event datetime → Unix seconds */
           const [ey, em, ed] = ev.date.split('-').map(Number);
@@ -86,8 +86,8 @@ module.exports = async (req, res) => {
           if (isNaN(evMs)) continue;
           const evS = evMs / 1000;
 
-          /* '1m' is always auto-added when any reminder exists */
-          const rtypes = [...new Set([...ev.reminders, '1m'])];
+          /* '1m' always fires; other reminders only if user enabled them */
+          const rtypes = ev.reminders?.length ? [...new Set([...ev.reminders, '1m'])] : ['1m'];
 
           for (const rtype of rtypes) {
             const key = `${ev.id}-${rtype}`;

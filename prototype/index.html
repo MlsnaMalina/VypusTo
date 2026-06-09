@@ -7155,14 +7155,17 @@ function renderUkolyMobile(animate) {
   const _ukTomStr = dStr(_ukTomD);
   const _ukIsToday    = t => t.date === 'today'    || t.date === _ukTodStr;
   const _ukIsTomorrow = t => t.date === 'tomorrow' || t.date === _ukTomStr;
+  const _ukHasIsoDate = t => /^\d{4}-\d{2}-\d{2}$/.test(t.date || '');
   const today    = active.filter(_ukIsToday);
   const tomorrow = active.filter(_ukIsTomorrow);
-  const nodate   = active.filter(t => !t.date || (!_ukIsToday(t) && !_ukIsTomorrow(t)));
+  const future   = active.filter(t => _ukHasIsoDate(t) && !_ukIsToday(t) && !_ukIsTomorrow(t));
+  future.sort((a, b) => a.date.localeCompare(b.date));
+  const nodate   = active.filter(t => !t.date || t.date === 'none' || (!_ukIsToday(t) && !_ukIsTomorrow(t) && !_ukHasIsoDate(t)));
   const grp = (lbl, list) => list.length
     ? `<div class="grp-lbl">${lbl}</div><div class="task-stack">${list.map(taskHTML).join('')}</div>`
     : '';
 
-  let html = grp('Dnes', today) + grp('Zítra', tomorrow) + grp('Bez data', nodate);
+  let html = grp('Dnes', today) + grp('Zítra', tomorrow) + grp('Brzy', future) + grp('Bez data', nodate);
 
   if (done.length) {
     html += `
@@ -7205,9 +7208,12 @@ function renderUkolyDesktop(animate) {
   const _tomStr = dStr(_tomD);
   const _isToday = t => t.date === 'today' || t.date === _todayStr;
   const _isTomorrow = t => t.date === 'tomorrow' || t.date === _tomStr;
+  const _dtHasIsoDate = t => /^\d{4}-\d{2}-\d{2}$/.test(t.date || '');
   const todayTasks    = active.filter(_isToday);
   const tomorrowTasks = active.filter(_isTomorrow);
-  const nodateTasks   = active.filter(t => !t.date || (!_isToday(t) && !_isTomorrow(t)));
+  const futureTasks   = active.filter(t => _dtHasIsoDate(t) && !_isToday(t) && !_isTomorrow(t));
+  futureTasks.sort((a, b) => a.date.localeCompare(b.date));
+  const nodateTasks   = active.filter(t => !t.date || t.date === 'none' || (!_isToday(t) && !_isTomorrow(t) && !_dtHasIsoDate(t)));
 
   function leftSection(key, label, color, taskList) {
     if (!taskList.length) return '';
@@ -7222,6 +7228,7 @@ function renderUkolyDesktop(animate) {
 
   let leftContent = leftSection('dnes',    'Dnes',    'var(--primary)',  todayTasks)
                   + leftSection('zitra',   'Zítra',   'var(--ink-2)',    tomorrowTasks)
+                  + leftSection('bezdata', 'Brzy',    'var(--ink-3)',    futureTasks)
                   + leftSection('bezdata', 'Bez data','var(--ink-3)',    nodateTasks);
 
   if (!leftContent) {
@@ -7441,14 +7448,14 @@ function checkNotifications() {
   let changed  = false;
 
   for (const ev of calEvents) {
-    if (!ev.reminders?.length || !ev.date) continue;
+    if (!ev.date) continue;
     const [ey, em, ed] = ev.date.split('-').map(Number);
     const [eh, emin]   = (ev.time || '09:00').split(':').map(Number);
     const evMs = new Date(ey, em - 1, ed, eh, emin, 0, 0).getTime();
     if (isNaN(evMs)) continue;
 
-    /* add auto '1m' whenever any reminder exists */
-    const rtypes = [...new Set([...ev.reminders, '1m'])];
+    /* '1m' always fires; other reminders only if user enabled them */
+    const rtypes = ev.reminders?.length ? [...new Set([...ev.reminders, '1m'])] : ['1m'];
 
     for (const rtype of rtypes) {
       const key = `${ev.id}-${rtype}`;
