@@ -1,15 +1,27 @@
 /* ─── VypusTo — Server-side Push Notification Scheduler ─────────────────
-   Triggered every 5 minutes by Vercel Cron.
-   Reads calEvents from Firestore, finds due reminders, sends FCM pushes.
+   Two modes, both triggered by the same endpoint:
 
-   Required environment variables (set in Vercel dashboard):
+   1. DAILY BRIEFING (Vercel cron, once per day at 07:00 UTC)
+      Sends one notification per event for events happening TODAY or TOMORROW.
+      Briefing key: `${id}-briefing-${utcDate}` — naturally resets each day
+      so the same event gets a fresh briefing the next morning.
+      Notification body example: "📅 Dnes · 14:00 · Praha"
+
+   2. PRECISE REMINDERS (optional external hourly cron via cron-job.org)
+      Fires the per-event reminders (1d / 1h / 15m / 1m) within ±5 min of
+      their target time. Works alongside the daily briefing — both share
+      the same fired-reminders doc so there are no double-sends.
+      Notification body example: "⏰ Za hodinu · 14:00"
+
+   Required env vars (Vercel dashboard → Settings → Environment Variables):
      FIREBASE_SERVICE_ACCOUNT  — base64-encoded service account JSON
-     CRON_SECRET               — arbitrary secret string (also set in vercel.json)
+     CRON_SECRET               — arbitrary secret (sent by Vercel cron
+                                 automatically; add as Authorization header
+                                 on cron-job.org for external cron)
    ─────────────────────────────────────────────────────────────────────── */
 
 const admin = require('firebase-admin');
 
-/* Singleton: initialise Admin SDK once per cold-start */
 let initialised = false;
 function ensureAdmin() {
   if (initialised) return;
@@ -20,10 +32,9 @@ function ensureAdmin() {
   initialised = true;
 }
 
-/* How many seconds before the event each reminder should fire */
+/* Seconds before the event each reminder fires */
 const OFFSETS_S = { '1d': 86400, '1h': 3600, '15m': 900, '1m': 60 };
 
-/* Labels sent as notification body prefix */
 const LABELS = {
   '1d':  '📅 Událost zítra',
   '1h':  '⏰ Za hodinu',
@@ -31,18 +42,14 @@ const LABELS = {
   '1m':  '🔔 Začíná za minutu!',
 };
 
-/* Fire window: [-120 s … +90000 s] around the target moment.
-   Cron fires once per day (Vercel Hobby plan limit); window covers a full
-   24-hour interval with margin so no reminder is missed.
-   fired[key] deduplication (stored in Firestore) prevents double-sends. */
-const WINDOW_EARLY_S = 120;
-const WINDOW_LATE_S  = 90000; // ~25 hours
+/* Precise-reminder window: fire if cron lands within ±5 min of target */
+const PRECISE_EARLY_S = 300;
+const PRECISE_LATE_S  = 300;
 
 const APP_URL  = 'https://vypus-to.vercel.app';
 const ICON_URL = `${APP_URL}/icon-192.png`;
 
 module.exports = async (req, res) => {
-  /* ── Security: verify Vercel cron secret ── */
   const authHeader = req.headers['authorization'] || '';
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -52,9 +59,13 @@ module.exports = async (req, res) => {
     ensureAdmin();
     const db        = admin.firestore();
     const messaging = admin.messaging();
-    const nowS      = Math.floor(Date.now() / 1000);
+    const nowMs     = Date.now();
+    const nowS      = Math.floor(nowMs / 1000);
 
-    /* ── Iterate over every user ── */
+    /* UTC date strings */
+    const todayStr    = new Date(nowMs).toISOString().split('T')[0];
+    const tomorrowStr = new Date(nowMs + 86400000).toISOString().split('T')[0];
+
     const userDocs = await db.collection('users').listDocuments();
     let sent = 0, skipped = 0, errors = 0;
 
@@ -87,46 +98,92 @@ module.exports = async (req, res) => {
           if (isNaN(evMs)) continue;
           const evS = evMs / 1000;
 
-          /* '1m' always fires; other reminders only if user enabled them */
-          const rtypes = ev.reminders?.length ? [...new Set([...ev.reminders, '1m'])] : ['1m'];
+          const timeStr = ev.time     ? ev.time          : '';
+          const locStr  = ev.location ? ` · ${ev.location}` : '';
+
+          /* ── MODE 1: DAILY BRIEFING ──────────────────────────────────
+             One notification per event for today's and tomorrow's events.
+             The briefing key includes the UTC date so each day starts fresh.
+             Skip events that already passed more than 15 minutes ago.     */
+          const isToday    = ev.date === todayStr;
+          const isTomorrow = ev.date === tomorrowStr;
+
+          if ((isToday && evS > nowS - 900) || isTomorrow) {
+            const briefKey = `${ev.id}-briefing-${todayStr}`;
+
+            if (!newFired[briefKey]) {
+              const when   = isTomorrow ? 'Zítra' : 'Dnes';
+              const atTime = timeStr ? ` · ${timeStr}` : '';
+              const body   = `📅 ${when}${atTime}${locStr}`;
+
+              try {
+                await messaging.send({
+                  token,
+                  notification: { title: `VypusTo — ${ev.title}`, body },
+                  webpush: {
+                    notification: {
+                      icon:  ICON_URL,
+                      badge: `${APP_URL}/favicon-32.png`,
+                      tag:   `vypusto-brief-${ev.id}`,
+                    },
+                    fcmOptions: { link: APP_URL },
+                    data: { tag: `vypusto-brief-${ev.id}`, url: APP_URL },
+                  },
+                });
+                newFired[briefKey] = todayStr;
+                firedChanged = true;
+                sent++;
+              } catch (e) {
+                console.error(`[send-reminders] briefing uid=${userRef.id} ev=${ev.id}:`, e.message);
+                errors++;
+              }
+            }
+          }
+
+          /* ── MODE 2: PRECISE REMINDERS (external hourly cron) ────────
+             Fires per-event reminders within ±5 min of their target time.
+             Useful when cron-job.org calls this endpoint every hour.
+             Key `${id}-${rtype}` is permanent — fires once per event.    */
+          const rtypes = ev.reminders?.length
+            ? [...new Set([...ev.reminders, '1m'])]
+            : ['1m'];
 
           for (const rtype of rtypes) {
             const key = `${ev.id}-${rtype}`;
-            if (newFired[key]) continue;           // already sent
+            if (newFired[key]) continue;
 
             const targetS = evS - (OFFSETS_S[rtype] || 0);
-            const diff    = nowS - targetS;        // seconds past target
+            const diff    = nowS - targetS;   // positive = past the target
 
-            if (diff >= -WINDOW_EARLY_S && diff < WINDOW_LATE_S) {
-              const timeStr = ev.time     ? ` · ${ev.time}`     : '';
-              const locStr  = ev.location ? ` · ${ev.location}` : '';
-              const body    = (LABELS[rtype] || '') + timeStr + locStr;
+            if (diff >= -PRECISE_EARLY_S && diff < PRECISE_LATE_S) {
+              const body = (LABELS[rtype] || '') + (timeStr ? ` · ${timeStr}` : '') + locStr;
 
-              await messaging.send({
-                token,
-                notification: {
-                  title: `VypusTo — ${ev.title}`,
-                  body,
-                },
-                webpush: {
-                  notification: {
-                    icon:               ICON_URL,
-                    badge:              `${APP_URL}/favicon-32.png`,
-                    tag:                `vypusto-${ev.id}-${rtype}`,
-                    requireInteraction: rtype === '1m',
+              try {
+                await messaging.send({
+                  token,
+                  notification: { title: `VypusTo — ${ev.title}`, body },
+                  webpush: {
+                    notification: {
+                      icon:               ICON_URL,
+                      badge:              `${APP_URL}/favicon-32.png`,
+                      tag:                `vypusto-${ev.id}-${rtype}`,
+                      requireInteraction: rtype === '1m',
+                    },
+                    fcmOptions: { link: APP_URL },
+                    data: {
+                      tag:                `vypusto-${ev.id}-${rtype}`,
+                      url:                APP_URL,
+                      requireInteraction: String(rtype === '1m'),
+                    },
                   },
-                  fcmOptions: { link: APP_URL },
-                  data: {
-                    tag:                `vypusto-${ev.id}-${rtype}`,
-                    url:                APP_URL,
-                    requireInteraction: String(rtype === '1m'),
-                  },
-                },
-              });
-
-              newFired[key] = new Date().toISOString().split('T')[0];
-              firedChanged = true;
-              sent++;
+                });
+                newFired[key] = todayStr;
+                firedChanged = true;
+                sent++;
+              } catch (e) {
+                console.error(`[send-reminders] precise uid=${userRef.id} ev=${ev.id} rtype=${rtype}:`, e.message);
+                errors++;
+              }
             }
           }
         }
@@ -136,7 +193,7 @@ module.exports = async (req, res) => {
             .set({ items: newFired }, { merge: true });
         }
       } catch (err) {
-        console.error(`[send-reminders] uid=${userRef.id}`, err.message);
+        console.error(`[send-reminders] user uid=${userRef.id}:`, err.message);
         errors++;
       }
     }));
@@ -147,7 +204,7 @@ module.exports = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('[send-reminders] fatal', err);
+    console.error('[send-reminders] fatal:', err);
     return res.status(500).json({ error: err.message });
   }
 };
