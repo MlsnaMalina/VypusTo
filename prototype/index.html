@@ -2371,6 +2371,62 @@
     .cal-toggle-sw:not(.on) .cal-toggle-txt-on  { color: var(--ink-3); }
     .cal-toggle-sw.on .cal-toggle-txt-off { color: rgba(255,255,255,.45); }
     .cal-toggle-sw.on .cal-toggle-txt-on  { color: #fff; }
+    /* Zdravotní deník */
+    .cal-health-btn {
+      margin-left: auto; align-self: center; padding: 7px 14px; border-radius: 20px;
+      background: var(--bg-off); border: 1.5px solid var(--border);
+      font-family: var(--f-hand); font-size: 15px; font-weight: 700; color: var(--ink-2);
+      cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .cal-health-btn:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+    .health-type-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .health-type {
+      flex: 1; padding: 11px; border-radius: 12px; background: var(--bg-off);
+      border: 1.5px solid var(--border); font-family: var(--f-hand);
+      font-size: 16px; font-weight: 700; color: var(--ink-2); cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .health-type.on { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+    .health-form-row { display: flex; gap: 14px; }
+    .health-field { flex: 1; min-width: 0; margin-bottom: 14px; }
+    .health-field-date { flex: 0 0 110px; }
+    .health-field input {
+      width: 100%; padding: 11px 12px; border-radius: 10px; border: 1.5px solid var(--border);
+      background: var(--bg); font-family: var(--f-body); font-size: 14px; color: var(--ink);
+      outline: none; transition: border-color .15s;
+    }
+    .health-field input:focus { border-color: var(--primary); }
+    .health-hist-head { display: flex; align-items: center; justify-content: space-between; margin: 22px 0 10px; }
+    .health-filter-row { display: flex; gap: 6px; }
+    .health-filter {
+      padding: 5px 12px; border-radius: 16px; background: var(--bg-off);
+      border: 1.5px solid var(--border); font-size: 12.5px; font-weight: 600;
+      color: var(--ink-2); cursor: pointer; transition: all .15s;
+    }
+    .health-filter.on { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
+    .health-search {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--border);
+      background: var(--bg); font-family: var(--f-body); font-size: 13.5px; color: var(--ink);
+      outline: none; margin-bottom: 10px; transition: border-color .15s;
+    }
+    .health-search:focus { border-color: var(--primary); }
+    .health-list { max-height: 260px; overflow-y: auto; }
+    .health-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .health-row:last-child { border-bottom: none; }
+    .health-row-ico { font-size: 17px; flex-shrink: 0; }
+    .health-row-info { flex: 1; min-width: 0; }
+    .health-row-main { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .health-row-sub { display: block; font-size: 11.5px; color: var(--ink-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .health-row-del {
+      background: none; border: none; color: var(--ink-3); cursor: pointer;
+      padding: 4px 6px; font-size: 13px; flex-shrink: 0; border-radius: 6px;
+      transition: color .12s, background .12s;
+    }
+    .health-row-del:hover { color: #c4614a; background: var(--bg-off); }
+    .health-empty { font-size: 13px; color: var(--ink-3); padding: 14px 0; text-align: center; }
+    .cal-fc-health { display: flex; align-items: center; gap: 3px; font-size: 10px; color: var(--ink-2); overflow: hidden; }
+    .cal-fc-health span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     /* Recurring payments list */
     .fin-rec-list { padding: 0 20px 4px; }
     .fin-rec-group-lbl { font-size: 10.5px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; padding: 10px 0 5px; display: flex; align-items: center; justify-content: space-between; }
@@ -3382,6 +3438,7 @@
             <span class="cal-toggle-txt cal-toggle-txt-on">on</span>
           </button>
         </div>
+        <button class="cal-health-btn" onclick="openHealthSheet()">🩺 Zdraví</button>
       </div>
       <div id="js-cal-focus" class="cal-focus-wrap"></div>
       <div id="js-cal-grid"></div>
@@ -3714,6 +3771,48 @@
       <span class="day-head-main" id="js-day-main"></span>
     </div>
     <div id="js-day-body"></div>
+  </div>
+</div>
+
+<!-- HEALTH LOG SHEET (klíšťata, nemoci) -->
+<div class="overlay" id="js-health-overlay">
+  <div class="sheet">
+    <div class="sheet-pill"></div>
+    <div class="sheet-title">Zdravotní deník</div>
+
+    <div class="health-type-row">
+      <button class="health-type on" data-htype="kliste">🕷 Klíště</button>
+      <button class="health-type" data-htype="nemoc">🤒 Nemoc</button>
+    </div>
+
+    <div class="health-form-row">
+      <div class="health-field">
+        <label class="bday-field-lbl">Kdo</label>
+        <input type="text" id="js-health-person" list="js-health-persons" placeholder="Jméno" autocomplete="off" spellcheck="false"/>
+        <datalist id="js-health-persons"></datalist>
+      </div>
+      <div class="health-field health-field-date">
+        <label class="bday-field-lbl">Kdy</label>
+        <input type="text" id="js-health-date" placeholder="5.7." inputmode="numeric" autocomplete="off"/>
+      </div>
+    </div>
+    <div class="health-field">
+      <label class="bday-field-lbl">Poznámka <small class="bday-optional">(nepovinné)</small></label>
+      <input type="text" id="js-health-note" placeholder="Např. za uchem, odstraněno celé…" autocomplete="off"/>
+    </div>
+
+    <button class="sheet-save" id="js-health-save" disabled>Uložit záznam</button>
+
+    <div class="health-hist-head">
+      <span class="day-section-lbl" style="margin:0">Historie</span>
+      <div class="health-filter-row">
+        <button class="health-filter on" data-hfilter="vse">Vše</button>
+        <button class="health-filter" data-hfilter="kliste">🕷</button>
+        <button class="health-filter" data-hfilter="nemoc">🤒</button>
+      </div>
+    </div>
+    <input type="text" id="js-health-search" class="health-search" placeholder="Hledat podle jména…" autocomplete="off" spellcheck="false"/>
+    <div id="js-health-list" class="health-list"></div>
   </div>
 </div>
 
@@ -4726,6 +4825,18 @@ function saveCalEvents() {
   if (currentUser) userDataRef('calEvents').set({ items: calEvents }).catch(console.warn);
 }
 
+/* ── Zdravotní deník (klíšťata, nemoci) ── */
+const STORE_HEALTH = 'vypusto-health-v1';
+function _saveHealthLocal() { localStorage.setItem(STORE_HEALTH, JSON.stringify(healthLog)); }
+function _loadHealthLocal() {
+  try { const raw = localStorage.getItem(STORE_HEALTH); if (!raw) return false; healthLog = JSON.parse(raw); return true; } catch(e) { return false; }
+}
+function saveHealth() {
+  if (isDemoMode) return;
+  _saveHealthLocal();
+  if (currentUser) userDataRef('healthLog').set({ items: healthLog }).catch(console.warn);
+}
+
 /* load all data from Firestore; fall back to localStorage */
 /* ══════════════════════════════════════════
    FINANCE — DATA & FUNCTIONS
@@ -5281,15 +5392,16 @@ async function loadAllData() {
   _loadSettingsLocal();
   _loadRememberLocal();
   if (!currentUser) {
-    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal(); return;
+    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal(); _loadHealthLocal(); return;
   }
   try {
-    const [td, bd, nd, rd, ed] = await Promise.all([
+    const [td, bd, nd, rd, ed, hd] = await Promise.all([
       userDataRef('tasks').get(),
       userDataRef('birthdays').get(),
       userDataRef('notes').get(),
       userDataRef('recurring').get(),
       userDataRef('calEvents').get(),
+      userDataRef('healthLog').get(),
     ]);
 
     function merge(snap, setter, localLoader, localSaver) {
@@ -5313,10 +5425,11 @@ async function loadAllData() {
     merge(nd, items => { notes = items; _saveNotesLocal(); }, _loadNotesLocal, saveNotes);
     merge(rd, items => { recurringEvents = items; _saveRecLocal(); }, _loadRecLocal, saveRec);
     merge(ed, items => { calEvents = items; _saveEventsLocal(); }, _loadEventsLocal, saveCalEvents);
+    merge(hd, items => { healthLog = items; _saveHealthLocal(); }, _loadHealthLocal, saveHealth);
 
   } catch(e) {
     console.warn('Firestore load failed, falling back to localStorage', e);
-    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal();
+    _loadTasksLocal(); _loadBdaysLocal(); _loadNotesLocal(); _loadRecLocal(); _loadEventsLocal(); _loadHealthLocal();
   }
   /* Cycle data — always loaded separately (own Firestore doc structure) */
   loadCycleLocal();
@@ -5330,6 +5443,7 @@ let tasks     = DEFAULT_TASKS.map(t => ({ ...t, completedAt: t.completedAt ? new
 let birthdays = DEFAULT_BIRTHDAYS.map(b => ({ ...b }));
 let notes     = DEFAULT_NOTES.map(n => ({ ...n }));
 let calEvents = [];   /* calendar events: {id, title, date:'YYYY-MM-DD', time:'HH:MM'|null, tag, color} */
+let healthLog = [];   /* health records: {id, type:'kliste'|'nemoc', person, date:'YYYY-MM-DD', note} */
 let editingBdayId = null;
 let editingAnniversaries = [];
 
@@ -7032,6 +7146,12 @@ function renderMesic() {
       }
     });
 
+    healthLog.forEach(h => {
+      if (h.date !== cds) return;
+      const meta = HEALTH_META[h.type] || HEALTH_META.nemoc;
+      rows.push(`<div class="cal-fc-health"><span>${meta.ico}</span><span>${h.person}</span></div>`);
+    });
+
     if (S.calShowFin) {
       const finRec = financeData.recurring || [];
       finRec
@@ -7121,7 +7241,23 @@ function openDaySheet(dateStr) {
       </div>`).join('');
   }
 
-  if (!evs.length && !taskList.length) {
+  const dayHealth = healthLog.filter(h => h.date === dateStr);
+  if (dayHealth.length > 0) {
+    bodyHtml += `<span class="day-section-lbl">Zdraví</span>`;
+    bodyHtml += dayHealth.map(h => {
+      const meta = HEALTH_META[h.type] || HEALTH_META.nemoc;
+      return `<div class="health-row">
+        <span class="health-row-ico">${meta.ico}</span>
+        <div class="health-row-info">
+          <span class="health-row-main">${h.person} — ${meta.label}</span>
+          ${h.note ? `<span class="health-row-sub">${h.note}</span>` : ''}
+        </div>
+        <button class="health-row-del" data-hdel-day="${h.id}" title="Smazat">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  if (!evs.length && !taskList.length && !dayHealth.length) {
     bodyHtml = `<p class="day-empty">Nic naplánováno.<br>Volný den!</p>`;
   }
 
@@ -7129,12 +7265,29 @@ function openDaySheet(dateStr) {
   bodyHtml += `<button class="day-add-btn" data-date-arg="${dateArg}">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Přidat záznam
+  </button>
+  <button class="day-add-btn" data-health-date="${dateStr}" style="margin-top:10px">
+    🩺 Zdravotní záznam
   </button>`;
 
   $('js-day-body').innerHTML = bodyHtml;
 
-  const addBtn = $('js-day-body').querySelector('.day-add-btn');
+  const addBtn = $('js-day-body').querySelector('.day-add-btn[data-date-arg]');
   if (addBtn) addBtn.addEventListener('click', () => { closeDaySheet(); openModal(addBtn.dataset.dateArg); });
+
+  const healthBtn = $('js-day-body').querySelector('[data-health-date]');
+  if (healthBtn) healthBtn.addEventListener('click', () => {
+    closeDaySheet(); openHealthSheet(healthBtn.dataset.healthDate);
+  });
+
+  $('js-day-body').querySelectorAll('[data-hdel-day]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      healthLog = healthLog.filter(h => h.id !== Number(btn.dataset.hdelDay));
+      saveHealth();
+      openDaySheet(dateStr);
+      if (S.view === 'mesic') renderMesic();
+    });
+  });
 
   $('js-day-overlay').classList.add('open');
 }
@@ -7142,6 +7295,103 @@ function openDaySheet(dateStr) {
 function closeDaySheet() {
   currentDaySheet = null;
   $('js-day-overlay').classList.remove('open');
+}
+
+/* ─── ZDRAVOTNÍ DENÍK ─── */
+const HEALTH_META = {
+  kliste: { ico: '🕷', label: 'Klíště' },
+  nemoc:  { ico: '🤒', label: 'Nemoc'  },
+};
+let _healthType   = 'kliste';
+let _healthFilter = 'vse';
+
+function _healthDateLbl(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d}. ${m}. ${y}`;
+}
+
+function openHealthSheet(prefillDate) {
+  _healthType = 'kliste';
+  document.querySelectorAll('.health-type').forEach(b =>
+    b.classList.toggle('on', b.dataset.htype === _healthType));
+  $('js-health-person').value = '';
+  $('js-health-note').value   = '';
+  const now = new Date();
+  const pre = prefillDate || dStr(now);
+  const [py, pm, pd] = pre.split('-').map(Number);
+  $('js-health-date').value = `${pd}.${pm}.${py}`;
+  $('js-health-save').disabled = true;
+  /* datalist — dřívější jména pro našeptávání */
+  const persons = [...new Set(healthLog.map(h => h.person))].sort();
+  $('js-health-persons').innerHTML = persons.map(p => `<option value="${p}">`).join('');
+  $('js-health-search').value = '';
+  _healthFilter = 'vse';
+  document.querySelectorAll('.health-filter').forEach(b =>
+    b.classList.toggle('on', b.dataset.hfilter === 'vse'));
+  renderHealthList();
+  $('js-health-overlay').classList.add('open');
+  setTimeout(() => $('js-health-person').focus(), 320);
+}
+
+function closeHealthSheet() { $('js-health-overlay').classList.remove('open'); }
+
+function renderHealthList() {
+  const q = $('js-health-search').value.trim().toLowerCase();
+  let list = [...healthLog].sort((a, b) => b.date.localeCompare(a.date));
+  if (_healthFilter !== 'vse') list = list.filter(h => h.type === _healthFilter);
+  if (q) list = list.filter(h => h.person.toLowerCase().includes(q));
+
+  if (!list.length) {
+    $('js-health-list').innerHTML = `<div class="health-empty">${
+      healthLog.length ? 'Nic nenalezeno.' : 'Zatím žádné záznamy.'}</div>`;
+    return;
+  }
+  $('js-health-list').innerHTML = list.map(h => {
+    const meta = HEALTH_META[h.type] || HEALTH_META.nemoc;
+    return `<div class="health-row">
+      <span class="health-row-ico">${meta.ico}</span>
+      <div class="health-row-info">
+        <span class="health-row-main">${h.person} — ${meta.label}</span>
+        <span class="health-row-sub">${_healthDateLbl(h.date)}${h.note ? ` · ${h.note}` : ''}</span>
+      </div>
+      <button class="health-row-del" data-hdel="${h.id}" title="Smazat">✕</button>
+    </div>`;
+  }).join('');
+  $('js-health-list').querySelectorAll('[data-hdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      healthLog = healthLog.filter(h => h.id !== Number(btn.dataset.hdel));
+      saveHealth();
+      renderHealthList();
+      if (S.view === 'mesic') renderMesic();
+    });
+  });
+}
+
+function saveHealthEntry() {
+  const person = $('js-health-person').value.trim();
+  if (!person) return;
+  /* datum: přijmi d.m., d/m, d-m-rrrr — jinak dnes */
+  let date = dStr(new Date());
+  const raw = $('js-health-date').value.trim();
+  const m = raw.match(/^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](\d{2,4}))?[.\/-]?$/);
+  if (m) {
+    const day = parseInt(m[1]), mon = parseInt(m[2]);
+    let yr = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+    if (m[3] && yr < 100) yr += yr < 50 ? 2000 : 1900;
+    if (day >= 1 && day <= 31 && mon >= 1 && mon <= 12)
+      date = `${yr}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  }
+  healthLog.unshift({
+    id: Date.now(), type: _healthType, person, date,
+    note: $('js-health-note').value.trim() || null,
+  });
+  saveHealth();
+  $('js-health-person').value = '';
+  $('js-health-note').value   = '';
+  $('js-health-save').disabled = true;
+  renderHealthList();
+  if (S.view === 'mesic') renderMesic();
+  showInAppNotif('Uloženo ✓', `${HEALTH_META[_healthType].label} — ${person}`);
 }
 
 /* ─── RENDER ÚKOLY — MOBILE (time groups) ─── */
@@ -8822,7 +9072,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       /* reset data to empty defaults for fresh users */
       tasks = []; birthdays = DEFAULT_BIRTHDAYS.map(b => ({ ...b }));
-      notes = []; recurringEvents = []; calEvents = [];
+      notes = []; recurringEvents = []; calEvents = []; healthLog = [];
 
       await loadAllData();
 
@@ -9035,6 +9285,34 @@ document.addEventListener('DOMContentLoaded', () => {
   $('js-day-overlay').addEventListener('click', e => {
     if (e.target === $('js-day-overlay')) closeDaySheet();
   });
+
+  /* ── Zdravotní deník ── */
+  $('js-health-overlay').addEventListener('click', e => {
+    if (e.target === $('js-health-overlay')) closeHealthSheet();
+  });
+  document.querySelectorAll('.health-type').forEach(b => {
+    b.addEventListener('click', () => {
+      _healthType = b.dataset.htype;
+      document.querySelectorAll('.health-type').forEach(x =>
+        x.classList.toggle('on', x === b));
+    });
+  });
+  document.querySelectorAll('.health-filter').forEach(b => {
+    b.addEventListener('click', () => {
+      _healthFilter = b.dataset.hfilter;
+      document.querySelectorAll('.health-filter').forEach(x =>
+        x.classList.toggle('on', x === b));
+      renderHealthList();
+    });
+  });
+  $('js-health-search').addEventListener('input', renderHealthList);
+  $('js-health-person').addEventListener('input', () => {
+    $('js-health-save').disabled = !$('js-health-person').value.trim();
+  });
+  $('js-health-person').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && $('js-health-person').value.trim()) saveHealthEntry();
+  });
+  $('js-health-save').addEventListener('click', saveHealthEntry);
 
   $('js-undo-btn').addEventListener('click', () => {
     if (lastCompletedId !== null) {
