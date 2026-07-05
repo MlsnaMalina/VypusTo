@@ -42,9 +42,42 @@ const LABELS = {
   '1m':  '🔔 Začíná za minutu!',
 };
 
-/* Precise-reminder window: fire if cron lands within ±5 min of target */
+/* Precise-reminder window: fire if cron lands within ±5 min of target.
+   Requires the external cron (cron-job.org) to call this endpoint every
+   5 minutes — the daily Vercel cron alone cannot hit these windows. */
 const PRECISE_EARLY_S = 300;
 const PRECISE_LATE_S  = 300;
+
+/* ── Europe/Prague timezone helpers ──────────────────────────────────────
+   Vercel functions run in UTC, but event dates/times in Firestore are
+   Prague local time. Without conversion every reminder fires 1–2 h late. */
+function pragueOffsetMs(utcMs) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Prague', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const p = Object.fromEntries(
+    dtf.formatToParts(new Date(utcMs)).map(x => [x.type, x.value])
+  );
+  const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second);
+  return asUtc - utcMs;
+}
+
+/* Event date+time (Prague local) → true UTC epoch ms */
+function pragueEpochMs(dateStr, timeStr) {
+  const [y, m, d]  = dateStr.split('-').map(Number);
+  const [hh, mm]   = (timeStr || '09:00').split(':').map(Number);
+  if ([y, m, d, hh, mm].some(isNaN)) return NaN;
+  const utcGuess = Date.UTC(y, m - 1, d, hh, mm);
+  return utcGuess - pragueOffsetMs(utcGuess);
+}
+
+/* Current date string (YYYY-MM-DD) in Prague */
+function pragueDateStr(ms) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Prague' })
+    .format(new Date(ms));
+}
 
 const APP_URL  = 'https://vypus-to.vercel.app';
 const ICON_URL = `${APP_URL}/icon-192.png`;
@@ -62,9 +95,9 @@ module.exports = async (req, res) => {
     const nowMs     = Date.now();
     const nowS      = Math.floor(nowMs / 1000);
 
-    /* UTC date strings */
-    const todayStr    = new Date(nowMs).toISOString().split('T')[0];
-    const tomorrowStr = new Date(nowMs + 86400000).toISOString().split('T')[0];
+    /* Prague-local date strings — event dates are stored in Prague time */
+    const todayStr    = pragueDateStr(nowMs);
+    const tomorrowStr = pragueDateStr(nowMs + 86400000);
 
     const userDocs = await db.collection('users').listDocuments();
     let sent = 0, skipped = 0, errors = 0;
@@ -91,10 +124,8 @@ module.exports = async (req, res) => {
         for (const ev of events) {
           if (!ev.date) continue;
 
-          /* Parse event datetime → Unix seconds */
-          const [ey, em, ed] = ev.date.split('-').map(Number);
-          const [eh, emin]   = (ev.time || '09:00').split(':').map(Number);
-          const evMs = new Date(ey, em - 1, ed, eh, emin, 0, 0).getTime();
+          /* Parse event datetime (Prague local) → Unix seconds */
+          const evMs = pragueEpochMs(ev.date, ev.time);
           if (isNaN(evMs)) continue;
           const evS = evMs / 1000;
 

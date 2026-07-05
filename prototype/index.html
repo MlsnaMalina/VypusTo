@@ -7570,15 +7570,16 @@ async function _initFCM() {
 }
 
 /* Start the notification engine.
-   Tries FCM server push first; falls back to local 60-second polling. */
+   FCM handles push while the app is closed; local 60-second polling ALWAYS
+   runs too — it is the only reliable source of precise 1h/15m/1m reminders
+   while the app is open (server cron cadence is too coarse). Double-fire is
+   prevented per-channel: local uses localStorage, server uses Firestore,
+   and both mark each event+type as fired exactly once. */
 async function _startNotifEngine() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  const fcmOk = await _initFCM();
-  if (!fcmOk) {
-    /* Local fallback — works while the browser tab is open */
-    checkNotifications();
-    setInterval(checkNotifications, 60_000);
-  }
+  await _initFCM();
+  checkNotifications();
+  setInterval(checkNotifications, 60_000);
 }
 
 function initNotifications() {
