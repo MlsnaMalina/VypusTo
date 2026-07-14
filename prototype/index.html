@@ -9636,9 +9636,12 @@ document.addEventListener('DOMContentLoaded', () => {
   $('js-rec-title').addEventListener('keydown', e => { if (e.key === 'Escape') closeRecModal(); });
 
   document.querySelectorAll('#js-rec-months-grid .rec-month-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      pill.classList.toggle('on');
-      pill.querySelector('input').checked = pill.classList.contains('on');
+    /* Listen on the checkbox's 'change' event, not the label's 'click' —
+       clicking a <label> wrapping a checkbox fires a native click on the
+       checkbox too, which bubbles back through the label. A 'click'
+       listener on the label would fire twice per tap and cancel itself out. */
+    pill.querySelector('input').addEventListener('change', e => {
+      pill.classList.toggle('on', e.target.checked);
     });
   });
 
