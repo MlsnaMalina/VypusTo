@@ -9098,7 +9098,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       currentUser = null;
       document.getElementById('auth-loading').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
+      /* ?demo v URL spustí ukázkovou verzi rovnou (odkaz z portfolia) */
+      if (new URLSearchParams(location.search).has('demo') && !isDemoMode) {
+        enterDemoMode();
+      } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+      }
     }
   });
 
