@@ -6750,11 +6750,13 @@ function renderDnes(animate = false) {
   $('js-date').textContent = `${targetD.getDate()}. ${mons[targetD.getMonth()]}`;
   $('js-year').textContent = String(targetD.getFullYear());
 
-  // Birthday banner
+  // Birthday banner — full name (birthdays need the specific person identified,
+  // unlike namedays which are meant to congratulate everyone with that first name)
   const bday = birthdays.find(b => b.month === targetD.getMonth()+1 && b.day === targetD.getDate());
   const bd = $('js-bday');
   if (bday) {
-    $('js-bday-txt').textContent = `${isTom?'Zítra':'Dnes'} slaví ${bday.firstName}`;
+    const bdayFullName = bday.firstName + (bday.lastName ? ` ${bday.lastName}` : '');
+    $('js-bday-txt').textContent = `${isTom?'Zítra':'Dnes'} slaví ${bdayFullName}`;
     const ini = $('js-bday-ini');
     if (ini) ini.textContent = (bday.firstName||'').trim().charAt(0).toUpperCase();
     bd.classList.add('visible');
@@ -8235,11 +8237,16 @@ function renderNarozeniny() {
     const ageLbl = ev.type === 'anniversary' && ev.yearStart
       ? `<div class="bday-tile-age" title="${age} let">${heartStr(ev.yearStart)}</div>`
       : (age ? `<div class="bday-tile-age">${age} let</div>` : '');
+    /* Namedays congratulate everyone sharing that first name, so first name
+       alone is correct there. Birthdays/anniversaries celebrate one specific
+       person — show the full name so contacts with the same first name
+       (e.g. two Jaroslavs) can be told apart. */
+    const displayName = ev.type === 'nameday' ? ev.firstName : ev.fullName;
     return `<div class="bday-tile${extraCls}" data-type="${ev.type}">
       <div class="bday-illus-wrap">
         ${bdayIllus(ev.type, illusCol)}
       </div>
-      <div class="bday-tile-name">${ev.firstName}</div>
+      <div class="bday-tile-name">${displayName}</div>
       ${typeLbl ? `<div class="bday-tile-type">${typeLbl}</div>` : ''}
       ${ageLbl}
       <span class="bday-tile-badge ${cls}">${badge}</span>
