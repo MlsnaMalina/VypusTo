@@ -1516,6 +1516,10 @@
       border: 1.5px solid var(--border); cursor: pointer; transition: all .15s;
     }
     .nastav-reset-btn:hover { color: var(--ink); border-color: var(--ink-2); }
+    .nastav-backup-hint {
+      font-family: var(--f-body); font-size: 13px; color: var(--ink-3);
+      line-height: 1.5; margin-bottom: 12px;
+    }
 
     .poz-body { padding: 4px 24px 0; }
     .note-sec-lbl {
@@ -3497,6 +3501,10 @@
         <div class="nastav-notif-block" id="js-notif-settings-block">
           <!-- rendered dynamically by renderNotifSettings() -->
         </div>
+
+        <div class="nastav-section-lbl" style="margin-top:28px">Záloha dat</div>
+        <div class="nastav-backup-hint">Stáhne všechna tvá data (úkoly, narozeniny, poznámky, události, zdravotní deník, finance) do jednoho souboru. Ulož si ho třeba do OneDrive nebo na e-mail.</div>
+        <button class="nastav-save-btn" id="js-ns-backup">⬇ Stáhnout zálohu dat</button>
       </div>
     </div>
 
@@ -4580,6 +4588,24 @@ function saveSettings() {
   _saveSettingsLocal();
   applySettingsColors();
   rerender();
+}
+
+function downloadBackup() {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    app: 'VypusTo',
+    tasks, birthdays, notes, recurringEvents, calEvents, healthLog, financeData, cycleData,
+    settings
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `vypusto-zaloha-${dStr(new Date())}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function renderSettings() {
@@ -9292,6 +9318,15 @@ document.addEventListener('DOMContentLoaded', () => {
     settings.colors = { ...DEFAULT_COLORS };
     saveSettings();
     renderSettings();
+  });
+
+  $('js-ns-backup').addEventListener('click', () => {
+    downloadBackup();
+    const btn = $('js-ns-backup');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Staženo';
+    btn.style.opacity = '.7';
+    setTimeout(() => { btn.textContent = orig; btn.style.opacity = ''; }, 1400);
   });
 
   /* Live swatch preview on color input change */
